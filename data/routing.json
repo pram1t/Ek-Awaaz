@@ -267,7 +267,7 @@
       "asks": [
         {
           "q": "What were you refused, and in which month?",
-          "hint": "What the dealer said, and how much you were owed. Do not type your card number.",
+          "hint": "What the dealer said, and how much you were owed.",
           "ph": "Example: no wheat for two months, he said stock is over"
         },
         {

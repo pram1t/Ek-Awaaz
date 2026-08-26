@@ -17,6 +17,7 @@
 */
 
 import crypto from 'node:crypto';
+import { askIsBanned } from './banned-asks.js';
 
 /* ----------------------------------------------------------------- 1. INPUT ----- */
 
@@ -140,7 +141,7 @@ function clean(value, maxLen) {
  * Validate a classification result against reality. Anything the model got wrong is replaced
  * by the deterministic value rather than shown to a citizen.
  */
-export function validateClassification(out, { domainKeys, optionKeys, fallback }) {
+export function validateClassification(out, { domainKeys, optionKeys, fallback, topUp }) {
   const safe = { ...fallback };
 
   if (out && typeof out === 'object') {
@@ -159,7 +160,10 @@ export function validateClassification(out, { domainKeys, optionKeys, fallback }
     safe.injury = out.injury === true;
     safe.language = /^[a-z]{2}(-[A-Za-z]{2,4})?$/.test(out.language || '') ? out.language : (fallback.language || 'en');
 
-    if (typeof out.optionKey === 'string' && optionKeys.includes(out.optionKey)) {
+    /* Scoped to the domain we actually settled on. Validating against every tier key in the
+       table let infra.power come back holding "national_highway", a tier it does not have. */
+    const allowedTiers = typeof optionKeys === 'function' ? optionKeys(safe.domain) : optionKeys;
+    if (typeof out.optionKey === 'string' && allowedTiers.includes(out.optionKey)) {
       safe.optionKey = out.optionKey;
       const oc = Number(out.optionConfidence);
       safe.optionConfidence = Number.isFinite(oc) ? Math.min(1, Math.max(0, oc)) : 0;
@@ -167,10 +171,29 @@ export function validateClassification(out, { domainKeys, optionKeys, fallback }
 
     if (Array.isArray(out.asks)) {
       const asks = out.asks
-        .map((a) => ({ q: clean(a && a.q, 140), hint: clean(a && a.hint, 180), ph: clean(a && a.ph, 120) }))
+        .filter((a) => !askIsBanned(a && a.q))
+        .map((a, i) => ({
+          q: clean(a && a.q, 140),
+          hint: clean(a && a.hint, 180),
+          /* An empty example leaves the citizen staring at a blank box, which is the thing
+             the examples exist to prevent. Borrow the hand-written one for this domain. */
+          ph: clean(a && a.ph, 120) || String((fallback.asks && fallback.asks[i] && fallback.asks[i].ph) || '').replace(/^Example:\s*/i, '')
+        }))
         .filter((a) => a.q.length > 3)
         .slice(0, 3);
-      if (asks.length) safe.asks = asks;
+      /* Only top up where it would actually help: the model's own domain, English only,
+         because the hand-written questions exist in English alone. Dropping to one good
+         question beats appending one in the wrong language about the wrong subject. */
+      const english = /^en/i.test(safe.language || 'en');
+      const own = (topUp && topUp(safe.domain)) || [];
+      if (english) {
+        const spare = own.filter((f) => !asks.some((a) => a.q === f.q));
+        while (asks.length < 2 && spare.length) {
+          const s = spare.shift();
+          asks.push({ q: s.q, hint: s.hint, ph: String(s.ph || '').replace(/^Example:\s*/i, '') });
+        }
+      }
+      if (asks.length) safe.asks = asks.slice(0, 3);
     }
   }
 

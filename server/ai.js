@@ -13,6 +13,7 @@
 
 import OpenAI from 'openai';
 import { routing } from './db.js';
+import { correctDomain } from './corrections.js';
 import {
   validateClassification, validatePlain, validateSentence,
   canSpend, record, budgetLeft, cacheKey, cacheGet, cacheSet
@@ -59,24 +60,55 @@ const TIER_LINES = Object.entries(routing.domains)
 
 const INTAKE_SYSTEM = `${SMITI}
 
-Read what the person said and return JSON only.
+RULE ONE, above everything: reply in the SAME language and the SAME SCRIPT the person wrote
+in. English in, English out. Devanagari in, Devanagari out. Hindi typed in Latin letters gets
+Hindi back in Latin letters. This covers the asks, the title and the summary alike. Getting
+this wrong is the worst thing you can do here.
+
+RULE TWO: never ask which office, department, authority or ministry handles this. Working that
+out is our job, and they do not know the answer — not knowing is the whole reason they came to
+us.
+  WRONG: "Which office looks after this problem?"
+  RIGHT: "Which stretch of the road is worst?"
+The ONLY two cases where you may ask about an office at all:
+  money.bank — when they first told the bank, because that date starts the ombudsman clock
+  office.inaction — which office is ignoring them, because that IS the complaint
+Everywhere else, asking about an office is forbidden. Ask about the problem instead: how long,
+how bad, who is affected, what it has stopped, what it has cost.
+
+RULE THREE: never ask for a full account number, card number, Aadhaar or PAN. A reference that
+is safe to quote — a UAN, a PNR, a docket, a consumer number — is fine.
+
+One that is easy to get wrong: street lights, footpaths, culverts and dividers ON a road or
+highway belong to that road's authority, so they are infra.road, not infra.power. A DISCOM
+cannot touch a light the highway authority owns.
+
+Read what the person said and return JSON.
 
 domain — exactly one key from: ${DOMAIN_LINES}
-optionKey — where the domain appears below, the tier that fits. null if you cannot tell from
-what they said. Never guess between a village road and a national highway; that decides who is
-legally responsible.
+confidence — how sure you are of the domain, strictly between 0 and 1. Give a real judgement,
+never 0.
+optionKey — where the domain appears below, the tier that fits what they described; null only
+if you genuinely cannot tell. Never guess between a village road and a national highway,
+because that decides who is legally responsible. If they name a national highway, say so.
 ${TIER_LINES}
+optionConfidence — how sure you are of the tier, strictly between 0 and 1. Never 0 when you
+have chosen a tier.
 
-asks — 2 or 3 follow-ups, in Smiti's voice, in the SAME language the person used. Each needs a
-short hint and a concrete example. Ask what an officer would need before they could act.
-title — under 9 words, plain.
-summary — one factual sentence.
+asks — exactly 2 follow-ups, in Smiti's voice. Each needs:
+  q     the question, one thing only
+  hint  one short line on why it matters
+  ph    a realistic example ANSWER someone might actually type. Never leave it empty.
+Ask what an officer would need before they could act on this.
+
+title — under 9 words, their language and script.
+summary — one factual sentence, their language and script.
 area — the place they named, if any. state — the Indian state, if you can tell.
 injury — true only if a person was hurt or something was damaged.
-language — the BCP-47 code they wrote in, e.g. hi-IN, en-IN.
+language — the BCP-47 code of what they actually WROTE: en-IN, hi-IN and so on.
 
-{"domain":"","optionKey":null,"confidence":0,"optionConfidence":0,"title":"","summary":"",
-"area":"","state":"","injury":false,"language":"","asks":[{"q":"","hint":"","ph":""}]}`;
+Return these keys: domain, confidence, optionKey, optionConfidence, title, summary, area,
+state, injury, language, asks.`;
 
 /* -------------------------------------------------------------------- PLUMBING ----- */
 
@@ -104,9 +136,10 @@ const KEYWORDS = [
   ['money.pmkisan', /kisan|किसान|instalment|installment|samman nidhi/i],
   ['supply.ration', /ration|राशन|pds|fair price|kerosene|wheat|rice|anaj|dealer|डीलर/i],
   ['work.mgnrega', /mgnrega|nrega|मनरेगा|job card|wages|मजदूरी|majduri/i],
+  ['infra.road', /pothole|road|sadak|सड़क|गड्ढ|gaddh|highway|rajmarg|राजमार्ग|हाईवे|street ?light|streetlight|स्ट्रीट ?लाइट|रोशनी|divider|culvert|footpath|street|rasta|रास्ता/i],
   ['infra.power', /electric|power|bijli|बिजली|outage|transformer|current|meter|light bill/i],
   ['infra.water', /water|pani|पानी|tap|handpump|नल|tanker|supply line/i],
-  ['infra.road', /pothole|road|sadak|सड़क|गड्ढ|gaddh|highway|street|rasta|रास्ता|culvert|footpath/i],
+  
   ['property.housing', /builder|flat|rera|possession|मकान|land record|mutation|ज़मीन|jamin/i],
   ['travel.rail', /train|railway|रेल|irctc|station|pnr|coach/i],
   ['telecom.service', /sim|network|recharge|internet|broadband|मोबाइल|jio|airtel|bsnl/i],
@@ -154,11 +187,27 @@ export async function classify(text) {
 
   try {
     const raw = await ask(INTAKE_SYSTEM, String(text).slice(0, 1200), { maxTokens: 600, temperature: 0.35 });
-    const safe = validateClassification(raw, { domainKeys: DOMAIN_KEYS, optionKeys: OPTION_KEYS, fallback });
+    const safe = validateClassification(raw, {
+          domainKeys: DOMAIN_KEYS,
+          /* tiers belonging to the chosen domain, not every tier in the table */
+          optionKeys: (d) => (routing.domains[d]?.disambiguator?.options || []).map((o) => o.key),
+          /* the hand-written questions for the chosen domain, for topping up */
+          topUp: (d) => routing.domains[d]?.asks || [],
+          fallback
+        });
 
     /* A tier is only accepted when the model was confident about it. An unconfident guess here
        sends the case to the wrong constitutional tier, which is the one mistake that matters. */
     if (safe.optionKey && (safe.optionConfidence ?? 0) < 0.6) safe.optionKey = null;
+
+    /* A few cases the model gets wrong in a way that sends the citizen to an office that
+       legally cannot act. Enforced here rather than asked for in the prompt. */
+    const fix = correctDomain(text, safe.domain);
+    if (fix.corrected) {
+      safe.domain = fix.domain;
+      safe.optionKey = null;          // the old tier belonged to the old domain
+      safe.correctedBecause = fix.because;
+    }
 
     safe.source = 'model';
     cacheSet(key, { ...safe, source: undefined });
