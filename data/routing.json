@@ -18,7 +18,8 @@
             "legal_basis": "Article 243G and the Eleventh Schedule; local government is Entry 5 of the State List",
             "route": "none",
             "fallback": "No online system exists for Panchayat roads anywhere in India. The honest route is the state CM helpline, pre-filled.",
-            "remedy": "pothole.compensation"
+            "remedy": "pothole.compensation",
+            "default": true
           },
           {
             "key": "pmgsy",
@@ -29,7 +30,8 @@
             "legal_basis": "Scheme of the Ministry of Rural Development — no statute",
             "route": "meri_sadak",
             "fallback": null,
-            "remedy": "pothole.compensation"
+            "remedy": "pothole.compensation",
+            "default": false
           },
           {
             "key": "town",
@@ -40,7 +42,8 @@
             "legal_basis": "Article 243W and the Twelfth Schedule; Entry 5, State List",
             "route": "state_portal",
             "fallback": "City portals differ. Where none exists we degrade to the state portal and say so.",
-            "remedy": "pothole.compensation"
+            "remedy": "pothole.compensation",
+            "default": false
           },
           {
             "key": "state_highway",
@@ -51,7 +54,8 @@
             "legal_basis": "Entry 13, State List",
             "route": "state_portal",
             "fallback": "Varies by state.",
-            "remedy": "pothole.compensation"
+            "remedy": "pothole.compensation",
+            "default": false
           },
           {
             "key": "national_highway",
@@ -62,7 +66,8 @@
             "legal_basis": "Entry 23, Union List; National Highways Act 1956; NHAI Act 1988",
             "route": "cpgrams",
             "fallback": null,
-            "remedy": "pothole.compensation"
+            "remedy": "pothole.compensation",
+            "default": false
           },
           {
             "key": "cantonment",
@@ -73,7 +78,8 @@
             "legal_basis": "Cantonments Act 2006",
             "route": "cpgrams",
             "fallback": null,
-            "remedy": "pothole.compensation"
+            "remedy": "pothole.compensation",
+            "default": false
           }
         ]
       }
@@ -111,8 +117,18 @@
       "route": "epfigms",
       "remedy": "pf.ombudsman",
       "identifiers": [
-        { "key": "uan", "label": "Your UAN", "hint": "12 digits, on your payslip or the EPFO app.", "required": true },
-        { "key": "claim_date", "label": "When you filed the claim", "hint": "Approximate month is fine.", "required": false }
+        {
+          "key": "uan",
+          "label": "Your UAN",
+          "hint": "12 digits, on your payslip or the EPFO app.",
+          "required": true
+        },
+        {
+          "key": "claim_date",
+          "label": "When you filed the claim",
+          "hint": "Approximate month is fine.",
+          "required": false
+        }
       ]
     },
     "money.tax_refund": {
@@ -126,8 +142,18 @@
       "route": "e_nivaran",
       "remedy": "tax.244a",
       "identifiers": [
-        { "key": "assessment_year", "label": "Assessment year", "hint": "For example 2025-26.", "required": true },
-        { "key": "filed_on", "label": "Date you filed the return", "hint": "Approximate is fine.", "required": false }
+        {
+          "key": "assessment_year",
+          "label": "Assessment year",
+          "hint": "For example 2025-26.",
+          "required": true
+        },
+        {
+          "key": "filed_on",
+          "label": "Date you filed the return",
+          "hint": "Approximate is fine.",
+          "required": false
+        }
       ]
     },
     "money.bank": {
@@ -141,8 +167,18 @@
       "route": "rbi_cms",
       "remedy": "bank.rbi_ombudsman",
       "identifiers": [
-        { "key": "bank", "label": "Which bank", "hint": "Bank name is enough.", "required": true },
-        { "key": "complained_on", "label": "When you first complained to the bank", "hint": "This decides whether the ombudsman can hear it yet.", "required": true }
+        {
+          "key": "bank",
+          "label": "Which bank",
+          "hint": "Bank name is enough.",
+          "required": true
+        },
+        {
+          "key": "complained_on",
+          "label": "When you first complained to the bank",
+          "hint": "This decides whether the ombudsman can hear it yet.",
+          "required": true
+        }
       ]
     },
     "supply.ration": {
@@ -249,22 +285,80 @@
     }
   },
   "channels": {
-    "cpgrams": { "label": "CPGRAMS", "status": "api_exists", "mocked": true },
-    "meri_sadak": { "label": "Meri Sadak (NRIDA)", "status": "defined_channel", "mocked": true, "note": "Geotagged photo, reopenable within 10 days." },
-    "epfigms": { "label": "EPFiGMS", "status": "api_exists", "mocked": true },
-    "rbi_cms": { "label": "RBI Complaint Management System", "status": "api_exists", "mocked": true },
-    "e_nivaran": { "label": "e-Nivaran (Income Tax)", "status": "api_exists", "mocked": true },
-    "railmadad": { "label": "RailMadad / 139", "status": "api_exists", "mocked": true },
-    "pmkisan": { "label": "pmkisan.gov.in grievance", "status": "api_exists", "mocked": true },
-    "state_portal": { "label": "State grievance portal", "status": "varies_by_state", "mocked": true },
-    "operator": { "label": "Operator appellate authority", "status": "varies", "mocked": true },
-    "vigilance": { "label": "Chief Vigilance Officer", "status": "no_public_tracking", "mocked": true },
-    "none": { "label": "No online route exists", "status": "none", "mocked": false, "note": "Honest dead end. We hand over the CM helpline, pre-filled." }
+    "cpgrams": {
+      "label": "CPGRAMS",
+      "status": "api_exists",
+      "mocked": true
+    },
+    "meri_sadak": {
+      "label": "Meri Sadak (NRIDA)",
+      "status": "defined_channel",
+      "mocked": true,
+      "note": "Geotagged photo, reopenable within 10 days."
+    },
+    "epfigms": {
+      "label": "EPFiGMS",
+      "status": "api_exists",
+      "mocked": true
+    },
+    "rbi_cms": {
+      "label": "RBI Complaint Management System",
+      "status": "api_exists",
+      "mocked": true
+    },
+    "e_nivaran": {
+      "label": "e-Nivaran (Income Tax)",
+      "status": "api_exists",
+      "mocked": true
+    },
+    "railmadad": {
+      "label": "RailMadad / 139",
+      "status": "api_exists",
+      "mocked": true
+    },
+    "pmkisan": {
+      "label": "pmkisan.gov.in grievance",
+      "status": "api_exists",
+      "mocked": true
+    },
+    "state_portal": {
+      "label": "State grievance portal",
+      "status": "varies_by_state",
+      "mocked": true
+    },
+    "operator": {
+      "label": "Operator appellate authority",
+      "status": "varies",
+      "mocked": true
+    },
+    "vigilance": {
+      "label": "Chief Vigilance Officer",
+      "status": "no_public_tracking",
+      "mocked": true
+    },
+    "none": {
+      "label": "No online route exists",
+      "status": "none",
+      "mocked": false,
+      "note": "Honest dead end. We hand over the CM helpline, pre-filled."
+    }
   },
   "helplines": {
-    "default": { "label": "State CM helpline", "number": null },
-    "bihar": { "label": "Bihar CM helpline", "number": "18003456123" },
-    "madhya pradesh": { "label": "MP CM Helpline", "number": "181" },
-    "uttar pradesh": { "label": "UP Jansunwai helpline", "number": "1076" }
+    "default": {
+      "label": "State CM helpline",
+      "number": null
+    },
+    "bihar": {
+      "label": "Bihar CM helpline",
+      "number": "18003456123"
+    },
+    "madhya pradesh": {
+      "label": "MP CM Helpline",
+      "number": "181"
+    },
+    "uttar pradesh": {
+      "label": "UP Jansunwai helpline",
+      "number": "1076"
+    }
   }
 }

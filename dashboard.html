@@ -336,10 +336,12 @@ const cases = {
   .supported-row .sbar i{display:block;height:100%;background:var(--blue)}
   @media(max-width:860px){.supported-row{grid-template-columns:1fr 1fr}}
 </style>
+<script src="api-client.js"></script>
 <script src="session.js"></script>
 <script>
-  /* The dashboard only exists for a logged-in session; joined and filed cases come from it. */
-  (function () {
+  /* The dashboard only exists for a logged-in session. Cases come from the server, keyed on
+     the verified mobile number; sessionStorage is only the offline fallback. */
+  (async function () {
     const main = document.querySelector('.main > .shell');
     const state = EA.read();
 
@@ -357,38 +359,81 @@ const cases = {
     if (out) out.addEventListener('click', (e) => { e.preventDefault(); EA.logout(); window.location.href = 'index.html'; });
 
     const when = (t) => new Date(t).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    const onDate = (iso) => iso ? new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 
-    if (state.joined.length) {
+    /* Server is the source of truth. Fall back to the local session only if it is unreachable. */
+    let filed = state.filed, joined = state.joined, live = false;
+    if (window.EAAPI) {
+      const res = await window.EAAPI.myCases(state.phone);
+      if (!res.error) {
+        live = true;
+        filed = res.filed.map((c) => ({
+          id: c.code, title: c.title, office: c.office, at: c.filedOn, iso: c.filedOn,
+          clock: c.clock, status: c.status, visibility: c.visibility, area: c.area,
+          overdue: c.overdue, escalatesTo: c.escalatesTo, supporters: c.supporters, target: c.target
+        }));
+        joined = res.joined.map((c) => ({
+          id: c.code, title: c.title, office: c.office, area: c.area,
+          supporters: c.supporters, target: c.target || 50, at: c.filedOn, iso: c.filedOn,
+          clock: c.clock, status: c.status
+        }));
+      }
+    }
+
+    const STATUS = {
+      open: 'Open', escalated: 'Escalated', awaiting_confirmation: 'Awaiting your confirmation',
+      confirmed_fixed: 'Confirmed fixed', reopened: 'Reopened', partly_fixed: 'Partly fixed',
+      awaiting_routing: 'Awaiting routing'
+    };
+
+    if (joined.length) {
       const section = document.createElement('div');
       section.className = 'supported';
-      section.innerHTML = '<div class="supported-top"><p class="eyebrow">Cases you support</p><span>' + state.joined.length + (state.joined.length === 1 ? ' case' : ' cases') + '</span></div>'
-        + state.joined.map((j) => {
+      section.innerHTML = '<div class="supported-top"><p class="eyebrow">Cases you support</p><span>' + joined.length + (joined.length === 1 ? ' case' : ' cases') + '</span></div>'
+        + joined.map((j) => {
           const pct = Math.min(100, Math.round((j.supporters / j.target) * 100));
           return '<div class="supported-row"><div><span class="tag">Supporting</span><h3>' + EA.esc(j.title) + '</h3><p class="cid">' + EA.esc(j.id) + ' · ' + EA.esc(j.area) + '</p></div>'
             + '<div class="sfact"><small>With</small><b>' + EA.esc(j.office) + '</b></div>'
-            + '<div class="sfact"><small>You joined</small><b>' + when(j.at) + '</b><b style="color:var(--muted);font-weight:600">' + j.supporters + ' of ' + j.target + ' supporters</b></div>'
+            + '<div class="sfact"><small>You joined</small><b>' + (j.iso ? onDate(j.iso) : when(j.at)) + '</b><b style="color:var(--muted);font-weight:600">' + j.supporters + ' of ' + j.target + ' supporters</b></div>'
             + '<span class="sbar"><i style="width:' + pct + '%"></i></span></div>';
         }).join('');
       const area = document.querySelector('#yourCases');
       area.insertBefore(section, area.firstChild);
     }
 
-    if (state.filed.length) {
+    if (filed.length) {
       const list = document.querySelector('#yourCases .case-list');
-      state.filed.slice().reverse().forEach((f) => {
+      filed.slice().reverse().forEach((f) => {
         const row = document.createElement('article');
         row.className = 'case-card case-row';
-        row.dataset.status = 'pending';
-        row.innerHTML = '<div><span class="status pending">Filed just now</span><h3>' + EA.esc(f.title || 'New grievance') + '</h3><p class="cid">' + EA.esc(f.id) + '</p></div>'
+        const done = f.status === 'confirmed_fixed';
+        row.dataset.status = done ? 'resolved' : 'pending';
+        const label = STATUS[f.status] || 'Filed';
+        const stage = (n) => ['on', 'on', done || f.status === 'awaiting_confirmation' ? 'on' : '', done ? 'on' : ''][n] || '';
+        row.innerHTML = '<div><span class="status ' + (done ? 'resolved' : 'pending') + '">' + EA.esc(label) + '</span><h3>' + EA.esc(f.title || 'New grievance') + '</h3><p class="cid">' + EA.esc(f.id) + (f.area ? ' · ' + EA.esc(f.area) : '') + '</p></div>'
           + '<div class="rfact"><small>With</small><b>' + EA.esc(f.office || 'Awaiting routing') + '</b></div>'
-          + '<div class="rfact"><small>Elapsed</small><b>Filed ' + when(f.at) + '</b></div>'
-          + '<div class="rfact due"><small>Next due</small><b>Officer response in 21 days</b></div><span class="chev">→</span>'
-          + '<div class="stages"><div class="on"><i class="done"></i><span>Filed</span></div><div class="on"><i class="now"></i><span>Routed</span></div><div><i></i><span>Officer response</span></div><div><i></i><span>You confirm</span></div></div>';
+          + '<div class="rfact"><small>Elapsed</small><b>' + (f.clock ? EA.esc(f.clock) : 'Filed ' + (f.iso ? onDate(f.iso) : when(f.at))) + '</b></div>'
+          + '<div class="rfact due"><small>' + (done ? 'Confirmed' : f.overdue ? 'Overdue' : 'Next due') + '</small><b>'
+            + (done ? 'Closed by you, not by a report'
+                    : f.status === 'awaiting_confirmation' ? 'Waiting for you to confirm'
+                    : f.overdue ? 'Past 21 days — escalates to ' + EA.esc(f.escalatesTo || 'the next authority')
+                    : 'Officer response inside 21 days') + '</b></div><span class="chev">→</span>'
+          + '<div class="stages"><div class="' + stage(0) + '"><i class="done"></i><span>Filed</span></div>'
+            + '<div class="' + stage(1) + '"><i class="' + (f.status === 'open' ? 'now' : 'done') + '"></i><span>Routed</span></div>'
+            + '<div class="' + stage(2) + '"><i class="' + (f.status === 'awaiting_confirmation' ? 'now' : done ? 'done' : '') + '"></i><span>Officer response</span></div>'
+            + '<div class="' + stage(3) + '"><i class="' + (done ? 'done' : '') + '"></i><span>You confirm</span></div></div>';
         list.insertBefore(row, list.firstChild);
       });
     }
 
-    const total = 3 + state.filed.length;
+    if (!live) {
+      const banner = document.createElement('p');
+      banner.style.cssText = 'margin:0 0 18px;padding:11px 14px;background:#fdf3e3;border-left:3px solid #8a6114;font-size:12.5px;color:#5a4410';
+      banner.textContent = 'Showing cases saved on this device — the server could not be reached, so counts may be out of date.';
+      document.querySelector('#yourCases').prepend(banner);
+    }
+
+    const total = 3 + filed.length;
     const tab = document.querySelector('.tab[data-target="yourCases"] b');
     if (tab) tab.textContent = total;
     const all = document.querySelector('[data-filter-for="yourCases"] .filter[data-status="all"] b');

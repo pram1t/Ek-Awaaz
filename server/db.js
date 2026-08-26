@@ -11,7 +11,17 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
-const DB_PATH = process.env.DB_PATH || path.join(ROOT, 'data', 'ekawaaz.db');
+/* Storage location.
+   A persistent host (Render, Railway, Fly, your laptop) gets a real file and cases survive.
+   Serverless hosts have a read-only filesystem, so there we run in memory: the seed history is
+   always present, and cases created during a session live as long as that instance does.
+   `storageMode` is reported by /api/health so the limitation is never hidden. */
+const SERVERLESS = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const DB_PATH = process.env.DB_PATH || (SERVERLESS ? ':memory:' : path.join(ROOT, 'data', 'ekawaaz.db'));
+export const storageMode = DB_PATH === ':memory:' ? 'memory' : 'file';
+export const storageNote = storageMode === 'memory'
+  ? 'Serverless instance: seeded case history is always present, but cases you create live only as long as this instance. Set DB_PATH to a writable path, or host on a persistent process, for durable storage.'
+  : `Persistent file at ${DB_PATH}.`;
 
 export const routing = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'routing.json'), 'utf8'));
 export const remedies = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'remedies.json'), 'utf8'));
@@ -20,7 +30,7 @@ const seed = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'seed.json'), 'u
 export const stats = seed.stats;
 
 const db = new Database(DB_PATH);
-db.pragma('journal_mode = WAL');
+if (storageMode === 'file') db.pragma('journal_mode = WAL');
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS cases (

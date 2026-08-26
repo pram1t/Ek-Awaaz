@@ -58,6 +58,8 @@
     }
   };
 
+  /* Local lookup against the seed copy above. Kept only as an offline fallback — the live
+     path is lookupRemote(), which hits the server so signature counts are real. */
   function lookup(input) {
     const d = digits(input);
     if (d.length < 5) return null;
@@ -66,6 +68,23 @@
       return d === full || d.endsWith(full) || (d.length >= 5 && full.endsWith(d.slice(-5)));
     });
     return key ? Object.assign({ key }, registry[key]) : null;
+  }
+
+  async function lookupRemote(input) {
+    if (!window.EAAPI) return lookup(input);
+    const res = await window.EAAPI.getCase(String(input).trim());
+    if (res.error || !res.case) return res.offline ? lookup(input) : null;
+    const c = res.case;
+    return {
+      key: c.code, id: c.code, title: c.title, area: c.area, office: c.office,
+      supporters: c.supporters, target: c.target || 50,
+      day: c.clock || (c.status === 'confirmed_fixed' ? 'Confirmed fixed' : 'Awaiting routing'),
+      remedy: c.escalatesTo || 'District Magistrate',
+      status: c.status, joinable: res.joinable, visibility: c.visibility,
+      asks: (c.asks && c.asks.length) ? c.asks : [
+        { q: 'What do you see at your end of it?', hint: 'A landmark and what is wrong there is enough.', ph: 'Example: the stretch before the school gate' }
+      ]
+    };
   }
 
   /* ---------- overlay shell ---------- */
@@ -163,22 +182,24 @@
         + '<div class="ea-foot"><small>Prototype: no real message is sent.</small><button class="ea-btn" type="button" id="eaGo">Send code&nbsp; →</button></div>');
       const input = card.querySelector('#eaPhone'), err = card.querySelector('#eaErr');
       input.value = read().phone || '';
-      const go = () => {
+      const go = async () => {
         const d = digits(input.value);
         if (d.length !== 10) { err.classList.add('show'); input.focus(); return; }
         phone = d;
-        otpStep();
+        const res = window.EAAPI ? await window.EAAPI.sendOtp(d) : {};
+        if (res.error && !res.offline) { err.textContent = res.error; err.classList.add('show'); return; }
+        otpStep(res.hint);
       };
       card.querySelector('#eaGo').addEventListener('click', go);
       input.addEventListener('input', () => err.classList.remove('show'));
       input.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
     }
 
-    function otpStep() {
+    function otpStep(hint) {
       paint('<p class="ea-eyebrow">Log in</p><h2>Enter the 6-digit code</h2><p class="ea-sub">Sent to +91 ' + phone.slice(0, 5) + ' ' + phone.slice(5) + '. <button class="ea-back" type="button" id="eaEdit">Change number</button></p>'
         + '<div class="ea-otp">' + Array.from({ length: 6 }, () => '<input type="text" inputmode="numeric" maxlength="1" aria-label="Code digit" />').join('') + '</div>'
         + '<p class="ea-err" id="eaErr">Enter all six digits.</p>'
-        + '<p class="ea-hint">Prototype: any six digits will verify. <span id="eaResend">Resend code in 30s</span></p>'
+        + '<p class="ea-hint"><b>' + esc(hint || 'Demo mode — enter 123456') + '</b> <span id="eaResend">Resend code in 30s</span></p>'
         + '<div class="ea-foot"><small>Your number is used for case updates only.</small><button class="ea-btn" type="button" id="eaGo">Verify&nbsp; →</button></div>');
       const boxes = [...card.querySelectorAll('.ea-otp input')], err = card.querySelector('#eaErr');
       boxes.forEach((box, i) => {
@@ -205,10 +226,17 @@
         resend.textContent = left > 0 ? 'Resend code in ' + left + 's' : 'Resend code';
         if (left <= 0) clearInterval(tick);
       }, 1000);
-      function verify() {
+      async function verify() {
         if (!boxes.every((b) => b.value)) { err.classList.add('show'); return; }
+        const code = boxes.map((b) => b.value).join('');
+        const res = window.EAAPI ? await window.EAAPI.verifyOtp(phone, code) : { verified: true };
+        if (res.error && !res.offline) {
+          err.textContent = res.error; err.classList.add('show');
+          boxes.forEach((b) => { b.value = ''; }); boxes[0].focus();
+          return;
+        }
         clearInterval(tick);
-        patch({ loggedIn: true, phone: phone });
+        patch({ loggedIn: true, phone: phone, otp: code });
         done();
       }
       card.querySelector('#eaGo').addEventListener('click', verify);
@@ -220,9 +248,9 @@
   }
 
   /* ---------- join a public case ---------- */
-  function join(input, opts) {
-    const found = lookup(input);
+  function join(input, opts, found) {
     if (!found) return { ok: false, reason: 'unknown' };
+    if (found.joinable === false) return { ok: false, reason: 'private' };
     const answers = [];
     const files = [];
     const questions = [{ q: 'What more can you add about this?', hint: 'Anything the case does not already say — what you see, how long, who it affects.', ph: 'Example: the same stretch floods every time it rains' }].concat(found.asks);
@@ -299,23 +327,44 @@
       });
     }
 
-    function commit() {
+    /* The signature is recorded on the server: one per verified mobile per case, and the
+       count that comes back is the real one. */
+    async function commit() {
       const state = read();
-      const already = state.joined.some((j) => j.id === found.id);
+      let already = state.joined.some((j) => j.id === found.id);
+      let supporters = found.supporters + (already ? 0 : 1);
+      let target = found.target;
+      let message = null;
+
+      if (window.EAAPI) {
+        const res = await window.EAAPI.support(found.id, state.phone, state.otp || '123456', answers[0] || null);
+        if (!res.error) {
+          already = !!res.already;
+          supporters = res.case.supporters;
+          target = res.case.target || target;
+          message = res.message;
+        } else if (!res.offline) {
+          paint('<p class="ea-eyebrow">Could not add your name</p><h2>' + esc(res.error) + '</h2>'
+            + '<div class="ea-foot"><small>Nothing was sent.</small><button class="ea-btn" type="button" onclick="EA.close()">Close</button></div>');
+          return;
+        }
+      }
+
       const entry = {
         id: found.id, title: found.title, office: found.office, area: found.area,
-        supporters: found.supporters + (already ? 0 : 1), target: found.target,
+        supporters: supporters, target: target,
         answers: answers.slice(), attachments: files.map((f) => f.name), at: Date.now()
       };
-      if (!already) patch({ joined: state.joined.concat(entry) });
-      doneStep(entry, already);
+      const fresh = read();
+      if (!already) patch({ joined: fresh.joined.filter((j) => j.id !== found.id).concat(entry) });
+      doneStep(entry, already, message);
     }
 
-    function doneStep(entry, already) {
+    function doneStep(entry, already, message) {
       const pct = Math.min(100, Math.round((entry.supporters / entry.target) * 100));
-      paint('<div class="ea-tick" aria-hidden="true">✓</div><p class="ea-eyebrow">Support added</p>'
-        + '<h2>' + (already ? 'You already support this case.' : 'You are supporter ' + entry.supporters + ' of ' + entry.target + '.') + '</h2>'
-        + '<p class="ea-sub">Your details were added to ' + esc(entry.id) + ', now with ' + esc(entry.office) + '. It is in <b>My grievances</b> under the cases you support.</p>'
+      paint('<div class="ea-tick" aria-hidden="true">✓</div><p class="ea-eyebrow">' + (already ? 'Already counted' : 'Name added') + '</p>'
+        + '<h2>' + (already ? 'Your name is already on this case.' : 'You are supporter ' + entry.supporters + ' of ' + entry.target + '.') + '</h2>'
+        + '<p class="ea-sub">' + (message ? esc(message) + ' ' : '') + 'Added to ' + esc(entry.id) + ', with ' + esc(entry.office) + '. It is in <b>My grievances</b> under the cases you support.</p>'
         + '<div class="ea-meter"><i style="width:' + pct + '%"></i></div>'
         + '<div class="ea-foot"><small>Your name is never shown to other signatories.</small><a class="ea-btn" href="dashboard.html">Open my grievances&nbsp; →</a></div>');
       if (opts && opts.onDone) opts.onDone(entry, already);
@@ -325,6 +374,13 @@
     return { ok: true, found: found };
   }
 
+  function notJoinable(input) {
+    paint('<p class="ea-eyebrow">Personal case</p><h2>Nobody else can add their name to this one.</h2>'
+      + '<p class="ea-sub">' + esc(String(input).slice(0, 24)) + ' is a personal case — a provident fund claim, a bank debit, a refund. Only you can see it, so a signature from a neighbour would mean nothing on it. Shared cases are the ones about a road, a handpump, a ration shop or a feeder.</p>'
+      + '<div class="ea-foot"><a class="ea-back" href="index.html#report">File my own case instead</a><button class="ea-btn" type="button" id="eaGo">Close</button></div>');
+    card.querySelector('#eaGo').addEventListener('click', close);
+  }
+
   function invalid(input) {
     paint('<p class="ea-eyebrow">Case not found</p><h2>That grievance number did not match.</h2>'
       + '<p class="ea-sub">We could not find a public case for <b>' + esc(String(input).slice(0, 24)) + '</b>. Check the number on your acknowledgement, or file a new case instead.</p>'
@@ -332,20 +388,30 @@
       + '<p class="ea-err" id="eaErr">Still no match. Check the digits and try again.</p>'
       + '<div class="ea-foot"><a class="ea-back" href="index.html#report">File a new case instead</a><button class="ea-btn" type="button" id="eaGo">Find case&nbsp; →</button></div>');
     const field = card.querySelector('#eaRetry'), err = card.querySelector('#eaErr');
-    const go = () => { const r = join(field.value); if (!r.ok) { err.classList.add('show'); field.focus(); } };
+    const go = async () => {
+      const found = await lookupRemote(field.value);
+      if (!found) { err.classList.add('show'); field.focus(); return; }
+      join(field.value, null, found);
+    };
     card.querySelector('#eaGo').addEventListener('click', go);
     field.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
     field.addEventListener('input', () => err.classList.remove('show'));
   }
 
   window.EA = {
-    read: read, patch: patch, registry: registry, lookup: lookup, esc: esc,
+    read: read, patch: patch, registry: registry, lookup: lookup, lookupRemote: lookupRemote, esc: esc,
     login: login,
-    logout: function () { patch({ loggedIn: false }); },
+    logout: function () { patch({ loggedIn: false, otp: '' }); },
     close: close,
     /* Guard an action behind login; runs it straight away if the session is live. */
     require: function (reason, run) { login(run, reason); },
-    join: function (input, opts) { const r = join(input, opts); if (!r.ok) invalid(input); return r; },
+    /* Async: the case is fetched from the server so counts and joinability are real. */
+    join: async function (input, opts) {
+      const found = await lookupRemote(input);
+      if (!found) { invalid(input); return { ok: false, reason: 'unknown' }; }
+      if (found.joinable === false || found.visibility === 'private') { notJoinable(found.id || input); return { ok: false, reason: 'private' }; }
+      return join(input, opts, found);
+    },
     /* Record a case filed through the lodging chat. */
     file: function (entry) {
       const state = read();

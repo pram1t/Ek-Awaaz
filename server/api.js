@@ -30,9 +30,18 @@ function daysSince(iso) {
 function resolve(domainKey, optionKey, ctx = {}) {
   const domain = routing.domains[domainKey] || routing.domains.other;
   let node = domain;
-  if (domain.disambiguator && optionKey) {
-    const opt = domain.disambiguator.options.find((o) => o.key === optionKey);
-    if (opt) node = opt;
+  let assumed = false;
+  if (domain.disambiguator) {
+    const opts = domain.disambiguator.options;
+    let opt = optionKey ? opts.find((o) => o.key === optionKey) : null;
+    if (!opt) {
+      // Nothing chosen and the model was not confident. Fall to the marked default and SAY SO,
+      // rather than leaving the office unresolved.
+      opt = opts.find((o) => o.default) || opts[0];
+      assumed = true;
+    }
+    node = opt;
+    optionKey = opt.key;
   }
 
   // "Rajnagar Ward 4, Patna district" -> block is "Rajnagar", not "Rajnagar Ward 4".
@@ -52,6 +61,11 @@ function resolve(domainKey, optionKey, ctx = {}) {
     domain: domainKey,
     domainLabel: domain.label,
     optionKey: optionKey || null,
+    assumed,
+    tierChoices: domain.disambiguator
+      ? { question: domain.disambiguator.question, hint: domain.disambiguator.hint,
+          options: domain.disambiguator.options.map((o) => ({ key: o.key, label: o.label, tier: o.tier })) }
+      : null,
     tier: node.tier || domain.tier || 'Unknown',
     office,
     reason: node.reason || domain.reason || null,
@@ -119,6 +133,8 @@ api.get('/health', (_req, res) => {
     ai: aiAvailable() ? 'live' : 'fallback',
     model: aiAvailable() ? (process.env.OPENAI_MODEL || 'gpt-4o-mini') : null,
     mockOtp: MOCK_OTP,
+    storage: db.storageMode,
+    storageNote: db.storageNote,
     disclosure: 'Independent prototype. Filing, officer actions and identities are simulated. No live government system is contacted.'
   });
 });

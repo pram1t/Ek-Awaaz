@@ -15,3 +15,5 @@ screenshots/
 .thumbnail
 *.dc.html
 .image-slots.state.json
+server.log
+server.err.log

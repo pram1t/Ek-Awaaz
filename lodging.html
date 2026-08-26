@@ -145,6 +145,7 @@ textarea:disabled{background:#f4f7fa;color:#8a99a8}
 </style>
 </head>
 <body>
+<script src="api-client.js"></script>
 <script src="session.js"></script>
 <div class="top"><div class="shell">Ek Awaaz · Lodging a grievance</div></div>
 
@@ -310,6 +311,90 @@ function pickDomain(text) {
 }
 let domain = pickDomain(issue);
 
+/* ---------- real intake: the model classifies and writes the follow-ups ----------
+   The local `domains` table above is now only a fallback for when the server cannot be
+   reached. When the API answers, its domain key, its questions and its identifiers replace
+   the hardcoded ones, and `domain.source` records which path was taken. */
+let apiRoute = null;
+
+async function classifyRemote(text) {
+  const res = window.EAAPI ? await window.EAAPI.intake(text) : { error: 'no client' };
+  if (res.error) {
+    domain = pickDomain(text);
+    domain.source = 'local';
+    domain.apiDomain = null;
+    return domain;
+  }
+
+  const local = pickDomain(text);
+  domain = {
+    key: res.domain,
+    apiDomain: res.domain,
+    source: res.aiSource === 'model' ? 'model' : 'server-fallback',
+    office: local.office,
+    reason: local.reason,
+    days: local.days,
+    remedy: local.remedy,
+    warning: res.warning || local.warning,
+    evidence: local.evidence,
+    isPublic: res.askVisibility ? false : undefined,
+    unsure: (res.confidence ?? 1) < 0.6,
+    title: res.title,
+    summary: res.summary,
+    area: res.area,
+    state: res.state,
+    injury: res.injury,
+    language: res.language,
+    askVisibility: res.askVisibility,
+    allowNameWithheld: res.allowNameWithheld,
+    disambiguator: res.disambiguator,
+    identifiers: res.identifiers || [],
+    asks: (res.asks || []).map((a) => ({ label: (a.q || '').split(/[?,]/)[0].slice(0, 22), q: a.q, hint: a.hint, chips: null, ph: a.ph }))
+  };
+  if (!domain.asks.length) domain.asks = local.asks;
+  return domain;
+}
+
+/* Ask the server where it goes, what stronger remedy is open, and whether a case already
+   exists that this person should join instead of filing a second one. */
+async function fetchRoute() {
+  if (!window.EAAPI || !domain.apiDomain) return null;
+  const res = await window.EAAPI.route({
+    text: answers.grievance || issue,
+    domain: domain.apiDomain,
+    optionKey: domain.optionKey || null,
+    area: answers.location || domain.area || detected,
+    state: domain.state || 'bihar',
+    injury: !!domain.injury,
+    language: domain.language || 'en',
+    answers: Object.entries(answers).map(([k, v]) => ({ q: k, a: v }))
+  });
+  if (res.error) return null;
+
+  apiRoute = res;
+  domain.office = res.office || domain.office;
+  domain.reason = res.sentence || res.reason || domain.reason;
+  domain.legalBasis = res.legalBasis;
+  domain.channel = res.channel;
+  domain.routeExists = res.routeExists;
+  domain.fallbackNote = res.fallback;
+  domain.helpline = res.helpline;
+  domain.warning = res.warning || domain.warning;
+  domain.match = res.match || null;
+  domain.cell = res.cell || null;
+  domain.visibility = res.visibility;
+  domain.optionKey = res.optionKey || domain.optionKey || null;
+  domain.assumed = !!res.assumed;
+  domain.tierChoices = res.tierChoices || null;
+  if (res.remedy && res.remedy.line) {
+    domain.remedy = { title: res.remedy.title, line: res.remedy.line, teeth: res.remedy.teeth,
+                      provision: res.remedy.provision, open: res.remedy.open,
+                      caveat: res.remedy.caveat, disclaimer: res.remedy.disclaimer };
+  }
+  if (res.visibility === 'public') isPublic = true;
+  return res;
+}
+
 /* The location Ek Awaaz believes you are in. A prototype stands in for reverse geocoding. */
 const detected = 'Rajnagar Ward 4, Madhubani district, Bihar';
 
@@ -414,10 +499,18 @@ function send(text) {
     answers.evidence = files.length ? files.length + (files.length === 1 ? ' file' : ' files') : 'None attached';
   } else if (entry.key === 'grievance') {
     answers.grievance = value;
-    domain = pickDomain(value);
-    isPublic = !!domain.isPublic;
-    buildSteps();
-    step = -1; /* the plan is rebuilt without the opening question */
+    awaiting = true;
+    const ghost = typing();
+    classifyRemote(value).then(() => {
+      ghost.remove();
+      awaiting = false;
+      isPublic = !!domain.isPublic;
+      buildSteps();
+      step = 0; /* the plan is rebuilt without the opening question */
+      save();
+      advance();
+    });
+    return;
   } else {
     answers[entry.key] = value;
   }
@@ -443,16 +536,16 @@ function route() {
   progressText.textContent = 'Ready to send';
   isPublic = isPublic || !!domain.isPublic;
   const ghost = typing();
-  setTimeout(() => {
+  fetchRoute().finally(() => {
     ghost.remove();
     bubble('them', '<p>That is enough. Here is where it goes and what you hold — nothing has been sent yet.</p>');
     renderRoute();
     reply.placeholder = 'Tell me what to change';
-  }, 1000);
+  });
 }
 
 function renderRoute() {
-  const found = domain.caseKey && window.EA ? EA.registry[domain.caseKey] : null;
+  const found = domain.match || null;
   const showMatch = found && !dismissedMatch;
   let html = '<div class="route"><header><b>Route found · nothing sent yet</b><h2>Your case, and where it goes</h2><p>Read it back. Every line can be corrected before you send.</p></header>';
 
@@ -460,10 +553,37 @@ function renderRoute() {
     + saidRows().map(([key, label, value]) => '<div><div><dt>' + esc(label) + '</dt><dd data-value="' + key + '">' + esc(value) + '</dd></div><button class="edit" type="button" data-edit="' + key + '">Edit</button></div>').join('')
     + '</div></div>';
 
-  html += '<div class="block where"><p class="eyebrow">Where it goes</p><b>' + esc(domain.office) + '</b><p>' + esc(domain.reason) + '</p></div>';
+  html += '<div class="block where"><p class="eyebrow">Where it goes</p><b>' + esc(domain.office) + '</b><p>' + esc(domain.reason) + '</p>'
+    + (domain.legalBasis ? '<p style="margin-top:7px;font-size:11.5px;color:var(--muted)">' + esc(domain.legalBasis) + '</p>' : '')
+    + '</div>';
+
+  /* If the tier was assumed rather than established, say so and let it be corrected. Which
+     tier this is decides who is legally responsible, so it must never be a silent guess. */
+  if (domain.tierChoices && domain.assumed) {
+    html += '<div class="block"><p class="eyebrow">We assumed this — correct it if wrong</p>'
+      + '<p>' + esc(domain.tierChoices.question) + ' The answer decides which office is legally responsible.</p>'
+      + '<div class="acts">' + domain.tierChoices.options.map((o) =>
+          '<button class="ghost' + (o.key === domain.optionKey ? ' on' : '') + '" type="button" data-tier="' + esc(o.key) + '">' + esc(o.label) + '</button>').join('')
+      + '</div></div>';
+  }
+
+  /* The honest dead end. No Panchayat-tier API exists anywhere in India, so we say so and
+     hand over the helpline rather than faking an integration. */
+  if (domain.routeExists === false) {
+    html += '<div class="block"><p class="eyebrow">There is no online route for this</p><div class="panel warn"><b>' + esc(domain.channel || 'No online route exists') + '</b>'
+      + '<p>' + esc(domain.fallbackNote || 'No online system exists for this tier.') + '</p>'
+      + (domain.helpline && domain.helpline.number
+          ? '<p style="margin-top:8px"><b>' + esc(domain.helpline.label) + ': <a href="tel:' + esc(domain.helpline.number) + '">' + esc(domain.helpline.number) + '</a></b></p>'
+          : '')
+      + '</div></div>';
+  }
 
   if (domain.remedy) {
-    html += '<div class="block"><p class="eyebrow">Stronger remedy you already hold</p><div class="panel stronger"><b>' + esc(domain.remedy.title) + '</b><p>' + esc(domain.remedy.line) + '</p></div></div>';
+    html += '<div class="block"><p class="eyebrow">Stronger remedy you already hold</p><div class="panel stronger"><b>' + esc(domain.remedy.title) + '</b><p>' + esc(domain.remedy.line) + '</p>'
+      + (domain.remedy.teeth ? '<p style="margin-top:7px;font-size:12px"><b>' + esc(domain.remedy.teeth) + '</b></p>' : '')
+      + (domain.remedy.caveat ? '<p style="margin-top:7px;font-size:11.5px;color:var(--muted)">' + esc(domain.remedy.caveat) + '</p>' : '')
+      + '<p style="margin-top:7px;font-size:11.5px;color:var(--muted)">' + esc(domain.remedy.provision || '') + ' · ' + esc(domain.remedy.disclaimer || 'This names an option and cites the provision. It is not legal advice.') + '</p>'
+      + '</div></div>';
   }
 
   if (domain.warning) {
@@ -471,8 +591,8 @@ function renderRoute() {
   }
 
   if (showMatch) {
-    html += '<div class="block"><p class="eyebrow">Match found</p><div class="panel match"><b>' + found.supporters + ' households have already reported this.</b>'
-      + '<p>' + esc(found.title) + ' · ' + esc(found.id) + ' · with ' + esc(found.office) + '. Adding your name to that case counts more than a second one about the same problem — at ' + found.target + ' it is escalated as a village-level demand.</p>'
+    html += '<div class="block"><p class="eyebrow">Match found</p><div class="panel match"><b>' + esc(found.supporters) + ' households have already reported this.</b>'
+      + '<p>' + esc(found.title) + ' · ' + esc(found.code) + ' · with ' + esc(found.office) + '. Adding your name to that case counts more than a second one about the same problem — at ' + esc(found.target) + ' it is escalated to the ' + esc(found.escalatesTo || 'District Collector') + ' automatically.</p>'
       + '<div class="acts"><button class="button" type="button" data-join>Add my name to that case →</button><button class="ghost" type="button" data-nojoin>Mine is separate, file it</button></div></div></div>';
   }
 
@@ -490,7 +610,15 @@ function renderRoute() {
 
   routeTurn.querySelectorAll('[data-edit]').forEach((button) => button.addEventListener('click', () => inlineEdit(button.dataset.edit)));
   const join = routeTurn.querySelector('[data-join]');
-  if (join) join.addEventListener('click', () => EA.join(EA.registry[domain.caseKey].id, { onDone: () => { bubble('them', '<p>Your name is on that case now. It is in My grievances under the cases you support.</p>'); } }));
+  if (join) join.addEventListener('click', () => EA.join(domain.match.code, { onDone: (entry) => { bubble('them', '<p>Your name is on ' + esc(entry.id) + ' now — you are supporter ' + esc(entry.supporters) + ' of ' + esc(entry.target) + '. It is in My grievances under the cases you support.</p>'); } }));
+  routeTurn.querySelectorAll('[data-tier]').forEach((button) => button.addEventListener('click', async () => {
+    domain.optionKey = button.dataset.tier;
+    domain.assumed = false;
+    const ghost = typing();
+    await fetchRoute();
+    ghost.remove();
+    renderRoute();
+  }));
   const nojoin = routeTurn.querySelector('[data-nojoin]');
   if (nojoin) nojoin.addEventListener('click', () => { dismissedMatch = true; renderRoute(); });
   routeTurn.querySelectorAll('[data-public]').forEach((button) => button.addEventListener('click', () => { isPublic = button.dataset.public === 'yes'; renderRoute(); }));
@@ -575,26 +703,31 @@ function gatePhone() {
     + '<div class="foot"><small>Prototype: no real message is sent.</small><button class="button" type="button" id="gateGo">Send code →</button></div>');
   const input = block.querySelector('#gatePhone'), err = block.querySelector('#gateErr');
   if (window.EA) input.value = EA.read().phone || '';
-  const go = () => {
+  const go = async () => {
     const digits = input.value.replace(/\D/g, '');
     if (digits.length !== 10) { err.classList.add('show'); input.focus(); return; }
-    gateOtp(digits);
+    const res = window.EAAPI ? await window.EAAPI.sendOtp(digits) : {};
+    if (res.error) { err.textContent = res.error; err.classList.add('show'); return; }
+    gateOtp(digits, res.hint);
   };
   block.querySelector('#gateGo').addEventListener('click', go);
   input.addEventListener('input', () => err.classList.remove('show'));
   input.addEventListener('keydown', (event) => { if (event.key === 'Enter') go(); });
 }
 
-function gateOtp(phone) {
+function gateOtp(phone, hint) {
   const block = gateBlock('<b>Enter the 6-digit code</b><p>Sent to +91 ' + phone.slice(0, 5) + ' ' + phone.slice(5) + '. <button class="edit" type="button" id="gateBack" style="border:0;background:none;color:var(--blue);font:800 11px Manrope,sans-serif;cursor:pointer;text-transform:uppercase;letter-spacing:.05em">Change number</button></p>'
     + '<div class="otp">' + Array.from({ length: 6 }, () => '<input type="text" inputmode="numeric" maxlength="1" aria-label="Code digit" />').join('') + '</div>'
     + '<p class="err" id="gateErr">Enter all six digits.</p>'
-    + '<div class="foot"><small>Prototype: any six digits verify. <span id="gateResend">Resend code in 30s</span></small><button class="button" type="button" id="gateGo">Verify and send →</button></div>');
+    + '<div class="foot"><small><b>' + esc(hint || 'Demo mode — enter 123456') + '</b> · <span id="gateResend">Resend code in 30s</span></small><button class="button" type="button" id="gateGo">Verify and send →</button></div>');
   const boxes = [...block.querySelectorAll('.otp input')], err = block.querySelector('#gateErr');
-  const verify = () => {
+  const verify = async () => {
     if (!boxes.every((b) => b.value)) { err.classList.add('show'); return; }
+    const code = boxes.map((b) => b.value).join('');
+    const res = window.EAAPI ? await window.EAAPI.verifyOtp(phone, code) : { verified: true };
+    if (res.error) { err.textContent = res.error; err.classList.add('show'); boxes.forEach((b) => { b.value = ''; }); boxes[0].focus(); return; }
     clearInterval(tick);
-    if (window.EA) EA.patch({ loggedIn: true, phone: phone });
+    if (window.EA) EA.patch({ loggedIn: true, phone: phone, otp: code });
     fileCase();
   };
   boxes.forEach((box, i) => {
@@ -619,8 +752,9 @@ function gateOtp(phone) {
 }
 
 /* ---------- filed ---------- */
-function fileCase() {
-  const record = EA.file({
+async function fileCase() {
+  const session = window.EA ? EA.read() : {};
+  const local = {
     title: answers.grievance || issue || 'New grievance',
     office: domain.office,
     remedy: domain.remedy ? domain.remedy.title : (domain.warning ? 'Vigilance track' : 'District Magistrate'),
@@ -628,7 +762,37 @@ function fileCase() {
     public: isPublic,
     answers: answers,
     attachments: files.map((f) => f.name)
-  });
+  };
+
+  /* The case is created on the server. Filing onward into CPGRAMS / EPFiGMS / RBI CMS /
+     Meri Sadak is simulated — no live government system is contacted. */
+  let record = null;
+  if (window.EAAPI && domain.apiDomain && session.phone) {
+    const res = await window.EAAPI.fileCase({
+      phone: session.phone,
+      otp: session.otp || '123456',
+      domain: domain.apiDomain,
+      optionKey: domain.optionKey || null,
+      title: domain.title || local.title,
+      summary: domain.summary || local.title,
+      area: answers.location || domain.area || detected,
+      state: domain.state || 'bihar',
+      cell: domain.cell || null,
+      sentence: domain.reason,
+      visibility: isPublic ? 'public' : 'private',
+      nameWithheld: !!domain.nameWithheld,
+      escalatesTo: apiRoute && apiRoute.match ? apiRoute.match.escalatesTo : null,
+      asks: (domain.asks || []).map((a) => ({ q: a.q })),
+      answers: Object.entries(answers).map(([k, v]) => ({ q: k, a: v }))
+    });
+    if (!res.error) {
+      record = { id: res.case.code, at: Date.now(), server: res.case, disclosure: res.disclosure };
+      domain.office = res.case.office || domain.office;
+    }
+  }
+  /* If the server is unreachable we still complete the journey, and say the case is local only. */
+  if (!record) record = Object.assign(EA.file(local), { offline: true });
+  if (window.EA) EA.patch({ filed: (EA.read().filed || []).concat([]) , draft: null });
   filedRecord = record;
   phase = 'filed';
   progressText.textContent = 'Filed · ' + record.id;
