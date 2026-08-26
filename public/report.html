@@ -150,7 +150,7 @@ textarea:disabled{background:#f4f7fa;color:#8a99a8}
 <div class="top"><div class="shell">Ek Awaaz · Lodging a grievance</div></div>
 
 <header class="head"><div class="shell head-in">
-  <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span><strong>एक आवाज़</strong><small>EK AWAAZ</small></span></a>
+  <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span><strong>एक आवाज़</strong><small>EK AWAAZ</small></span></a>
   <div class="progress"><b>Assembling your case</b><span id="progressText">Nothing filed yet</span></div>
 </div></header>
 
@@ -355,10 +355,37 @@ async function classifyRemote(text) {
   return domain;
 }
 
+/* Remedy gates are date-driven — the RBI Ombudsman opens once the bank has had 30 days, the
+   EPF Ombudsman once EPFiGMS has. So pull a date out of whatever the citizen answered and hand
+   it to the gate, rather than letting it default to closed. */
+function dateFromAnswers() {
+  const MONTHS = 'jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec';
+  /* Format from local parts. toISOString() would shift IST midnight back a day and
+     under-report the elapsed days the remedy gate depends on. */
+  const iso = (y, m, d) => `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  const valid = (y, m, d) => y > 1990 && y < 2100 && m >= 1 && m <= 12 && d >= 1 && d <= 31;
+
+  for (const value of Object.values(answers)) {
+    const t = String(value || '');
+    let m = t.match(new RegExp('(\\d{1,2})\\s*(?:st|nd|rd|th)?\\s+(' + MONTHS + ')[a-z]*\\.?\\s*(\\d{4})?', 'i'));
+    if (m) {
+      const month = MONTHS.split('|').indexOf(m[2].toLowerCase().slice(0, 3)) + 1;
+      const year = Number(m[3] || new Date().getFullYear());
+      if (valid(year, month, Number(m[1]))) return iso(year, month, Number(m[1]));
+    }
+    m = t.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (m && valid(+m[1], +m[2], +m[3])) return iso(+m[1], +m[2], +m[3]);
+    m = t.match(/(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})/);
+    if (m && valid(+m[3], +m[2], +m[1])) return iso(+m[3], +m[2], +m[1]);
+  }
+  return null;
+}
+
 /* Ask the server where it goes, what stronger remedy is open, and whether a case already
    exists that this person should join instead of filing a second one. */
 async function fetchRoute() {
   if (!window.EAAPI || !domain.apiDomain) return null;
+  const said = dateFromAnswers();
   const res = await window.EAAPI.route({
     text: answers.grievance || issue,
     domain: domain.apiDomain,
@@ -367,6 +394,8 @@ async function fetchRoute() {
     state: domain.state || 'bihar',
     injury: !!domain.injury,
     language: domain.language || 'en',
+    complained_on: said,
+    claim_date: said,
     answers: Object.entries(answers).map(([k, v]) => ({ q: k, a: v }))
   });
   if (res.error) return null;
@@ -818,7 +847,7 @@ async function fileCase() {
     + '<div class="block"><p class="eyebrow">What happens next</p><ul class="next">'
       + next.map(([n, title, line]) => '<li><span class="n">' + n + '</span><div><b>' + esc(title) + '</b>' + esc(line) + '</div></li>').join('')
     + '</ul></div>'
-    + '<div class="send"><a class="button" href="dashboard.html">Open my grievances →</a><small>Also visible under My grievances on the homepage, for as long as this session lasts.</small></div></div>';
+    + '<div class="send"><a class="button" href="/my-cases">Open my grievances →</a><small>Also visible under My grievances on the homepage, for as long as this session lasts.</small></div></div>';
 
   const turn = document.createElement('div');
   turn.className = 'turn';

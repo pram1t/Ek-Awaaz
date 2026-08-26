@@ -266,7 +266,7 @@
       <section class="section didi-section" id="report"><div class="shell didi-grid">
         <div class="didi-side">
           <p class="eyebrow">Talk to Awaaz Didi</p>
-          <div class="didi-portrait"><image-slot id="didi-portrait" shape="circle" placeholder="Drop the Didi illustration here"></image-slot></div>
+          <div class="didi-portrait" aria-hidden="true"><span>आ</span></div>
           <h2>Tell me what went wrong.</h2>
           <p class="lede small">Didi asks one question at a time, in your language. She never asks you to name a department, and nothing is filed until you have read it back.</p>
           <div class="didi-langs"><span>English</span><span>Hindi</span><span>Maithili</span><span>+19 languages</span></div>
@@ -323,7 +323,7 @@
   /* Login gate + join-a-case, replacing the old prototype auth stubs. */
   (function () {
     const fresh = (node) => { if (!node) return null; const clone = node.cloneNode(true); node.replaceWith(clone); return clone; };
-    const toDashboard = () => { EA.close(); window.location.href = 'dashboard.html'; };
+    const toDashboard = () => { EA.close(); window.location.href = '/my-cases'; };
 
     const mine = fresh(document.querySelector('.my-grievances'));
     if (mine) mine.addEventListener('click', () => EA.require('Your grievances are tied to your mobile number.', toDashboard));
@@ -367,7 +367,6 @@
   })();
 </script>
 
-  <script src="image-slot.js"></script>
   <script>
     /* Example sentences fill the box, so nobody has to invent an opening line. */
     (function () {

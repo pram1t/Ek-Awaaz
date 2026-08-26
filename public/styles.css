@@ -39,3 +39,7 @@
 .didi-examples>span{font:800 9.5px Manrope,sans-serif;letter-spacing:.09em;text-transform:uppercase;color:#8a99a8}
 .didi-examples button{border:1px solid #dbe3ea;background:#fbfcfd;color:#48596b;border-radius:4px;padding:7px 10px;font:600 11.5px Manrope,sans-serif;cursor:pointer;text-align:left;max-width:100%}
 .didi-examples button:hover{border-color:var(--blue);color:var(--blue);background:#fff}
+
+/* Didi avatar: CSS only, no asset and no third-party scaffold. */
+.didi-portrait{width:74px;height:74px;border-radius:50%;display:grid;place-items:center;background:#e8eefb;border:2px solid #1d4ed8;overflow:hidden}
+.didi-portrait span{font:700 34px/1 Hind,serif;color:#1d4ed8}

@@ -62,7 +62,7 @@
 </head>
 <body>
   <div class="top"><div class="shell">Ek Awaaz · My grievances</div></div>
-  <header class="header"><div class="shell header-inner"><a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span><strong>एक आवाज़</strong><small>EK AWAAZ</small></span></a><div class="header-right"><span>Signed in as a prototype user</span><a class="button" href="index.html">New grievance</a></div></div></header>
+  <header class="header"><div class="shell header-inner"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span><strong>एक आवाज़</strong><small>EK AWAAZ</small></span></a><div class="header-right"><span>Signed in as a prototype user</span><a class="button" href="/">New grievance</a></div></div></header>
   <main class="main"><div class="shell"><div class="page-bar">
       <div><h1>Your cases</h1><p class="page-sub">2 open · 1 resolved · Last officer update 19 Aug 2026</p></div>
       <div class="tabs"><button type="button" class="entry-card tab active" data-target="yourCases">Your grievances <b>3</b></button><button type="button" class="entry-card tab" data-target="publicCases">Public cases <b>2</b></button></div>
@@ -354,9 +354,9 @@ const cases = {
     }
 
     const signedIn = document.querySelector('.header-right span');
-    if (signedIn) signedIn.innerHTML = 'Signed in as +91 ' + EA.esc(state.phone.slice(0, 5) + ' ' + state.phone.slice(5)) + ' · <a href="index.html" id="logOut">Log out</a>';
+    if (signedIn) signedIn.innerHTML = 'Signed in as +91 ' + EA.esc(state.phone.slice(0, 5) + ' ' + state.phone.slice(5)) + ' · <a href="/" id="logOut">Log out</a>';
     const out = document.querySelector('#logOut');
-    if (out) out.addEventListener('click', (e) => { e.preventDefault(); EA.logout(); window.location.href = 'index.html'; });
+    if (out) out.addEventListener('click', (e) => { e.preventDefault(); EA.logout(); window.location.href = '/'; });
 
     const when = (t) => new Date(t).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
     const onDate = (iso) => iso ? new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';

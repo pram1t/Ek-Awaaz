@@ -61,15 +61,22 @@ separate frontend. SQLite is seeded on boot from `data/seed.json`, so a fresh de
 starts with the same synthetic case history and no persistent disk is required.
 
 ```
-server.js              express: static + /api, blocks working dirs from being served
+server/index.js        express: clean URLs, static, /api. Only public/ is ever served.
 server/db.js           SQLite schema, seeding, joinder, escalation, closure
 server/ai.js           the model layer — every function degrades to deterministic rules
 server/api.js          HTTP endpoints
 data/routing.json      jurisdiction routing table — hand-authored from statute
 data/remedies.json     the remedy ladder — forum, clock, teeth, statutory provision
 data/seed.json         synthetic case history + real DARPG figures
-api-client.js          browser client (window.EAAPI) — load before session.js
-index.html lodging.html dashboard.html styles.css app.js session.js
+public/index.html      /
+public/report.html     /report      — the citizen journey
+public/my-cases.html   /my-cases    — cases filed and joined
+public/api-client.js   browser client (window.EAAPI), loaded before session.js
+public/session.js      login, joinder modal, shared session
+public/app.js public/styles.css
+docs/architecture.md   the full dossier with citations
+
+URLs are clean — no .html anywhere. Old .html paths 301 to the new ones.
 ```
 
 ### What is real, and what is mocked

@@ -366,7 +366,7 @@
         + '<h2>' + (already ? 'Your name is already on this case.' : 'You are supporter ' + entry.supporters + ' of ' + entry.target + '.') + '</h2>'
         + '<p class="ea-sub">' + (message ? esc(message) + ' ' : '') + 'Added to ' + esc(entry.id) + ', with ' + esc(entry.office) + '. It is in <b>My grievances</b> under the cases you support.</p>'
         + '<div class="ea-meter"><i style="width:' + pct + '%"></i></div>'
-        + '<div class="ea-foot"><small>Your name is never shown to other signatories.</small><a class="ea-btn" href="dashboard.html">Open my grievances&nbsp; →</a></div>');
+        + '<div class="ea-foot"><small>Your name is never shown to other signatories.</small><a class="ea-btn" href="/my-cases">Open my grievances&nbsp; →</a></div>');
       if (opts && opts.onDone) opts.onDone(entry, already);
     }
 
@@ -377,7 +377,7 @@
   function notJoinable(input) {
     paint('<p class="ea-eyebrow">Personal case</p><h2>Nobody else can add their name to this one.</h2>'
       + '<p class="ea-sub">' + esc(String(input).slice(0, 24)) + ' is a personal case — a provident fund claim, a bank debit, a refund. Only you can see it, so a signature from a neighbour would mean nothing on it. Shared cases are the ones about a road, a handpump, a ration shop or a feeder.</p>'
-      + '<div class="ea-foot"><a class="ea-back" href="index.html#report">File my own case instead</a><button class="ea-btn" type="button" id="eaGo">Close</button></div>');
+      + '<div class="ea-foot"><a class="ea-back" href="/report">File my own case instead</a><button class="ea-btn" type="button" id="eaGo">Close</button></div>');
     card.querySelector('#eaGo').addEventListener('click', close);
   }
 
@@ -386,7 +386,7 @@
       + '<p class="ea-sub">We could not find a public case for <b>' + esc(String(input).slice(0, 24)) + '</b>. Check the number on your acknowledgement, or file a new case instead.</p>'
       + '<label class="ea-label" for="eaRetry">Public grievance number</label><input id="eaRetry" type="text" placeholder="Example: EA–2026–04412" />'
       + '<p class="ea-err" id="eaErr">Still no match. Check the digits and try again.</p>'
-      + '<div class="ea-foot"><a class="ea-back" href="index.html#report">File a new case instead</a><button class="ea-btn" type="button" id="eaGo">Find case&nbsp; →</button></div>');
+      + '<div class="ea-foot"><a class="ea-back" href="/report">File a new case instead</a><button class="ea-btn" type="button" id="eaGo">Find case&nbsp; →</button></div>');
     const field = card.querySelector('#eaRetry'), err = card.querySelector('#eaErr');
     const go = async () => {
       const found = await lookupRemote(field.value);
