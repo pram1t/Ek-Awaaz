@@ -26,10 +26,12 @@ document.querySelector('#reportForm')?.addEventListener('submit', (event) => {
   const issue = document.querySelector('#issue').value.trim();
   if (!issue) { showToast('Please describe what happened first.'); return; }
   pendingIssue = issue;
-  window.location.href = 'lodging.html?issue=' + encodeURIComponent(issue);
+  window.location.href = '/report?issue=' + encodeURIComponent(issue);
 });
 
-document.querySelector('.voice-button').addEventListener('click', () => showToast('Didi is listening. Voice input is simulated in this prototype.'));
+/* The speak-instead control is built by voice.js and owns its own clicks. This used to bind
+   '.voice-button', which no longer exists, and the resulting null threw here — silently
+   aborting the rest of app.js, including openAuth(). */
 
 const authOverlay = document.querySelector('#authOverlay');
 const signInForm = document.querySelector('#signInForm');
