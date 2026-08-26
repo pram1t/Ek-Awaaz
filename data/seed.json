@@ -1,0 +1,144 @@
+{
+  "_note": "Seeded synthetic case history. Migrated from the hardcoded registry that used to live in session.js. Officer actions, dates, signature counts and identities here are all simulated — no live government system was touched.",
+  "cases": [
+    {
+      "code": "EA-2026-04412",
+      "domain": "infra.road",
+      "option_key": "village",
+      "title": "Road damage, Rajnagar Ward 4",
+      "summary": "A 40-metre stretch of broken surface after the first rain, with two earlier repairs in the same spot.",
+      "area": "Rajnagar Ward 4, Patna district",
+      "state": "bihar",
+      "cell": "rajnagar-w4-road-01",
+      "office": "Block Development Officer, Rajnagar block",
+      "visibility": "public",
+      "supporters": 34,
+      "target": 50,
+      "status": "open",
+      "filed_on": "2026-03-12",
+      "recurrence": 3,
+      "escalates_to": "District Collector",
+      "asks": [
+        { "q": "Which stretch is worst near you?", "hint": "A landmark is enough — the school turning, the handpump, the bus stop.", "ph": "Example: the 40 m before the primary school gate" },
+        { "q": "Has this road caused you a loss or an injury?", "hint": "A fall, a damaged vehicle, an ambulance or school van that could not pass.", "ph": "Example: my scooter axle broke on 4 August" }
+      ]
+    },
+    {
+      "code": "EA-2026-04108",
+      "domain": "infra.water",
+      "option_key": null,
+      "title": "Water supply interruption",
+      "summary": "Supply failing four days a week, with nothing after 7 am on the days it does come.",
+      "area": "Ward 9, Patna district",
+      "state": "bihar",
+      "cell": "patna-w9-water-01",
+      "office": "District water office",
+      "visibility": "public",
+      "supporters": 18,
+      "target": 40,
+      "status": "awaiting_routing",
+      "filed_on": "2026-04-02",
+      "recurrence": 1,
+      "escalates_to": "Municipal Commissioner",
+      "asks": [
+        { "q": "How many days a week does your supply fail?", "hint": "And roughly at which hours, if there is a pattern.", "ph": "Example: four days a week, nothing after 7 am" },
+        { "q": "Where are you getting water from meanwhile?", "hint": "A tanker, a neighbour's connection, a handpump, purchased cans.", "ph": "Example: buying two 20-litre cans a day" }
+      ]
+    },
+    {
+      "code": "EA-2026-04871",
+      "domain": "infra.power",
+      "option_key": null,
+      "title": "Burnt-out transformer, Kanjhawala feeder",
+      "summary": "Eleven streets on one feeder, worst stretch nine hours a day, mostly overnight.",
+      "area": "Kanjhawala feeder, 11 streets",
+      "state": "delhi",
+      "cell": "kanjhawala-feeder-01",
+      "office": "Discom Executive Engineer",
+      "visibility": "public",
+      "supporters": 63,
+      "target": 80,
+      "status": "confirmed_fixed",
+      "filed_on": "2026-04-21",
+      "officer_responded_on": "2026-05-09",
+      "confirmed_on": "2026-05-14",
+      "confirmed_by": 41,
+      "recurrence": 1,
+      "escalates_to": "State Electricity Regulatory Commission",
+      "asks": [
+        { "q": "How many hours a day is your supply out?", "hint": "Give the worst stretch you have had this week.", "ph": "Example: 9 hours, mostly 6 pm to 3 am" },
+        { "q": "Has the outage damaged anything or stopped work?", "hint": "A burnt appliance, spoiled stock, a shop or clinic that had to close.", "ph": "Example: refrigerator compressor burnt, ₹6,000" }
+      ]
+    },
+    {
+      "code": "EA-2026-05230",
+      "domain": "infra.road",
+      "option_key": "national_highway",
+      "title": "Street lights out, NH-44 km 118 to 121",
+      "summary": "Three kilometres unlit including the service road entry and the crossing.",
+      "area": "NH-44, km 118 to 121",
+      "state": "haryana",
+      "cell": "nh44-km118-121-lights",
+      "office": "Project Director, NHAI",
+      "visibility": "public",
+      "supporters": 128,
+      "target": 150,
+      "status": "confirmed_fixed",
+      "filed_on": "2026-05-04",
+      "officer_responded_on": "2026-06-02",
+      "confirmed_on": "2026-06-09",
+      "confirmed_by": 77,
+      "recurrence": 1,
+      "escalates_to": "NHAI Regional Officer",
+      "asks": [
+        { "q": "Which km marker do you use, and at what time?", "hint": "The bend, the service road entry, the crossing you take after dark.", "ph": "Example: km 119 service road entry, around 8 pm daily" },
+        { "q": "Have you seen a crash or a near miss on this stretch?", "hint": "A date and what happened is enough. Say no if you have not.", "ph": "Example: two-wheeler hit the divider on 12 May" }
+      ]
+    },
+    {
+      "code": "EA-2026-05604",
+      "domain": "other",
+      "option_key": null,
+      "title": "Anganwadi kendra roof, Barkheda village",
+      "summary": "Roof unusable since June; children sitting outside, no meal on rain days.",
+      "area": "Barkheda village",
+      "state": "madhya pradesh",
+      "cell": "barkheda-anganwadi-01",
+      "office": "Child Development Project Officer",
+      "visibility": "public",
+      "supporters": 32,
+      "target": 45,
+      "status": "confirmed_fixed",
+      "filed_on": "2026-06-18",
+      "officer_responded_on": "2026-07-21",
+      "confirmed_on": "2026-07-28",
+      "confirmed_by": 25,
+      "recurrence": 1,
+      "escalates_to": "District Programme Officer",
+      "asks": [
+        { "q": "How many children from your household attend the kendra?", "hint": "And whether they have stopped going because of the building.", "ph": "Example: two children, both kept home since June" },
+        { "q": "What are the children doing now instead?", "hint": "Sitting outside, sent to another kendra, or not attending at all.", "ph": "Example: sitting under the neem tree; no meal on rain days" }
+      ]
+    }
+  ],
+  "stats": {
+    "_source": "DARPG monthly CPGRAMS report, March 2026 (PIB PRID 2252591) and April 2026 figures. Real published data.",
+    "received_march_2026": 189189,
+    "redressed_march_2026": 181279,
+    "pending_march_2026": 81187,
+    "avg_disposal_days": 13,
+    "top_departments_april_2026": [
+      { "name": "Labour & Employment", "count": 27979 },
+      { "name": "Financial Services (Banking)", "count": 24759 },
+      { "name": "Petroleum & Natural Gas", "count": 14038 }
+    ],
+    "median_days_by_domain": {
+      "_source": "SEEDED DEMO DATA — not published figures. Labelled as such on the dashboard.",
+      "money.pf": 47,
+      "money.bank": 31,
+      "money.tax_refund": 62,
+      "infra.road": 26,
+      "supply.ration": 19
+    }
+  }
+}

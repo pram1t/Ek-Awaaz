@@ -1,0 +1,133 @@
+{
+  "_note": "The remedy ladder. For each domain, the statutory or regulatory remedy the citizen actually holds — with its forum, its clock and its teeth. Naming a remedy is NOT legal advice; every surface that shows one must say so.",
+  "_disclaimer": "This names an option and cites the provision. It is not legal advice.",
+  "remedies": {
+    "bank.rbi_ombudsman": {
+      "title": "RBI Ombudsman",
+      "forum": "Reserve Bank Integrated Ombudsman Scheme, 2021",
+      "where": "cms.rbi.org.in",
+      "teeth": "Award up to ₹20 lakh, plus up to ₹1 lakh for time, expense and harassment",
+      "clock": "Available once your bank has had 30 days",
+      "provision": "RB-IOS 2021",
+      "gate": { "type": "days_since", "field": "complained_on", "days": 30 },
+      "before_gate": "Your bank has to be given 30 days first. We will file with the bank now and tell you the day the ombudsman becomes available.",
+      "after_gate": "Your bank has had {days} days. That means the RBI Ombudsman can hear this, and can award up to ₹20 lakh."
+    },
+    "tax.244a": {
+      "title": "Statutory interest on your refund",
+      "forum": "Income-tax Act 1961",
+      "where": "Claimed through the assessing officer / CPC",
+      "teeth": "0.5% per month or part of a month",
+      "clock": "Accrues while the delay is not your fault",
+      "provision": "Section 244A",
+      "gate": null,
+      "after_gate": "Interest under Section 244A is statutory, not discretionary. If the delay is not your fault, it is owed to you at 0.5% for every month."
+    },
+    "pf.ombudsman": {
+      "title": "EPF escalation and Ombudsman",
+      "forum": "Regional PF Commissioner, then Central PF Commissioner, then the EPF Ombudsman for your region",
+      "where": "EPFiGMS, then the regional Ombudsman",
+      "teeth": "Statutory appeal under section 7I; the Ombudsman can direct the office",
+      "clock": "Ombudsman route opens roughly a month after EPFiGMS fails",
+      "provision": "EPF & MP Act 1952, section 7I",
+      "gate": { "type": "days_since", "field": "claim_date", "days": 30 },
+      "before_gate": "EPFiGMS gets the first attempt. We will file there and tell you when the Ombudsman route opens.",
+      "after_gate": "EPFiGMS has had {days} days. The EPF Ombudsman for your region can take this, and there is a statutory appeal under section 7I."
+    },
+    "ration.nfsa": {
+      "title": "District Grievance Redressal Officer",
+      "forum": "Every district has one under the National Food Security Act",
+      "where": "District Grievance Redressal Officer, then the State Food Commission on appeal",
+      "teeth": "A statutory entitlement, not a request",
+      "clock": "No 21-day cap — this is a right, not a grievance",
+      "provision": "NFSA 2013, sections 14, 15 and 16",
+      "gate": null,
+      "after_gate": "Ration is a statutory entitlement. Your district has a Grievance Redressal Officer under NFSA section 15, and the State Food Commission hears appeals under section 16."
+    },
+    "electricity.cgrf": {
+      "title": "Consumer Grievance Redressal Forum",
+      "forum": "CGRF of your distribution company, then the Electricity Ombudsman",
+      "where": "CGRF, then the state Electricity Ombudsman",
+      "teeth": "The Forum must decide in 3 months; the Ombudsman in about 60 days",
+      "clock": "Appeal to the Ombudsman within 30 days of the Forum's order",
+      "provision": "Electricity Act 2003, sections 42(5) and 42(6)",
+      "gate": null,
+      "after_gate": "Your distribution company has a Consumer Grievance Redressal Forum under section 42(5) that must decide within three months, and an Electricity Ombudsman above it under section 42(6)."
+    },
+    "housing.rera": {
+      "title": "RERA Authority",
+      "forum": "State Real Estate Regulatory Authority and its Adjudicating Officer",
+      "where": "Your state RERA",
+      "teeth": "Compensation, interest and penalty; then the Appellate Tribunal",
+      "clock": "Authority disposes in 60 days; appeal within 60 days; tribunal in 60 days",
+      "provision": "Real Estate (Regulation and Development) Act 2016",
+      "gate": null,
+      "after_gate": "A builder delay is a RERA matter. The Authority must dispose of it in 60 days, and its Adjudicating Officer can award you compensation and interest."
+    },
+    "mgnrega.ombudsperson": {
+      "title": "District Ombudsperson",
+      "forum": "MGNREGA district Ombudsperson",
+      "where": "District Ombudsperson",
+      "teeth": "Can enquire and pass awards. Delay compensation for wages past 15 days. Unemployment allowance at 25% of minimum wage for the first 30 days, half-wage after",
+      "clock": "Wages are due within 15 days of the work",
+      "provision": "MGNREG Act 2005 and state grievance rules",
+      "gate": null,
+      "after_gate": "MGNREGA wages are due within 15 days, and delay past that carries compensation. Your district has an Ombudsperson who can pass an award.",
+      "caveat": "Thin in practice — as of 2018 only 20 states and one Union Territory had even framed MGNREGA grievance rules, and unemployment allowance actually paid nationally was ₹12,000 and ₹3,000 in 2019-20 and 2020-21."
+    },
+    "pothole.compensation": {
+      "title": "Public-law compensation for injury",
+      "forum": "Civic body and road contractor, jointly",
+      "where": "Claim against the civic body; recoverable from the officers and contractors named",
+      "teeth": "₹6 lakh for a death; ₹50,000 to ₹2.5 lakh for injury",
+      "clock": "Arises when the road caused a death or injury",
+      "provision": "Article 21; High Court on Its Own Motion v. State of Maharashtra, Bombay HC, 14 October 2025",
+      "gate": { "type": "flag", "field": "injury", "equals": true },
+      "before_gate": null,
+      "after_gate": "If this road caused a death or an injury, the Bombay High Court fixed compensation in October 2025 — ₹6 lakh for a death, ₹50,000 to ₹2.5 lakh for injury — payable by the civic body and the contractor jointly, and recoverable from the officers named.",
+      "scope": "Maharashtra. Kerala has held similarly. Elsewhere the Article 21 reasoning is available but the amounts are not fixed.",
+      "built": false
+    },
+    "consumer.commission": {
+      "title": "Consumer Commission",
+      "forum": "District Consumer Disputes Redressal Commission",
+      "where": "e-Daakhil / e-Jagriti",
+      "teeth": "Refund, replacement, compensation for loss and harassment. District up to ₹50 lakh; State up to ₹2 crore",
+      "clock": "No 21-day cap; it is a filing, not a request",
+      "provision": "Consumer Protection Act 2019",
+      "gate": null,
+      "after_gate": "Deficient service by any provider can go to a District Consumer Commission through e-Daakhil, which can order refund and compensation."
+    },
+    "telecom.consumer_commission": {
+      "title": "Consumer Commission (no telecom ombudsman exists)",
+      "forum": "Operator appellate authority, then a Consumer Commission",
+      "where": "e-Daakhil / e-Jagriti",
+      "teeth": "Damages are only available at a Consumer Commission — telecom has no ombudsman",
+      "clock": "30 days for non-billing complaints inside the operator",
+      "provision": "TRAI Act 1997; Consumer Protection Act 2019",
+      "gate": null,
+      "after_gate": "Telecom has no ombudsman. Your operator has a two-tier mechanism, and damages are only available at a Consumer Commission."
+    },
+    "pmkisan.escalation": {
+      "title": "State Nodal Officer escalation",
+      "forum": "PM-KISAN tiered grievance mechanism",
+      "where": "pmkisan.gov.in, then the State Nodal Officer",
+      "teeth": "Automatic escalation after 15 working days",
+      "clock": "15 working days at tier one",
+      "provision": "Scheme guidelines, Ministry of Agriculture and Farmers Welfare",
+      "gate": null,
+      "after_gate": "Land seeding and name-mismatch cases escalate automatically to your State Nodal Officer after 15 working days."
+    },
+    "service.rts_act": {
+      "title": "Right to service, if your state has one",
+      "forum": "State right-to-service or grievance-redressal Act",
+      "where": "The designated officer, then the appellate authority named in the Act",
+      "teeth": "Bihar: quasi-judicial powers, 60 working days. Rajasthan: ₹250 a day, capped ₹5,000. Karnataka: ₹20 a day to you, capped ₹500",
+      "clock": "Set by the state Act, not by the 21-day administrative target",
+      "provision": "State legislation — MP 2010, Rajasthan 2011, Karnataka Sakala 2011, Delhi 2011, Bihar 2015 and others",
+      "gate": null,
+      "after_gate": "CPGRAMS runs on an Office Memorandum, not a statute — the 21-day target carries no penalty. If your state has a right-to-service Act, the clock there has legal teeth.",
+      "caveat": "Only some states have such an Act. Where none exists, escalation is persuasion, and we say so."
+    }
+  }
+}

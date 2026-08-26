@@ -1,0 +1,270 @@
+{
+  "_note": "Jurisdiction routing table. Hand-authored from constitutional and statutory sources; see README. The router selects a domain, then (if the domain has a disambiguator) one option. Never more than two questions.",
+  "domains": {
+    "infra.road": {
+      "label": "Road, pothole or street",
+      "visibility": "public",
+      "dedup_asset_type": "road_segment",
+      "disambiguator": {
+        "question": "What kind of road is it?",
+        "hint": "If you are not sure, pick the closest — we will say what we assumed.",
+        "options": [
+          {
+            "key": "village",
+            "label": "A road inside a village",
+            "tier": "Panchayat",
+            "office": "Block Development Officer, {block} block",
+            "reason": "A village road is a Panchayat subject under the Eleventh Schedule, so this does not go to Delhi.",
+            "legal_basis": "Article 243G and the Eleventh Schedule; local government is Entry 5 of the State List",
+            "route": "none",
+            "fallback": "No online system exists for Panchayat roads anywhere in India. The honest route is the state CM helpline, pre-filled.",
+            "remedy": "pothole.compensation"
+          },
+          {
+            "key": "pmgsy",
+            "label": "A rural road built under PMGSY",
+            "tier": "Central scheme",
+            "office": "State Quality Coordinator, NRIDA (PMGSY)",
+            "reason": "PMGSY roads have their own inspection chain under the Ministry of Rural Development.",
+            "legal_basis": "Scheme of the Ministry of Rural Development — no statute",
+            "route": "meri_sadak",
+            "fallback": null,
+            "remedy": "pothole.compensation"
+          },
+          {
+            "key": "town",
+            "label": "A street inside a town or city",
+            "tier": "Municipal",
+            "office": "Municipal Commissioner, {city}",
+            "reason": "Roads and bridges are a municipal subject under the Twelfth Schedule.",
+            "legal_basis": "Article 243W and the Twelfth Schedule; Entry 5, State List",
+            "route": "state_portal",
+            "fallback": "City portals differ. Where none exists we degrade to the state portal and say so.",
+            "remedy": "pothole.compensation"
+          },
+          {
+            "key": "state_highway",
+            "label": "A state highway or a big district road",
+            "tier": "State",
+            "office": "Executive Engineer, State Public Works Department",
+            "reason": "Roads other than national highways are a State subject.",
+            "legal_basis": "Entry 13, State List",
+            "route": "state_portal",
+            "fallback": "Varies by state.",
+            "remedy": "pothole.compensation"
+          },
+          {
+            "key": "national_highway",
+            "label": "A national highway",
+            "tier": "Union",
+            "office": "Project Director, NHAI",
+            "reason": "National highways are a Union subject, so this one genuinely does go to Delhi.",
+            "legal_basis": "Entry 23, Union List; National Highways Act 1956; NHAI Act 1988",
+            "route": "cpgrams",
+            "fallback": null,
+            "remedy": "pothole.compensation"
+          },
+          {
+            "key": "cantonment",
+            "label": "Inside a cantonment",
+            "tier": "Union",
+            "office": "Chief Executive Officer, Cantonment Board",
+            "reason": "Cantonment roads sit with the Cantonment Board under the Ministry of Defence.",
+            "legal_basis": "Cantonments Act 2006",
+            "route": "cpgrams",
+            "fallback": null,
+            "remedy": "pothole.compensation"
+          }
+        ]
+      }
+    },
+    "infra.water": {
+      "label": "Water supply",
+      "visibility": "public",
+      "dedup_asset_type": "ward",
+      "tier": "Municipal / Panchayat",
+      "office": "Executive Engineer, water supply, {city}",
+      "reason": "Water supply is a local body subject, so it is decided at your ward, not centrally.",
+      "legal_basis": "Twelfth Schedule (water supply for domestic, industrial and commercial purposes); Eleventh Schedule for rural drinking water",
+      "route": "state_portal",
+      "remedy": null
+    },
+    "infra.power": {
+      "label": "Electricity — outage or wrong bill",
+      "visibility": "public",
+      "dedup_asset_type": "discom_feeder",
+      "tier": "State utility",
+      "office": "Executive Engineer, {discom}",
+      "reason": "Your distribution company answers first, and there is a statutory forum above it.",
+      "legal_basis": "Electricity Act 2003",
+      "route": "state_portal",
+      "remedy": "electricity.cgrf"
+    },
+    "money.pf": {
+      "label": "Provident fund — EPFO",
+      "visibility": "private",
+      "dedup_asset_type": null,
+      "tier": "Central",
+      "office": "Regional Provident Fund Commissioner",
+      "reason": "EPFO handles this through its own grievance system before anything else.",
+      "legal_basis": "Employees' Provident Funds and Miscellaneous Provisions Act 1952",
+      "route": "epfigms",
+      "remedy": "pf.ombudsman",
+      "identifiers": [
+        { "key": "uan", "label": "Your UAN", "hint": "12 digits, on your payslip or the EPFO app.", "required": true },
+        { "key": "claim_date", "label": "When you filed the claim", "hint": "Approximate month is fine.", "required": false }
+      ]
+    },
+    "money.tax_refund": {
+      "label": "Income tax refund",
+      "visibility": "private",
+      "dedup_asset_type": null,
+      "tier": "Central",
+      "office": "Centralised Processing Centre, Income Tax Department",
+      "reason": "Refund delays are handled by CPC, and interest on the delay is your statutory right.",
+      "legal_basis": "Income-tax Act 1961",
+      "route": "e_nivaran",
+      "remedy": "tax.244a",
+      "identifiers": [
+        { "key": "assessment_year", "label": "Assessment year", "hint": "For example 2025-26.", "required": true },
+        { "key": "filed_on", "label": "Date you filed the return", "hint": "Approximate is fine.", "required": false }
+      ]
+    },
+    "money.bank": {
+      "label": "Bank, payment or fraud",
+      "visibility": "private",
+      "dedup_asset_type": null,
+      "tier": "Regulated entity",
+      "office": "Nodal officer of your bank",
+      "reason": "Your bank gets 30 days first. After that an ombudsman can hear it.",
+      "legal_basis": "Reserve Bank of India Act 1934; RB-IOS 2021",
+      "route": "rbi_cms",
+      "remedy": "bank.rbi_ombudsman",
+      "identifiers": [
+        { "key": "bank", "label": "Which bank", "hint": "Bank name is enough.", "required": true },
+        { "key": "complained_on", "label": "When you first complained to the bank", "hint": "This decides whether the ombudsman can hear it yet.", "required": true }
+      ]
+    },
+    "supply.ration": {
+      "label": "Ration or PDS",
+      "visibility": "both",
+      "dedup_asset_type": "fps_licence",
+      "tier": "State / District",
+      "office": "District Grievance Redressal Officer under the NFSA",
+      "reason": "The NFSA gives every district a grievance officer for exactly this.",
+      "legal_basis": "National Food Security Act 2013, sections 14, 15 and 16",
+      "route": "state_portal",
+      "remedy": "ration.nfsa",
+      "note": "One report can create two records: a private case for your own entitlement, and a joinable public case about the shop."
+    },
+    "work.mgnrega": {
+      "label": "MGNREGA work or wages",
+      "visibility": "both",
+      "dedup_asset_type": "panchayat",
+      "tier": "District",
+      "office": "Programme Officer, {block} block",
+      "reason": "MGNREGA has a district ombudsperson with power to pass awards.",
+      "legal_basis": "Mahatma Gandhi National Rural Employment Guarantee Act 2005",
+      "route": "state_portal",
+      "remedy": "mgnrega.ombudsperson"
+    },
+    "money.pmkisan": {
+      "label": "PM-KISAN instalment",
+      "visibility": "private",
+      "dedup_asset_type": null,
+      "tier": "Central + State",
+      "office": "State Nodal Officer, PM-KISAN",
+      "reason": "Portal-level issues are fixed at tier one; land seeding and eligibility escalate to the state nodal officer.",
+      "legal_basis": "Central scheme of the Ministry of Agriculture and Farmers Welfare",
+      "route": "pmkisan",
+      "remedy": "pmkisan.escalation"
+    },
+    "property.housing": {
+      "label": "Builder, flat or property paper",
+      "visibility": "private",
+      "dedup_asset_type": "project_id",
+      "tier": "State regulator",
+      "office": "State Real Estate Regulatory Authority",
+      "reason": "RERA has an adjudicating officer who can award compensation, with a 60-day clock.",
+      "legal_basis": "Real Estate (Regulation and Development) Act 2016",
+      "route": "state_portal",
+      "remedy": "housing.rera"
+    },
+    "travel.rail": {
+      "label": "Train or station",
+      "visibility": "private",
+      "dedup_asset_type": null,
+      "tier": "Central",
+      "office": "Divisional Railway Manager via RailMadad",
+      "reason": "RailMadad and helpline 139 handle this, and CPGRAMS is genuinely the correct escalation above it. We say so rather than pretending otherwise.",
+      "legal_basis": "Railways Act 1989",
+      "route": "railmadad",
+      "remedy": null
+    },
+    "telecom.service": {
+      "label": "Phone or internet",
+      "visibility": "private",
+      "dedup_asset_type": null,
+      "tier": "Regulated entity",
+      "office": "Appellate Authority of your operator",
+      "reason": "TRAI requires a two-tier mechanism inside the operator. There is no telecom ombudsman.",
+      "legal_basis": "TRAI Act 1997; Telecom Consumers Protection Regulations",
+      "route": "operator",
+      "remedy": "telecom.consumer_commission"
+    },
+    "office.inaction": {
+      "label": "An office is not doing its work",
+      "visibility": "private",
+      "dedup_asset_type": null,
+      "tier": "Depends on the office",
+      "office": "The grievance officer of the department concerned",
+      "reason": "We route to the department's own grievance officer and start the clock.",
+      "legal_basis": "DARPG Office Memorandum, 23 August 2024 — administrative, not statutory",
+      "route": "cpgrams",
+      "remedy": "service.rts_act"
+    },
+    "integrity.bribe": {
+      "label": "Someone demanded money from me",
+      "visibility": "private",
+      "dedup_asset_type": null,
+      "tier": "Vigilance",
+      "office": "Chief Vigilance Officer of the department concerned",
+      "reason": "Corruption complaints leave the ordinary grievance workflow.",
+      "legal_basis": "CVC Act 2003 and DoPT procedure",
+      "route": "vigilance",
+      "remedy": null,
+      "warning": "Bribery complaints go to the Vigilance Officer under CVC rules. You will get one acknowledgement and then no updates, and no Action Taken Report is filed. That is the rule, not neglect. You can file with your name withheld from the office.",
+      "allow_name_withheld": true
+    },
+    "other": {
+      "label": "Something else",
+      "visibility": "private",
+      "dedup_asset_type": null,
+      "tier": "Unknown",
+      "office": "To be identified",
+      "reason": "We could not place this confidently, so we will say what we are unsure about rather than guess.",
+      "legal_basis": null,
+      "route": "cpgrams",
+      "remedy": null
+    }
+  },
+  "channels": {
+    "cpgrams": { "label": "CPGRAMS", "status": "api_exists", "mocked": true },
+    "meri_sadak": { "label": "Meri Sadak (NRIDA)", "status": "defined_channel", "mocked": true, "note": "Geotagged photo, reopenable within 10 days." },
+    "epfigms": { "label": "EPFiGMS", "status": "api_exists", "mocked": true },
+    "rbi_cms": { "label": "RBI Complaint Management System", "status": "api_exists", "mocked": true },
+    "e_nivaran": { "label": "e-Nivaran (Income Tax)", "status": "api_exists", "mocked": true },
+    "railmadad": { "label": "RailMadad / 139", "status": "api_exists", "mocked": true },
+    "pmkisan": { "label": "pmkisan.gov.in grievance", "status": "api_exists", "mocked": true },
+    "state_portal": { "label": "State grievance portal", "status": "varies_by_state", "mocked": true },
+    "operator": { "label": "Operator appellate authority", "status": "varies", "mocked": true },
+    "vigilance": { "label": "Chief Vigilance Officer", "status": "no_public_tracking", "mocked": true },
+    "none": { "label": "No online route exists", "status": "none", "mocked": false, "note": "Honest dead end. We hand over the CM helpline, pre-filled." }
+  },
+  "helplines": {
+    "default": { "label": "State CM helpline", "number": null },
+    "bihar": { "label": "Bihar CM helpline", "number": "18003456123" },
+    "madhya pradesh": { "label": "MP CM Helpline", "number": "181" },
+    "uttar pradesh": { "label": "UP Jansunwai helpline", "number": "1076" }
+  }
+}

@@ -1,0 +1,17 @@
+node_modules/
+.env
+.env.local
+*.log
+
+# runtime database (seeded on boot)
+data/ekawaaz.db
+data/ekawaaz.db-journal
+data/ekawaaz.db-wal
+data/ekawaaz.db-shm
+
+# working files, not part of the deployed prototype
+uploads/
+screenshots/
+.thumbnail
+*.dc.html
+.image-slots.state.json

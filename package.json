@@ -1,0 +1,21 @@
+{
+  "name": "ek-awaaz",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ek Awaaz — citizen grievance routing and remedy platform. Independent prototype.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node server/db.js --reseed"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.5.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "openai": "^4.73.0"
+  }
+}

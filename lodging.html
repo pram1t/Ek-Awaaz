@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lodging a grievance | Ek Awaaz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+:root{--navy:#102a43;--blue:#1d4ed8;--teal:#0f766e;--amber:#b45309;--paper:#f8f7f3;--line:#d5dfe8;--muted:#5d6b79}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--paper);color:#24313f;font:15px/1.55 Manrope,Arial,sans-serif;display:flex;flex-direction:column}
+a{color:var(--blue);text-decoration:none}a:hover{color:var(--navy)}
+.top{background:var(--navy);color:#dce8f5;padding:10px 0;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;flex:0 0 auto}
+.shell{width:min(760px,calc(100% - 32px));margin:auto}
+.head{flex:0 0 auto;border-bottom:1px solid var(--line);background:var(--paper)}
+.head-in{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0}
+.brand{display:flex;align-items:center;gap:11px;color:var(--navy)}
+.brand-mark{width:34px;height:34px;border:2px solid var(--blue);border-radius:50%;display:grid;place-items:center;position:relative;flex:0 0 34px}
+.brand-mark i{position:absolute;border:1.5px solid var(--blue);border-radius:50%}
+.brand-mark i:nth-child(1){width:21px;height:21px}.brand-mark i:nth-child(2){width:13px;height:13px}.brand-mark i:nth-child(3){width:5px;height:5px;background:var(--blue)}
+.brand strong{font:700 23px Hind,serif;display:block;line-height:.85}
+.brand small{display:block;font-size:8px;letter-spacing:.22em;font-weight:800;margin-top:5px}
+.progress{text-align:right}
+.progress b{display:block;font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#8a99a8}
+.progress span{display:block;font-size:13px;font-weight:700;color:var(--navy);margin-top:3px}
+.thread-wrap{flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain}
+.thread{padding:30px 0 26px;display:flex;flex-direction:column;gap:18px}
+.turn{display:flex;gap:12px;max-width:100%;animation:rise 360ms cubic-bezier(.22,.61,.36,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+.turn.you{flex-direction:row-reverse}
+.av{width:30px;height:30px;flex:0 0 30px;border-radius:50%;border:1.5px solid var(--blue);position:relative;display:grid;place-items:center;margin-top:2px}
+.av i{position:absolute;border:1px solid var(--blue);border-radius:50%}
+.av i:nth-child(1){width:18px;height:18px}.av i:nth-child(2){width:10px;height:10px}.av i:nth-child(3){width:4px;height:4px;background:var(--blue)}
+.turn.you .av{border-color:#b9c8d6;background:#fff;font:800 11px Manrope,sans-serif;color:var(--muted)}
+.bubble{max-width:min(520px,84%)}
+.bubble>p:not(.who):not(.aside){margin:0;padding:14px 17px;border:1px solid var(--line);border-radius:4px 14px 14px 14px;background:#fff;font-size:15px;color:#24313f;text-wrap:pretty}
+.turn.you .bubble>p:not(.who):not(.aside){border:0;background:var(--navy);color:#eaf1f8;border-radius:14px 4px 14px 14px}
+.bubble>p:not(.who):not(.aside)+p:not(.who):not(.aside){margin-top:7px}
+.bubble p.who{padding:0;border:0;background:none;border-radius:0;font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#8a99a8;margin:0 0 6px 2px}
+.turn.you .bubble p.who{text-align:right;margin:0 2px 6px 0;background:none;color:#8a99a8}
+.bubble p.aside{padding:0 17px;border:0;background:none;border-radius:0;font-size:12.5px;color:var(--muted);margin:7px 0 0}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.chip{border:1px solid #b9c8d6;background:#fff;color:var(--navy);border-radius:100px;padding:8px 14px;font:700 12.5px Manrope,sans-serif;cursor:pointer;transition:border-color .18s,color .18s}
+.chip:hover{border-color:var(--blue);color:var(--blue)}
+.turn.you .bubble .att{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;margin-top:7px}
+.att b{display:flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);border-radius:4px;padding:8px 11px;font:700 12px Manrope,sans-serif;color:var(--navy);max-width:220px}
+.att b s{text-decoration:none;color:var(--muted);font-weight:600}
+.dots{display:flex;gap:4px;padding:17px}
+.dots i{width:6px;height:6px;border-radius:50%;background:#b9c8d6;animation:blip 1200ms ease-in-out infinite}
+.dots i:nth-child(2){animation-delay:180ms}.dots i:nth-child(3){animation-delay:360ms}
+@keyframes blip{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+
+/* ---------- route screen ---------- */
+.wide{max-width:min(600px,96%)}
+.route{border:1px solid var(--line);background:#fff;border-radius:4px 14px 14px 14px;overflow:hidden}
+.route>header{padding:17px 20px 15px;border-bottom:1px solid #e6ecf2}
+.route>header b{display:block;font:800 10px Manrope,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:6px}
+.route>header h2{margin:0;font:700 21px Hind,serif;color:var(--navy);letter-spacing:-.01em}
+.route>header p{margin:5px 0 0;font-size:12.5px;color:var(--muted)}
+.block{padding:16px 20px;border-bottom:1px solid #e6ecf2}
+.block:last-of-type{border-bottom:0}
+.block>p.eyebrow{margin:0 0 11px;font:800 10px Manrope,sans-serif;letter-spacing:.09em;text-transform:uppercase;color:#8a99a8}
+.said{display:grid;gap:1px;background:#e6ecf2;border-radius:3px;overflow:hidden}
+.said>div{background:#fbfcfd;padding:11px 13px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}
+.said dt{margin:0 0 4px;font:800 9.5px Manrope,sans-serif;letter-spacing:.09em;text-transform:uppercase;color:#8a99a8}
+.said dd{margin:0;font-size:13.5px;font-weight:700;color:var(--navy);text-wrap:pretty}
+.said .edit{border:0;background:none;color:var(--blue);font:800 10.5px Manrope,sans-serif;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;padding:2px 0}
+.said .edit:hover{color:var(--navy)}
+.said input{width:100%;font:700 13.5px Manrope,sans-serif;color:var(--navy);padding:8px 10px;border:1px solid var(--blue);border-radius:3px}
+.said input:focus{outline:0}
+.where b{display:block;color:var(--navy);font-size:16px;letter-spacing:-.01em}
+.where p{margin:6px 0 0;font-size:13px;color:#48596b;text-wrap:pretty}
+.panel{padding:14px 16px;border-radius:3px}
+.panel b{display:block;font-size:13.5px;margin-bottom:5px}
+.panel p{margin:0;font-size:12.5px;line-height:1.55;text-wrap:pretty}
+.panel.stronger{background:#eef7f5;border-left:3px solid var(--teal);color:#245e57}
+.panel.stronger b{color:#0f766e}
+.panel.match{background:#f2f7ff;border-left:3px solid var(--blue);color:#33465c}
+.panel.match b{color:var(--navy);font-size:14.5px}
+.panel.warn{background:#fdf6ec;border-left:3px solid var(--amber);color:#6b4a17}
+.panel.warn b{color:var(--amber)}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+.ghost{border:1px solid #b9c8d6;background:#fff;color:var(--navy);border-radius:4px;padding:11px 14px;font:800 12px Manrope,sans-serif;cursor:pointer}
+.ghost:hover{border-color:var(--blue);color:var(--blue)}
+.ghost.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.ask-public p{margin:0 0 4px;font-size:13.5px;font-weight:700;color:var(--navy)}
+.ask-public small{display:block;font-size:12px;color:var(--muted);text-wrap:pretty}
+.send{padding:16px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#fbfcfd}
+.send small{font-size:11.5px;color:#8a99a8;flex:1 1 190px}
+.button{border:0;border-radius:4px;padding:14px 20px;background:var(--blue);color:#fff;font:800 13px Manrope,sans-serif;cursor:pointer;display:inline-block}
+.button:hover{background:#1740b8;color:#fff}
+.gate{padding:18px 20px;background:#fbfcfd;border-top:1px solid #e6ecf2}
+.gate b{display:block;color:var(--navy);font-size:14.5px;margin-bottom:4px}
+.gate p{margin:0 0 12px;font-size:12.5px;color:var(--muted);text-wrap:pretty}
+.gate input{width:100%;font:15px Manrope,sans-serif;color:var(--navy);padding:12px 13px;border:1px solid #b9c8d6;border-radius:4px}
+.gate input:focus{outline:0;border-color:var(--blue)}
+.gate .otp{display:flex;gap:8px}
+.gate .otp input{text-align:center;font:800 19px Manrope,sans-serif;padding:11px 0}
+.gate .foot{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+.gate .foot small{flex:1 1 150px;font-size:11.5px;color:#8a99a8}
+.gate .err{display:none;margin:9px 0 0;font:700 12px Manrope,sans-serif;color:#9f1239}
+.gate .err.show{display:block}
+.tick{width:42px;height:42px;border-radius:50%;background:#e3f2ee;color:var(--teal);display:grid;place-items:center;font-size:20px;margin-bottom:12px}
+.next{list-style:none;margin:0;padding:0;display:grid;gap:11px}
+.next li{display:grid;grid-template-columns:20px 1fr;gap:11px;font-size:13px;color:#3d4d5d;text-wrap:pretty}
+.next li b{display:block;color:var(--navy);font-size:13px;margin-bottom:2px}
+.next li span.n{width:20px;height:20px;border-radius:50%;background:#eef3f7;color:var(--navy);font:800 10px Manrope,sans-serif;display:grid;place-items:center;margin-top:1px}
+
+.composer{flex:0 0 auto;border-top:1px solid var(--line);background:#fff}
+.composer-in{padding:14px 0 18px}
+.dropzone{border:1px dashed transparent;border-radius:6px;transition:border-color .18s,background .18s;padding:2px}
+.dropzone.over{border-color:var(--blue);background:#f2f7ff}
+.row{display:flex;align-items:flex-end;gap:10px}
+textarea{flex:1;min-height:52px;max-height:180px;resize:none;font:15px/1.5 Manrope,Arial,sans-serif;color:var(--navy);padding:15px 16px;border:1px solid #b9c8d6;border-radius:6px;background:#fff}
+textarea:focus{outline:0;border-color:var(--blue)}
+textarea:disabled{background:#f4f7fa;color:#8a99a8}
+.clip{width:52px;height:52px;flex:0 0 52px;border:1px solid #b9c8d6;border-radius:6px;background:#fff;color:var(--muted);cursor:pointer;display:grid;place-items:center}
+.clip:hover{border-color:var(--blue);color:var(--blue)}
+.clip svg,.send-btn svg{width:20px;height:20px}
+.mic{position:relative;width:52px;height:52px;flex:0 0 52px;border:0;border-radius:50%;background:var(--blue);color:#fff;cursor:pointer;display:grid;place-items:center;transition:background .2s}
+.mic:hover{background:#1740b8}
+.mic.on{background:#9f1239}
+.mic svg{width:21px;height:21px;position:relative;z-index:2}
+.mic em{position:absolute;inset:0;border-radius:50%;border:1.5px solid #9f1239;opacity:0;pointer-events:none}
+.mic.on em{animation:ring 1800ms cubic-bezier(.22,.61,.36,1) infinite}
+.mic.on em:nth-of-type(2){animation-delay:600ms}
+@keyframes ring{from{transform:scale(1);opacity:.75}to{transform:scale(2.6);opacity:0}}
+.send-btn{width:52px;height:52px;flex:0 0 52px;border:0;border-radius:6px;background:var(--navy);color:#fff;cursor:pointer;display:grid;place-items:center}
+.send-btn:hover{background:#1b3c5a}
+.tray{display:none;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.tray.show{display:flex}
+.tray b{display:flex;align-items:center;gap:8px;background:#f4f7fa;border-radius:4px;padding:8px 10px;font:700 12px Manrope,sans-serif;color:var(--navy);max-width:240px}
+.tray b s{text-decoration:none;color:var(--muted);font-weight:600;white-space:nowrap}
+.tray b button{border:0;background:none;color:var(--muted);font-size:15px;line-height:1;cursor:pointer;padding:0}
+.tray b button:hover{color:#9f1239}
+.note{display:none;align-items:center;gap:9px;margin:0 0 10px;font-size:12px;font-weight:700;color:#9f1239}
+.note.show{display:flex}
+.wave{display:flex;align-items:flex-end;gap:3px;height:15px}
+.wave i{width:3px;height:5px;background:#9f1239;border-radius:1px;animation:wv 900ms ease-in-out infinite}
+.wave i:nth-child(2){animation-delay:120ms}.wave i:nth-child(3){animation-delay:240ms}.wave i:nth-child(4){animation-delay:360ms}.wave i:nth-child(5){animation-delay:480ms}
+@keyframes wv{0%,100%{height:5px}50%{height:15px}}
+.legal{margin:10px 0 0;font-size:11px;color:#93a2b1}
+@media(max-width:560px){.bubble,.wide{max-width:100%}.clip{display:none}.progress{display:none}.said>div{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<script src="session.js"></script>
+<div class="top"><div class="shell">Ek Awaaz · Lodging a grievance</div></div>
+
+<header class="head"><div class="shell head-in">
+  <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span><strong>एक आवाज़</strong><small>EK AWAAZ</small></span></a>
+  <div class="progress"><b>Assembling your case</b><span id="progressText">Nothing filed yet</span></div>
+</div></header>
+
+<div class="thread-wrap" id="threadWrap"><div class="thread shell" id="thread"></div></div>
+
+<footer class="composer"><div class="shell composer-in">
+  <div class="dropzone" id="dropzone">
+    <div class="tray" id="tray"></div>
+    <div class="note" id="note"><span class="wave"><i></i><i></i><i></i><i></i><i></i></span><span id="noteText">Listening. Speak in your own language.</span></div>
+    <form class="row" id="composerForm">
+      <button class="clip" id="clip" type="button" aria-label="Attach a photo or document"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11.5l-8.5 8.5a5 5 0 0 1-7-7l8.5-8.5a3.2 3.2 0 0 1 4.6 4.6l-8.6 8.5a1.5 1.5 0 0 1-2.1-2.1l7.9-7.9" /></svg></button>
+      <textarea id="reply" rows="1" placeholder="Type your answer, or press the mic to speak"></textarea>
+      <button class="mic" id="mic" type="button" aria-label="Answer by speaking"><em></em><em></em><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="2.5" width="6" height="11" rx="3" /><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" /></svg></button>
+      <button class="send-btn" type="submit" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6" /></svg></button>
+    </form>
+  </div>
+  <input type="file" id="photoInput" accept="image/*" capture="environment" multiple hidden />
+  <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple hidden />
+  <p class="legal">Your name is never shown on a public case. Only the issue, the office, and the number of people supporting it are visible.</p>
+</div></footer>
+
+<script>
+const issue = new URLSearchParams(location.search).get('issue') || '';
+
+/* ---------------------------------------------------------------
+   Domains. Each one names the office that actually owns the
+   problem, the reason it goes there, and the stronger remedy the
+   citizen holds above it. Follow-ups are written per domain —
+   identifiers only where the office genuinely needs one.
+---------------------------------------------------------------- */
+const domains = [
+  { key: 'bribe', test: /bribe|bribery|corrupt|rishwat|kickback|money asked|demanded money/,
+    office: 'Vigilance track, under CVC and DoPT procedure',
+    reason: 'A bribery complaint is pulled out of the ordinary grievance workflow and handled by vigilance instead.',
+    days: null,
+    warning: 'Vigilance works differently, and you should know before you send it. You will get one acknowledgement, and then no updates at all — no Action Taken Report is filed and the feedback loop is switched off on this track. That is the rule, not neglect by an officer.',
+    asks: [{ label: 'What was asked', q: 'What was asked for, by whom, and for which service?', hint: 'A designation is enough if you do not have a name. Do not put in anything you are not willing to have on record.' }],
+    evidence: 'Anything written — a slip, a message, a note. Skip this if there is nothing.',
+    isPublic: false },
+
+  { key: 'bank', test: /bank|debit|atm|upi|account|credit card|loan|emi|fraud|debited/,
+    office: 'Bank nodal officer, customer grievance cell',
+    reason: 'The bank gets one chance first, and that is what starts the 30-day clock the Ombudsman needs before it can hear you.',
+    days: 30,
+    remedy: { title: 'RBI Integrated Ombudsman Scheme, 2021', line: 'Once the bank has had its 30 days, the same complaint goes to the Ombudsman at cms.rbi.org.in, which can award up to ₹20 lakh against the loss and up to ₹1 lakh for your time, expense and harassment. We keep the date you first complained on file, because that is the date it turns on.' },
+    asks: [
+      { label: 'Amount and date', q: 'What was the amount, the date, and which bank?', hint: 'A disputed debit can only be traced with the amount and date. Add the reference from your statement if you have it.' },
+      { label: 'Told the bank', q: 'Have you complained to the bank already, and when?', hint: 'That date is the one the Ombudsman clock runs from. Say no if this is the first time.', chips: ['No, first time', 'Yes, at the branch', 'Yes, on their app'] }
+    ],
+    evidence: 'The statement page showing the debit, if you have it.',
+    isPublic: false },
+
+  { key: 'pf', test: /provident|\bpf\b|epf|uan|pension|gratuity|withdrawal claim/,
+    office: 'Regional EPFO office, through EPFiGMS',
+    reason: 'A PF claim is settled by the regional office that holds your UAN. The head office cannot decide it for them.',
+    days: 20,
+    remedy: { title: 'Central PF Commissioner, then the regional EPF Ombudsman', line: 'EPFiGMS carries no statutory clock, so the portal cannot compel an entry. The escalation above it can: the Central PF Commissioner, then the regional EPF Ombudsman after about a month, with a statutory appeal under section 7I above both.' },
+    asks: [
+      { label: 'UAN and claim', q: 'What is your UAN, and which claim is stuck?', hint: 'The UAN lets the regional office pull up the file without asking you again. Name the form — 19, 10C, 31 — if you know it.' },
+      { label: 'Office response', q: 'When did you file it, and has the office asked you for anything since?', hint: 'A KYC query, a rejection, or complete silence. Each one changes the next step.', chips: ['Complete silence', 'They rejected it', 'They asked for papers'] }
+    ],
+    evidence: 'The claim acknowledgement or the rejection letter, if you have one.',
+    isPublic: false },
+
+  { key: 'ration', test: /ration|pds|dealer|nfsa|kerosene|food grain|anganwadi|midday|mid-day/,
+    office: 'District Grievance Redressal Officer, under s.15 NFSA',
+    reason: 'The Food Security Act puts a named officer in every district for exactly this, above the dealer and above the block office.',
+    days: 21,
+    remedy: { title: 'State Food Commission, under s.16 NFSA 2013', line: 'Your entitlement under the Act is not discretionary. Above the District Grievance Redressal Officer sits the State Food Commission, which hears this as a statutory right rather than a request.' },
+    asks: [
+      { label: 'Card and refusal', q: 'What is your ration card number, and what were you refused?', hint: 'The card number, the month, and what the dealer said. If you have no card, say that instead.' },
+      { label: 'How long', q: 'How many months has this been going on, and how many people are in the household?', hint: 'The household count decides the quantity you are owed each month.' }
+    ],
+    evidence: 'A photo of your ration card, or of the dealer’s register if you were shown it.',
+    isPublic: false },
+
+  { key: 'power', test: /power|electric|transformer|outage|bijli|voltage|meter|discom|light bill/,
+    office: 'Executive Engineer, DISCOM distribution division',
+    reason: 'Supply and billing sit with the DISCOM. The forum above it is created by the Electricity Act, not by a grievance portal.',
+    days: 21,
+    remedy: { title: 'Consumer Grievance Redressal Forum, s.42(5) Electricity Act 2003', line: 'A DISCOM complaint has a statutory forum above it that must decide within three months, and an Electricity Ombudsman above that under s.42(6). Both are stronger than a portal grievance.' },
+    asks: [
+      { label: 'Hours out', q: 'How many hours a day is the supply out?', hint: 'Give the worst stretch you have had this week.', chips: ['Most of the day', 'Evenings only', 'Voltage fluctuation'] },
+      { label: 'Loss caused', q: 'Has the outage damaged anything or stopped work?', hint: 'A burnt appliance, spoiled stock, a shop or clinic that had to close. Say no if not.', chips: ['Nothing damaged', 'An appliance burnt', 'Work stopped'] }
+    ],
+    evidence: 'A photo of the burnt appliance, the meter, or the bill.',
+    isPublic: true },
+
+  { key: 'water', test: /water|tap|handpump|tanker|supply line|sewer|drain water/,
+    office: 'Public Health Engineering Department, district office',
+    reason: 'Piped water in the district is run by the PHED under the State, so no central ministry can order the repair.',
+    days: 21,
+    asks: [
+      { label: 'Days without', q: 'How many days has the supply been off, and at what hours does it come?', hint: 'And where you are getting water meanwhile — a tanker, a neighbour, purchased cans.', chips: ['No supply at all', 'A few hours, some days'] }
+    ],
+    evidence: 'A photo of the dry tap or the tanker queue helps, but is not required.',
+    caseKey: '2026-04108',
+    isPublic: true },
+
+  { key: 'road', test: /road|pothole|street|footpath|culvert|lane|bridge|rasta/,
+    office: 'Block Development Officer, Rajnagar block',
+    reason: 'A village road is a Panchayat subject under Article 243G, so this does not go to Delhi.',
+    days: 21,
+    asks: [
+      { label: 'How long', q: 'How long has it been like this, and what has it stopped?', hint: 'A rough answer is fine. Say if an ambulance, a school van or a delivery cannot get through.', chips: ['A few weeks', 'Since the monsoon', 'Over a year'] }
+    ],
+    evidence: 'A photo of the worst stretch lets the block office send an engineer to the right place.',
+    caseKey: '2026-04412',
+    isPublic: true },
+
+  { key: 'rail', test: /train|rail|pnr|irctc|station|platform|coach|ticket/,
+    office: 'Divisional Railway Manager, through RailMadad',
+    reason: 'RailMadad routes to the division that ran the train. Railways is one of the few places where CPGRAMS above it is genuinely the right escalation.',
+    days: 21,
+    asks: [
+      { label: 'PNR and train', q: 'What is your PNR, and the train and date of travel?', hint: 'The PNR lets the divisional office pull up the booking without asking you again.' },
+      { label: 'What you want', q: 'What are you asking for — a refund, or an answer?', hint: 'A refund claim and a service complaint go to different desks in the same division.', chips: ['A refund', 'An answer', 'Both'] }
+    ],
+    isPublic: false },
+
+  { key: 'tax', test: /tax|itr|refund|gst|assessment|income tax|tds/,
+    office: 'Income Tax CPC Bengaluru, through e-Nivaran',
+    reason: 'A processing or refund grievance is held by CPC, not by your local ward officer.',
+    days: 21,
+    remedy: { title: 'Interest under Section 244A', line: 'Where the delay is not your fault, interest on a delayed refund is statutory rather than a favour — 0.5% for every month or part month. We claim it in the same filing instead of asking for it later.' },
+    asks: [
+      { label: 'Year and filing', q: 'Which assessment year is this, and when did you file?', hint: 'The assessment year and filing date decide which office holds your case.' },
+      { label: 'Portal status', q: 'What does the portal show — a status, a demand, or nothing?', hint: 'Under processing, refund failed, a demand notice, or no movement at all.', chips: ['Under processing', 'Refund failed', 'A demand notice', 'Nothing at all'] }
+    ],
+    isPublic: false },
+
+  { key: 'id', test: /aadhaar|aadhar|\bpan\b|passport|voter|licence|license|certificate|birth|caste|domicile/,
+    office: 'Issuing authority — UIDAI regional office or the certificate office',
+    reason: 'Only the office that issued the document can correct it, and a complaint anywhere else is forwarded back to them.',
+    days: 21,
+    asks: [
+      { label: 'Document and reference', q: 'Which document is it, and what is the reference number of your request?', hint: 'The enrolment or acknowledgement number lets the office find your file.' },
+      { label: 'What they said', q: 'What did they say when they refused, or did they go quiet?', hint: 'Rejected with a reason, asked for more papers, or no answer at all.', chips: ['Rejected', 'Asked for more papers', 'No answer'] }
+    ],
+    evidence: 'The acknowledgement slip or the rejection message.',
+    isPublic: false },
+
+  { key: 'other', test: null,
+    office: 'District grievance office',
+    reason: 'Nothing you have told me names a sector clearly, so this goes to the district office, which is the tier that can mark it onward.',
+    days: 21,
+    unsure: true,
+    asks: [
+      { label: 'Office so far', q: 'Which office or department have you dealt with so far?', hint: 'Even a rough answer narrows it — the block office, a bank, a school, a hospital.' },
+      { label: 'How long', q: 'How long has this been going on?', hint: 'A rough answer is fine.', chips: ['A few weeks', 'Several months', 'Over a year'] }
+    ],
+    isPublic: false }
+];
+
+function pickDomain(text) {
+  const lower = String(text || '').toLowerCase();
+  return domains.find((d) => d.test && d.test.test(lower)) || domains[domains.length - 1];
+}
+let domain = pickDomain(issue);
+
+/* The location Ek Awaaz believes you are in. A prototype stands in for reverse geocoding. */
+const detected = 'Rajnagar Ward 4, Madhubani district, Bihar';
+
+const thread = document.querySelector('#thread'), wrap = document.querySelector('#threadWrap');
+const reply = document.querySelector('#reply'), micBtn = document.querySelector('#mic');
+const note = document.querySelector('#note'), noteText = document.querySelector('#noteText');
+const tray = document.querySelector('#tray'), progressText = document.querySelector('#progressText');
+const answers = {}, files = [];
+let steps = [], step = 0, awaiting = false, phase = 'intake', isPublic = false, filedRecord = null, dismissedMatch = false;
+
+function scrollDown() { wrap.scrollTop = wrap.scrollHeight; }
+function esc(text) { return String(text == null ? '' : text).replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c])); }
+function sizeOf(bytes) { return bytes > 1048576 ? (bytes / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(bytes / 1024)) + ' KB'; }
+function dueDate(days) { const d = new Date(Date.now() + days * 86400000); return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }); }
+
+function bubble(role, inner) {
+  const turn = document.createElement('div');
+  turn.className = 'turn ' + role;
+  turn.innerHTML = role === 'you'
+    ? '<span class="av" aria-hidden="true">आप</span><div class="bubble"><p class="who">You</p>' + inner + '</div>'
+    : '<span class="av" aria-hidden="true"><i></i><i></i><i></i></span><div class="bubble"><p class="who">Ek Awaaz</p>' + inner + '</div>';
+  thread.appendChild(turn);
+  scrollDown();
+  return turn;
+}
+
+function typing() {
+  const turn = document.createElement('div');
+  turn.className = 'turn';
+  turn.innerHTML = '<span class="av" aria-hidden="true"><i></i><i></i><i></i></span><div class="bubble" style="border:1px solid var(--line);background:#fff;border-radius:4px 14px 14px 14px"><span class="dots"><i></i><i></i><i></i></span></div>';
+  thread.appendChild(turn);
+  scrollDown();
+  return turn;
+}
+
+function ask(text, hint, chips, after) {
+  awaiting = true;
+  const ghost = typing();
+  setTimeout(() => {
+    ghost.remove();
+    let inner = '<p>' + esc(text) + '</p>';
+    if (hint) inner += '<p class="aside">' + esc(hint) + '</p>';
+    if (chips && chips.length) inner += '<div class="chips">' + chips.map((c) => '<button class="chip" type="button">' + esc(c) + '</button>').join('') + '</div>';
+    const turn = bubble('them', inner);
+    turn.querySelectorAll('.chip').forEach((chip) => chip.addEventListener('click', () => {
+      turn.querySelector('.chips').remove();
+      send(chip.textContent);
+    }));
+    awaiting = false;
+    if (after) after();
+    reply.focus();
+  }, 850 + Math.random() * 450);
+}
+
+/* ---------- the question plan: two or three follow-ups, then location ---------- */
+function buildSteps() {
+  steps = [];
+  if (!answers.grievance) {
+    steps.push({ key: 'grievance', label: 'Grievance', q: 'क्या हुआ? What happened?', hint: 'Say it the way you would tell a neighbour. I find the office from your words — you never pick a department.', chips: ['Road not repaired', 'Ration denied', 'Bank debited wrongly', 'PF claim stuck'] });
+  }
+  domain.asks.slice(0, 2).forEach((a, i) => steps.push({ key: 'ask' + i, label: a.label, q: a.q, hint: a.hint, chips: a.chips }));
+  if (domain.evidence) steps.push({ key: 'evidence', label: 'Evidence', kind: 'evidence', q: 'Anything to attach?', hint: domain.evidence + ' Use the clip, or drag files onto this screen.', chips: ['Nothing to attach'] });
+  steps.push({ key: 'location', label: 'Location', kind: 'location', q: 'One last thing — is this the right place?', hint: 'Detected as ' + detected + '. This decides which office holds the case, so correct it if it is wrong.', chips: ['Yes, that is right', 'It is somewhere else'] });
+}
+
+const progressLabels = ['Reading your grievance', 'Narrowing the office', 'Checking what the office will need', 'Locating the jurisdiction', 'Ready to review'];
+
+function save() { if (window.EA) EA.patch({ draft: { issue: issue, step: step, answers: answers, domain: domain.key, at: Date.now() } }); }
+
+function advance() {
+  progressText.textContent = progressLabels[Math.min(step, progressLabels.length - 1)];
+  if (step >= steps.length) { route(); return; }
+  const entry = steps[step];
+  ask(entry.q, entry.hint, entry.chips);
+}
+
+function send(text) {
+  const value = (text || reply.value).trim();
+  if (awaiting) return;
+  if (!value && !files.length) return;
+  const entry = steps[step] || {};
+
+  let inner = '';
+  if (value) inner += '<p>' + esc(value) + '</p>';
+  if (files.length && entry.kind === 'evidence') inner += '<div class="att">' + files.map((f) => '<b>' + esc(f.name) + ' <s>' + sizeOf(f.size) + '</s></b>').join('') + '</div>';
+  bubble('you', inner);
+  reply.value = '';
+  reply.style.height = '';
+
+  if (phase === 'route') { editFromMessage(value); return; }
+
+  if (entry.kind === 'location') {
+    if (/somewhere else|change|no,/i.test(value)) {
+      steps[step] = { key: 'location', label: 'Location', q: 'Where is this, exactly?', hint: 'Village or ward, then the block and district. A landmark is fine on top of that.' };
+      advance();
+      return;
+    }
+    answers.location = /that is right|yes/i.test(value) ? detected : value;
+  } else if (entry.kind === 'evidence') {
+    tray.classList.remove('show');
+    tray.innerHTML = '';
+    answers.evidence = files.length ? files.length + (files.length === 1 ? ' file' : ' files') : 'None attached';
+  } else if (entry.key === 'grievance') {
+    answers.grievance = value;
+    domain = pickDomain(value);
+    isPublic = !!domain.isPublic;
+    buildSteps();
+    step = -1; /* the plan is rebuilt without the opening question */
+  } else {
+    answers[entry.key] = value;
+  }
+
+  step++;
+  save();
+  advance();
+}
+
+/* ---------- the route screen ---------- */
+let routeTurn = null;
+
+function saidRows() {
+  const rows = [['grievance', 'What you reported', answers.grievance || issue || '—']];
+  steps.forEach((s) => { if (/^ask/.test(s.key)) rows.push([s.key, s.label, answers[s.key] || '—']); });
+  rows.push(['location', 'Location', answers.location || '—']);
+  rows.push(['evidence', 'Evidence', answers.evidence || (files.length ? files.length + ' files' : 'None attached')]);
+  return rows;
+}
+
+function route() {
+  phase = 'route';
+  progressText.textContent = 'Ready to send';
+  isPublic = isPublic || !!domain.isPublic;
+  const ghost = typing();
+  setTimeout(() => {
+    ghost.remove();
+    bubble('them', '<p>That is enough. Here is where it goes and what you hold — nothing has been sent yet.</p>');
+    renderRoute();
+    reply.placeholder = 'Tell me what to change';
+  }, 1000);
+}
+
+function renderRoute() {
+  const found = domain.caseKey && window.EA ? EA.registry[domain.caseKey] : null;
+  const showMatch = found && !dismissedMatch;
+  let html = '<div class="route"><header><b>Route found · nothing sent yet</b><h2>Your case, and where it goes</h2><p>Read it back. Every line can be corrected before you send.</p></header>';
+
+  html += '<div class="block"><p class="eyebrow">What you said</p><div class="said">'
+    + saidRows().map(([key, label, value]) => '<div><div><dt>' + esc(label) + '</dt><dd data-value="' + key + '">' + esc(value) + '</dd></div><button class="edit" type="button" data-edit="' + key + '">Edit</button></div>').join('')
+    + '</div></div>';
+
+  html += '<div class="block where"><p class="eyebrow">Where it goes</p><b>' + esc(domain.office) + '</b><p>' + esc(domain.reason) + '</p></div>';
+
+  if (domain.remedy) {
+    html += '<div class="block"><p class="eyebrow">Stronger remedy you already hold</p><div class="panel stronger"><b>' + esc(domain.remedy.title) + '</b><p>' + esc(domain.remedy.line) + '</p></div></div>';
+  }
+
+  if (domain.warning) {
+    html += '<div class="block"><p class="eyebrow">Before you send this</p><div class="panel warn"><b>One acknowledgement, then silence</b><p>' + esc(domain.warning) + '</p></div></div>';
+  }
+
+  if (showMatch) {
+    html += '<div class="block"><p class="eyebrow">Match found</p><div class="panel match"><b>' + found.supporters + ' households have already reported this.</b>'
+      + '<p>' + esc(found.title) + ' · ' + esc(found.id) + ' · with ' + esc(found.office) + '. Adding your name to that case counts more than a second one about the same problem — at ' + found.target + ' it is escalated as a village-level demand.</p>'
+      + '<div class="acts"><button class="button" type="button" data-join>Add my name to that case →</button><button class="ghost" type="button" data-nojoin>Mine is separate, file it</button></div></div></div>';
+  }
+
+  if (domain.unsure || domain.isPublic) {
+    html += '<div class="block ask-public"><p class="eyebrow">' + (domain.unsure ? 'I am not certain about this one' : 'Public or private') + '</p>'
+      + '<p>Should neighbours be able to add their names to this?</p><small>A shared case is harder for an office to close quietly. Your name is never shown to them either way.</small>'
+      + '<div class="acts"><button class="ghost' + (isPublic ? ' on' : '') + '" type="button" data-public="yes">Yes, let others join</button><button class="ghost' + (isPublic ? '' : ' on') + '" type="button" data-public="no">No, keep it mine</button></div></div>';
+  }
+
+  html += '<div class="send" id="sendBlock"><button class="button" type="button" data-send>Confirm and send →</button><small>' + (domain.days ? 'You get a case number and a ' + domain.days + '-day response clock immediately.' : 'You get a case number and one acknowledgement.') + '</small></div></div>';
+
+  if (!routeTurn) { routeTurn = document.createElement('div'); routeTurn.className = 'turn'; }
+  routeTurn.innerHTML = '<span class="av" aria-hidden="true"><i></i><i></i><i></i></span><div class="bubble wide">' + html + '</div>';
+  thread.appendChild(routeTurn);
+
+  routeTurn.querySelectorAll('[data-edit]').forEach((button) => button.addEventListener('click', () => inlineEdit(button.dataset.edit)));
+  const join = routeTurn.querySelector('[data-join]');
+  if (join) join.addEventListener('click', () => EA.join(EA.registry[domain.caseKey].id, { onDone: () => { bubble('them', '<p>Your name is on that case now. It is in My grievances under the cases you support.</p>'); } }));
+  const nojoin = routeTurn.querySelector('[data-nojoin]');
+  if (nojoin) nojoin.addEventListener('click', () => { dismissedMatch = true; renderRoute(); });
+  routeTurn.querySelectorAll('[data-public]').forEach((button) => button.addEventListener('click', () => { isPublic = button.dataset.public === 'yes'; renderRoute(); }));
+  routeTurn.querySelector('[data-send]').addEventListener('click', confirmSend);
+  scrollDown();
+}
+
+function inlineEdit(key) {
+  const cell = routeTurn.querySelector('[data-value="' + key + '"]');
+  if (!cell || cell.querySelector('input')) return;
+  const current = cell.textContent.trim();
+  cell.innerHTML = '<input type="text" value="' + esc(current === '—' || current === 'None attached' ? '' : current) + '" />';
+  const input = cell.querySelector('input');
+  input.focus();
+  input.select();
+  const commit = () => {
+    const value = input.value.trim();
+    if (value) {
+      if (key === 'grievance') answers.grievance = value;
+      else if (key === 'location') answers.location = value;
+      else if (key === 'evidence') answers.evidence = value;
+      else answers[key] = value;
+      save();
+    }
+    renderRoute();
+  };
+  input.addEventListener('keydown', (event) => { if (event.key === 'Enter') commit(); if (event.key === 'Escape') renderRoute(); });
+  input.addEventListener('blur', commit);
+}
+
+/* A typed message after the route screen corrects one line of it. */
+const fieldNames = { grievance: 'What you reported', location: 'Location', evidence: 'Evidence' };
+let pendingField = null;
+
+function editFromMessage(value) {
+  const lower = value.toLowerCase();
+  const labels = {};
+  saidRows().forEach(([key, label]) => { labels[label.toLowerCase()] = key; });
+  if (labels[lower]) { pendingField = labels[lower]; bubble('them', '<p>Send me the new wording for that line.</p>'); return; }
+  let field = pendingField;
+  pendingField = null;
+  if (!field) {
+    if (/ward|village|district|block|town|near|address|location/.test(lower)) field = 'location';
+    else if (/photo|file|attach|receipt|letter/.test(lower)) field = 'evidence';
+    else if (steps.some((s) => /^ask/.test(s.key))) field = steps.find((s) => /^ask/.test(s.key)).key;
+    else field = 'grievance';
+  }
+  if (!field) {
+    ask('Which line should I change?', 'Tap the line, then send the new wording.', saidRows().map((r) => r[1]));
+    return;
+  }
+  answers[field] = value;
+  save();
+  const ghost = typing();
+  setTimeout(() => {
+    ghost.remove();
+    bubble('them', '<p>Changed. Read it once more before you send it.</p>');
+    renderRoute();
+  }, 650);
+}
+
+/* ---------- confirm, then the login gate inline on the same screen ---------- */
+function confirmSend() {
+  if (window.EA && EA.read().loggedIn) { fileCase(); return; }
+  gatePhone();
+}
+
+function gateBlock(html) {
+  const block = routeTurn.querySelector('#sendBlock');
+  block.className = 'gate';
+  block.innerHTML = html;
+  scrollDown();
+  const first = block.querySelector('input');
+  if (first) first.focus();
+  return block;
+}
+
+function gatePhone() {
+  const block = gateBlock('<b>One step before it goes out</b><p>Your case is filed against your mobile number, so you can track the reply and nobody else can close it for you. No password, no Aadhaar.</p>'
+    + '<input id="gatePhone" type="tel" inputmode="numeric" maxlength="14" placeholder="10-digit mobile number" />'
+    + '<p class="err" id="gateErr">Enter a 10-digit mobile number.</p>'
+    + '<div class="foot"><small>Prototype: no real message is sent.</small><button class="button" type="button" id="gateGo">Send code →</button></div>');
+  const input = block.querySelector('#gatePhone'), err = block.querySelector('#gateErr');
+  if (window.EA) input.value = EA.read().phone || '';
+  const go = () => {
+    const digits = input.value.replace(/\D/g, '');
+    if (digits.length !== 10) { err.classList.add('show'); input.focus(); return; }
+    gateOtp(digits);
+  };
+  block.querySelector('#gateGo').addEventListener('click', go);
+  input.addEventListener('input', () => err.classList.remove('show'));
+  input.addEventListener('keydown', (event) => { if (event.key === 'Enter') go(); });
+}
+
+function gateOtp(phone) {
+  const block = gateBlock('<b>Enter the 6-digit code</b><p>Sent to +91 ' + phone.slice(0, 5) + ' ' + phone.slice(5) + '. <button class="edit" type="button" id="gateBack" style="border:0;background:none;color:var(--blue);font:800 11px Manrope,sans-serif;cursor:pointer;text-transform:uppercase;letter-spacing:.05em">Change number</button></p>'
+    + '<div class="otp">' + Array.from({ length: 6 }, () => '<input type="text" inputmode="numeric" maxlength="1" aria-label="Code digit" />').join('') + '</div>'
+    + '<p class="err" id="gateErr">Enter all six digits.</p>'
+    + '<div class="foot"><small>Prototype: any six digits verify. <span id="gateResend">Resend code in 30s</span></small><button class="button" type="button" id="gateGo">Verify and send →</button></div>');
+  const boxes = [...block.querySelectorAll('.otp input')], err = block.querySelector('#gateErr');
+  const verify = () => {
+    if (!boxes.every((b) => b.value)) { err.classList.add('show'); return; }
+    clearInterval(tick);
+    if (window.EA) EA.patch({ loggedIn: true, phone: phone });
+    fileCase();
+  };
+  boxes.forEach((box, i) => {
+    box.addEventListener('input', () => {
+      box.value = box.value.replace(/\D/g, '').slice(0, 1);
+      err.classList.remove('show');
+      if (box.value && boxes[i + 1]) boxes[i + 1].focus();
+      if (boxes.every((b) => b.value)) verify();
+    });
+    box.addEventListener('keydown', (event) => { if (event.key === 'Backspace' && !box.value && boxes[i - 1]) boxes[i - 1].focus(); if (event.key === 'Enter') verify(); });
+  });
+  let left = 30;
+  const resend = block.querySelector('#gateResend');
+  const tick = setInterval(() => {
+    left -= 1;
+    if (!document.body.contains(resend)) { clearInterval(tick); return; }
+    resend.textContent = left > 0 ? 'Resend code in ' + left + 's' : 'Resend code';
+    if (left <= 0) clearInterval(tick);
+  }, 1000);
+  block.querySelector('#gateGo').addEventListener('click', verify);
+  block.querySelector('#gateBack').addEventListener('click', gatePhone);
+}
+
+/* ---------- filed ---------- */
+function fileCase() {
+  const record = EA.file({
+    title: answers.grievance || issue || 'New grievance',
+    office: domain.office,
+    remedy: domain.remedy ? domain.remedy.title : (domain.warning ? 'Vigilance track' : 'District Magistrate'),
+    days: domain.days,
+    public: isPublic,
+    answers: answers,
+    attachments: files.map((f) => f.name)
+  });
+  filedRecord = record;
+  phase = 'filed';
+  progressText.textContent = 'Filed · ' + record.id;
+  routeTurn.remove();
+  routeTurn = null;
+
+  const days = domain.days;
+  const next = domain.warning
+    ? [['1', 'Acknowledgement', 'You get one acknowledgement with this number, usually within a day.'],
+       ['2', 'Then nothing', 'No Action Taken Report and no updates on this track. Silence here is the procedure, not neglect.'],
+       ['3', 'Keep the number', 'If you are asked for the same bribe again, tell me — a repeat on record is what moves a vigilance file.']]
+    : [['1', 'Routed within 24 hours', 'Your case reaches ' + domain.office + ' with this number attached.'],
+       ['2', 'Officer response due ' + dueDate(days), 'Day 1 of ' + days + ' starts today. Every entry the office makes shows up in My grievances and by SMS.'],
+       ['3', 'If the clock runs out', (domain.remedy ? domain.remedy.title + ' opens, and we prepare it with your dates already in it.' : 'We escalate above this office and tell you exactly who is holding it.')],
+       ['4', 'It closes when you say so', 'An Action Taken Report alone does not close your case. You confirm the fix, or it stays open.']];
+
+  const html = '<div class="route"><header><div class="tick" aria-hidden="true">✓</div><b>Case filed</b><h2>' + esc(record.id) + '</h2><p>Save this number. It is how any office finds your case.</p></header>'
+    + '<div class="block"><div class="said">'
+      + '<div><div><dt>With</dt><dd>' + esc(domain.office) + '</dd></div></div>'
+      + (days ? '<div><div><dt>Clock</dt><dd>Day 1 of ' + days + ' · response due ' + dueDate(days) + '</dd></div></div>' : '<div><div><dt>Clock</dt><dd>No response clock on the vigilance track</dd></div></div>')
+      + '<div><div><dt>Visibility</dt><dd>' + (isPublic ? 'Public — neighbours can add their names' : 'Private to you') + '</dd></div></div>'
+    + '</div></div>'
+    + '<div class="block"><p class="eyebrow">What happens next</p><ul class="next">'
+      + next.map(([n, title, line]) => '<li><span class="n">' + n + '</span><div><b>' + esc(title) + '</b>' + esc(line) + '</div></li>').join('')
+    + '</ul></div>'
+    + '<div class="send"><a class="button" href="dashboard.html">Open my grievances →</a><small>Also visible under My grievances on the homepage, for as long as this session lasts.</small></div></div>';
+
+  const turn = document.createElement('div');
+  turn.className = 'turn';
+  turn.innerHTML = '<span class="av" aria-hidden="true"><i></i><i></i><i></i></span><div class="bubble wide">' + html + '</div>';
+  thread.appendChild(turn);
+
+  reply.disabled = true;
+  reply.placeholder = 'Case filed. Follow it in My grievances.';
+  document.querySelector('#mic').disabled = true;
+  scrollDown();
+}
+
+/* ---------- composer ---------- */
+const form = document.querySelector('#composerForm');
+form.addEventListener('submit', (event) => { event.preventDefault(); send(); });
+reply.addEventListener('input', () => { reply.style.height = 'auto'; reply.style.height = Math.min(reply.scrollHeight, 180) + 'px'; });
+reply.addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); send(); } });
+
+const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null, listening = false, demoTimer = null;
+function startNote(text) { noteText.textContent = text; note.classList.add('show'); micBtn.classList.add('on'); listening = true; }
+function stopNote() { note.classList.remove('show'); micBtn.classList.remove('on'); listening = false; clearTimeout(demoTimer); }
+function appendSpoken(text) { reply.value = (reply.value ? reply.value.trim() + ' ' : '') + text; reply.dispatchEvent(new Event('input')); }
+if (Recognition) {
+  recognition = new Recognition();
+  recognition.lang = 'hi-IN';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.onresult = (event) => {
+    let finalText = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) if (event.results[i].isFinal) finalText += event.results[i][0].transcript;
+    if (finalText) appendSpoken(finalText.trim());
+  };
+  recognition.onerror = () => { noteText.textContent = 'The microphone was not available. You can type instead.'; setTimeout(stopNote, 2200); };
+  recognition.onend = () => { if (listening) stopNote(); };
+}
+function demoDictation() {
+  const words = ['Rajnagar', 'Ward', '4,', 'Madhubani', 'district'];
+  let i = 0;
+  noteText.textContent = 'Voice preview — this browser did not allow the microphone.';
+  (function next() {
+    if (i >= words.length) { stopNote(); return; }
+    appendSpoken(words[i++]);
+    demoTimer = setTimeout(next, 320);
+  })();
+}
+micBtn.addEventListener('click', () => {
+  if (listening) { if (recognition) recognition.stop(); stopNote(); return; }
+  if (recognition) { startNote('Listening. Speak in your own language.'); try { recognition.start(); } catch (e) { stopNote(); } }
+  else { startNote('Voice preview'); demoDictation(); }
+});
+
+const photoInput = document.querySelector('#photoInput'), fileInput = document.querySelector('#fileInput'), dropzone = document.querySelector('#dropzone');
+function renderTray() {
+  tray.innerHTML = files.map((f, i) => '<b>' + esc(f.name) + ' <s>' + sizeOf(f.size) + '</s><button type="button" data-i="' + i + '" aria-label="Remove">×</button></b>').join('');
+  tray.classList.toggle('show', files.length > 0);
+}
+function addFiles(list) { [...list].forEach((f) => files.push(f)); renderTray(); }
+tray.addEventListener('click', (event) => { const b = event.target.closest('button'); if (!b) return; files.splice(+b.dataset.i, 1); renderTray(); });
+document.querySelector('#clip').addEventListener('click', () => fileInput.click());
+photoInput.addEventListener('change', () => addFiles(photoInput.files));
+fileInput.addEventListener('change', () => addFiles(fileInput.files));
+['dragenter', 'dragover'].forEach((type) => document.addEventListener(type, (e) => { e.preventDefault(); dropzone.classList.add('over'); }));
+['dragleave', 'drop'].forEach((type) => document.addEventListener(type, (e) => { e.preventDefault(); if (e.type === 'dragleave' && e.relatedTarget) return; dropzone.classList.remove('over'); }));
+document.addEventListener('drop', (e) => { if (e.dataTransfer && e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
+
+/* ---------- open the conversation ---------- */
+const draft = window.EA ? EA.read().draft : null;
+if (draft && draft.step > 0 && (!issue || draft.issue === issue)) {
+  Object.assign(answers, draft.answers || {});
+  if (draft.domain) domain = domains.find((d) => d.key === draft.domain) || domain;
+  isPublic = !!domain.isPublic;
+  buildSteps();
+  step = Math.min(draft.step, steps.length);
+  for (let i = 0; i < step; i++) {
+    const entry = steps[i];
+    let inner = '<p>' + esc(entry.q) + '</p>';
+    if (entry.hint) inner += '<p class="aside">' + esc(entry.hint) + '</p>';
+    bubble('them', inner);
+    const said = answers[entry.key];
+    if (said) bubble('you', '<p>' + esc(said) + '</p>');
+  }
+  bubble('them', '<p class="aside">Picked up where you left off.</p>');
+  advance();
+} else if (issue) {
+  answers.grievance = issue;
+  isPublic = !!domain.isPublic;
+  buildSteps();
+  ask('क्या हुआ? What happened?', 'Say it the way you would tell a neighbour. I find the office from your words — you never pick a department.', null, () => {
+    setTimeout(() => {
+      bubble('you', '<p>' + esc(issue) + '</p>');
+      step = 0;
+      save();
+      advance();
+    }, 450);
+  });
+} else {
+  buildSteps();
+  advance();
+}
+</script>
+</body>
+</html>
