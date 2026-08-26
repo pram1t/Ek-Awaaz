@@ -145,8 +145,8 @@ textarea:disabled{background:#f4f7fa;color:#8a99a8}
 </style>
 </head>
 <body>
-<script src="api-client.js?v=20260826-3"></script>
-<script src="session.js?v=20260826-3"></script>
+<script src="api-client.js?v=20260826-11"></script>
+<script src="session.js?v=20260826-11"></script>
 <div class="top"><div class="shell">Ek Awaaz · Lodging a grievance</div></div>
 
 <header class="head"><div class="shell head-in">
@@ -173,7 +173,24 @@ textarea:disabled{background:#f4f7fa;color:#8a99a8}
 </div></footer>
 
 <script>
-const issue = new URLSearchParams(location.search).get('issue') || '';
+/* The opening sentence arrives in sessionStorage. A ?issue= parameter is still honoured for
+   any old link, but it is read once and then stripped from the address bar, because a
+   grievance in a URL ends up in history, logs and referrer headers. */
+const issue = (function () {
+  const KEY = 'ekawaaz.handoff';
+  let text = '';
+  try { text = sessionStorage.getItem(KEY) || ''; } catch (e) {}
+  if (!text) {
+    const param = new URLSearchParams(location.search).get('issue');
+    if (param) {
+      text = param;
+      try { sessionStorage.setItem(KEY, text); } catch (e) {}
+    }
+  }
+  if (location.search) history.replaceState(null, '', location.pathname + location.hash);
+  try { sessionStorage.removeItem(KEY); } catch (e) {}
+  return text;
+})();
 
 /* ---------------------------------------------------------------
    Domains. Each one names the office that actually owns the
@@ -390,7 +407,7 @@ async function fetchRoute() {
     text: answers.grievance || issue,
     domain: domain.apiDomain,
     optionKey: domain.optionKey || null,
-    area: answers.location || domain.area || detected,
+    area: answers.location || domain.area || '',
     state: domain.state || 'bihar',
     injury: !!domain.injury,
     language: domain.language || 'en',
@@ -414,6 +431,7 @@ async function fetchRoute() {
   domain.visibility = res.visibility;
   domain.optionKey = res.optionKey || domain.optionKey || null;
   domain.assumed = !!res.assumed;
+  domain.askVisibility = !!res.askVisibility;
   domain.tierChoices = res.tierChoices || null;
   if (res.remedy && res.remedy.line) {
     domain.remedy = { title: res.remedy.title, line: res.remedy.line, teeth: res.remedy.teeth,
@@ -424,8 +442,42 @@ async function fetchRoute() {
   return res;
 }
 
-/* The location Ek Awaaz believes you are in. A prototype stands in for reverse geocoding. */
-const detected = 'Rajnagar Ward 4, Madhubani district, Bihar';
+/* Location. This used to be a hardcoded string presented to the citizen as "Detected as
+   Rajnagar Ward 4, Madhubani district, Bihar" — a place they had never been to, asserted as a
+   detection that never happened. We ask the phone for real coordinates, and if it will not give
+   them we simply ask. We never claim to have detected anything we did not. */
+let coords = null;          /* {lat, lon, accuracy} once the phone gives them */
+let coordsAsked = false;
+
+function askForCoords() {
+  coordsAsked = true;
+  if (!navigator.geolocation) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    let settled = false;
+    const done = (v) => { if (!settled) { settled = true; resolve(v); } };
+    setTimeout(() => done(null), 6000);
+    navigator.geolocation.getCurrentPosition(
+      (p) => { coords = { lat: +p.coords.latitude.toFixed(5), lon: +p.coords.longitude.toFixed(5),
+                          accuracy: Math.round(p.coords.accuracy) }; done(coords); },
+      () => done(null),
+      { enableHighAccuracy: false, timeout: 6000, maximumAge: 600000 }
+    );
+  });
+}
+
+function locationStep() {
+  if (coords) {
+    return { key: 'location', label: 'Location', kind: 'location',
+      q: 'Where is this? Tell me the name of the place.',
+      hint: 'Your phone puts you near ' + coords.lat + ', ' + coords.lon + ' (about ' + coords.accuracy
+          + ' m). I still need the name — village or ward, then block and district — because that is '
+          + 'what decides which office holds the case.' };
+  }
+  return { key: 'location', label: 'Location', kind: 'location',
+    q: 'Where is this? Village or ward, then block and district.',
+    hint: (coordsAsked ? 'Your phone did not share a location, so tell me in words. ' : '')
+        + 'A landmark helps on top of that. This is what decides which office holds the case.' };
+}
 
 const thread = document.querySelector('#thread'), wrap = document.querySelector('#threadWrap');
 const reply = document.querySelector('#reply'), micBtn = document.querySelector('#mic');
@@ -486,7 +538,7 @@ function buildSteps() {
   }
   domain.asks.slice(0, 2).forEach((a, i) => steps.push({ key: 'ask' + i, label: a.label, q: a.q, hint: a.hint, chips: a.chips }));
   if (domain.evidence) steps.push({ key: 'evidence', label: 'Evidence', kind: 'evidence', q: 'Anything to attach?', hint: domain.evidence + ' Use the clip, or drag files onto this screen.', chips: ['Nothing to attach'] });
-  steps.push({ key: 'location', label: 'Location', kind: 'location', q: 'One last thing — is this the right place?', hint: 'Detected as ' + detected + '. This decides which office holds the case, so correct it if it is wrong.', chips: ['Yes, that is right', 'It is somewhere else'] });
+  steps.push(locationStep());
 }
 
 const progressLabels = ['Reading your grievance', 'Narrowing the office', 'Checking what the office will need', 'Locating the jurisdiction', 'Ready to review'];
@@ -516,12 +568,8 @@ function send(text) {
   if (phase === 'route') { editFromMessage(value); return; }
 
   if (entry.kind === 'location') {
-    if (/somewhere else|change|no,/i.test(value)) {
-      steps[step] = { key: 'location', label: 'Location', q: 'Where is this, exactly?', hint: 'Village or ward, then the block and district. A landmark is fine on top of that.' };
-      advance();
-      return;
-    }
-    answers.location = /that is right|yes/i.test(value) ? detected : value;
+    answers.location = value;
+    if (coords) answers.coords = coords.lat + ',' + coords.lon;
   } else if (entry.kind === 'evidence') {
     tray.classList.remove('show');
     tray.innerHTML = '';
@@ -533,6 +581,11 @@ function send(text) {
     classifyRemote(value).then(() => {
       ghost.remove();
       awaiting = false;
+      /* Ask early and quietly, so the answer is ready by the time we reach the location step. */
+      if (!coordsAsked) askForCoords().then(function () {
+        const i = steps.findIndex(function (st) { return st.key === 'location'; });
+        if (i >= 0 && i !== step) steps[i] = locationStep();
+      });
       isPublic = !!domain.isPublic;
       buildSteps();
       step = 0; /* the plan is rebuilt without the opening question */
@@ -625,8 +678,12 @@ function renderRoute() {
       + '<div class="acts"><button class="button" type="button" data-join>Add my name to that case →</button><button class="ghost" type="button" data-nojoin>Mine is separate, file it</button></div></div></div>';
   }
 
-  if (domain.unsure || domain.isPublic) {
-    html += '<div class="block ask-public"><p class="eyebrow">' + (domain.unsure ? 'I am not certain about this one' : 'Public or private') + '</p>'
+  /* Only offer the choice where it is a real choice. A personal case is told, not asked. */
+  if (domain.visibility === 'private') {
+    html += '<div class="block"><p class="eyebrow">Personal case</p>'
+      + '<p>This one is yours alone — nobody else can see it or add their name to it. Shared cases are the ones about a road, a handpump, a ration shop or a feeder.</p></div>';
+  } else if (domain.askVisibility || domain.isPublic) {
+    html += '<div class="block ask-public"><p class="eyebrow">' + (domain.askVisibility ? 'This one could go either way' : 'Public or private') + '</p>'
       + '<p>Should neighbours be able to add their names to this?</p><small>A shared case is harder for an office to close quietly. Your name is never shown to them either way.</small>'
       + '<div class="acts"><button class="ghost' + (isPublic ? ' on' : '') + '" type="button" data-public="yes">Yes, let others join</button><button class="ghost' + (isPublic ? '' : ' on') + '" type="button" data-public="no">No, keep it mine</button></div></div>';
   }
@@ -804,7 +861,7 @@ async function fileCase() {
       optionKey: domain.optionKey || null,
       title: domain.title || local.title,
       summary: domain.summary || local.title,
-      area: answers.location || domain.area || detected,
+      area: answers.location || domain.area || '',
       state: domain.state || 'bihar',
       cell: domain.cell || null,
       sentence: domain.reason,
@@ -933,15 +990,23 @@ if (draft && draft.step > 0 && (!issue || draft.issue === issue)) {
   bubble('them', '<p class="aside">Picked up where you left off.</p>');
   advance();
 } else if (issue) {
+  /* Arriving with a sentence already typed on the home page. This must still go through the
+     model — it used to skip straight to buildSteps(), leaving domain.apiDomain unset, so
+     fetchRoute() returned early and the whole journey silently ran on the local fallback
+     table instead of the API. */
   answers.grievance = issue;
-  isPublic = !!domain.isPublic;
-  buildSteps();
   ask('क्या हुआ? What happened?', 'Say it the way you would tell a neighbour. I find the office from your words — you never pick a department.', null, () => {
     setTimeout(() => {
       bubble('you', '<p>' + esc(issue) + '</p>');
-      step = 0;
-      save();
-      advance();
+      const ghost = typing();
+      classifyRemote(issue).then(() => {
+        ghost.remove();
+        isPublic = !!domain.isPublic;
+        buildSteps();
+        step = 0;
+        save();
+        advance();
+      });
     }, 450);
   });
 } else {

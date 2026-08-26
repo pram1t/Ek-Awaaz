@@ -26,7 +26,10 @@ document.querySelector('#reportForm')?.addEventListener('submit', (event) => {
   const issue = document.querySelector('#issue').value.trim();
   if (!issue) { showToast('Please describe what happened first.'); return; }
   pendingIssue = issue;
-  window.location.href = '/report?issue=' + encodeURIComponent(issue);
+  /* The grievance goes through sessionStorage, never the URL. A URL lands in browser
+     history, server access logs and referrer headers, and this text is personal data. */
+  try { sessionStorage.setItem('ekawaaz.handoff', issue); } catch (e) {}
+  window.location.href = '/report';
 });
 
 /* The speak-instead control is built by voice.js and owns its own clicks. This used to bind
@@ -86,7 +89,8 @@ function followupFor(text) {
 }
 
 function showFollowup(text) {
-  window.location.href = `lodging.html?issue=${encodeURIComponent(text)}`;
+  try { sessionStorage.setItem('ekawaaz.handoff', text); } catch (e) {}
+  window.location.href = '/report';
   return;
   const overlay = document.querySelector('#analysisOverlay');
   const prompt = followupFor(text);

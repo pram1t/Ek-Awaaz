@@ -167,7 +167,11 @@ api.post('/intake', async (req, res) => {
       : null,
     warning: resolved.warning,
     allowNameWithheld: resolved.allowNameWithheld,
-    askVisibility: domain.visibility === 'both' || (c.confidence ?? 1) < 0.6,
+    /* Ask only where visibility is genuinely a choice. A ration complaint is both personal
+       and communal; an unplaced report might go either way. A provident fund claim is
+       nobody else's business, and low classifier confidence does not change that — asking
+       there was the bug. */
+    askVisibility: domain.visibility === 'both' || c.domain === 'other',
     aiSource: c.source
   });
 });
@@ -198,8 +202,10 @@ api.post('/route', async (req, res) => {
     ? db.findMatch({ domain: b.domain, cell, area: b.area, state: ctx.state })
     : null;
 
+  const domainDef = routing.domains[b.domain] || routing.domains.other;
   res.json({
     ...resolved,
+    askVisibility: domainDef.visibility === 'both' || b.domain === 'other',
     cell,
     sentence,
     sentenceSource: source,
