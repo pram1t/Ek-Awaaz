@@ -1,0 +1,6 @@
+.archive
+docs
+node_modules
+server.log
+server.err.log
+data/ekawaaz.db
