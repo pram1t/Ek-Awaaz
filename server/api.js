@@ -12,6 +12,7 @@ import { Router } from 'express';
 import * as db from './db.js';
 import { routing, remedies } from './db.js';
 import { classify, pickOption, plainLanguage, routingSentence, aiAvailable } from './ai.js';
+import { sanitizeInput, detectEmergency, rateLimit, budgetReport, cacheReport, MAX_INPUT_CHARS } from './guardrails.js';
 
 const api = Router();
 const MOCK_OTP = process.env.MOCK_OTP || '123456';
@@ -125,6 +126,17 @@ function remedyFor(remedyKey, ctx = {}) {
   };
 }
 
+/* Model-backed endpoints are rate limited per caller. Reads are not — they cost nothing. */
+function metered(req, res, next) {
+  const who = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.ip || 'local';
+  const gate = rateLimit(who);
+  if (!gate.ok) {
+    res.set('Retry-After', String(gate.retryAfter));
+    return res.status(429).json({ error: gate.reason + ' This is a prototype on a small budget.', retryAfter: gate.retryAfter });
+  }
+  next();
+}
+
 /* =========================== ROUTES =========================== */
 
 api.get('/health', (_req, res) => {
@@ -135,30 +147,46 @@ api.get('/health', (_req, res) => {
     mockOtp: MOCK_OTP,
     storage: db.storageMode,
     storageNote: db.storageNote,
+    budget: budgetReport(),
+    cache: cacheReport(),
+    maxInputChars: MAX_INPUT_CHARS,
     disclosure: 'Independent prototype. Filing, officer actions and identities are simulated. No live government system is contacted.'
   });
 });
 
-/** STEP 1 — the citizen has said what happened. Classify and generate follow-ups. */
-api.post('/intake', async (req, res) => {
-  const text = String(req.body?.text || '').trim();
-  if (text.length < 4) return res.status(400).json({ error: 'Tell us what happened first.' });
+/** STEP 1 — the citizen has said what happened.
+    Sanitise, check it is not an emergency, then classify and write the follow-ups. */
+api.post('/intake', metered, async (req, res) => {
+  const clean = sanitizeInput(req.body?.text);
+  if (clean.tooShort) return res.status(400).json({ error: 'Tell me what happened first.' });
 
-  const c = await classify(text);
+  /* Some things typed into this box are not grievances. Filing a medical emergency as a
+     21-day case would be actively harmful, so we break out before spending a model call. */
+  const emergency = detectEmergency(clean.text);
+  if (emergency) {
+    return res.json({ emergency, text: clean.text, redacted: clean.redacted, aiSource: 'guardrail' });
+  }
+
+  const c = await classify(clean.text);
   const domain = routing.domains[c.domain] || routing.domains.other;
-  const resolved = resolve(c.domain, null, { area: c.area, state: c.state });
+  const resolved = resolve(c.domain, c.optionKey || null, { area: c.area, state: c.state });
 
   res.json({
-    text,
+    text: clean.text,
+    /* Told plainly rather than silently: if we stripped an identifier, the citizen should know. */
+    redacted: clean.redacted,
+    truncated: clean.truncated,
+    injectionIgnored: clean.injection,
     domain: c.domain,
     domainLabel: domain.label,
     confidence: c.confidence,
+    optionKey: c.optionKey || null,
     title: c.title,
     summary: c.summary,
     area: c.area || '',
     state: c.state || '',
     injury: !!c.injury,
-    language: c.language || 'en',
+    language: c.language || 'en-IN',
     asks: c.asks,
     identifiers: resolved.identifiers,
     disambiguator: domain.disambiguator
@@ -167,17 +195,17 @@ api.post('/intake', async (req, res) => {
       : null,
     warning: resolved.warning,
     allowNameWithheld: resolved.allowNameWithheld,
-    /* Ask only where visibility is genuinely a choice. A ration complaint is both personal
-       and communal; an unplaced report might go either way. A provident fund claim is
-       nobody else's business, and low classifier confidence does not change that — asking
-       there was the bug. */
+    /* Ask only where visibility is genuinely a choice. A ration complaint is both personal and
+       communal; an unplaced report might go either way. A provident fund claim is nobody else's
+       business, and low classifier confidence does not change that. */
     askVisibility: domain.visibility === 'both' || c.domain === 'other',
-    aiSource: c.source
+    aiSource: c.source,
+    cached: !!c.cached
   });
 });
 
 /** STEP 3 — the route screen. Office, reason, stronger remedy, and any joinder match. */
-api.post('/route', async (req, res) => {
+api.post('/route', metered, async (req, res) => {
   const b = req.body || {};
   const text = String(b.text || '');
   const answers = Array.isArray(b.answers) ? b.answers : [];
@@ -339,7 +367,7 @@ api.post('/cases/:code/confirm', (req, res) => {
 });
 
 /** SIMULATED officer reply, plus the plain-language rewrite. Explicitly mocked. */
-api.post('/cases/:code/simulate-reply', async (req, res) => {
+api.post('/cases/:code/simulate-reply', metered, async (req, res) => {
   const atr = String(req.body?.atr || '').trim() ||
     'With reference to the captioned grievance, the undersigned is directed to state that the ' +
     'concerned Junior Engineer has inspected the site and necessary rectification of the ' +
