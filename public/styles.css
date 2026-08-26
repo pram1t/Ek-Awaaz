@@ -6,7 +6,11 @@
 .didi-side .eyebrow{margin-bottom:18px}
 .didi-portrait{width:170px;height:170px;position:relative;margin-bottom:22px}
 .didi-portrait::after{content:"";position:absolute;inset:-9px;border:1px dashed #a9bccd;border-radius:50%;pointer-events:none}
-.didi-portrait image-slot{display:block;width:100%;height:100%;box-shadow:0 12px 26px #102a4318}
+.didi-portrait img{display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;object-position:50% 22%;box-shadow:0 12px 26px #102a4318}
+.didi-portrait>span{display:none}
+/* If the photo is missing the block still reads as deliberate, never as broken. */
+.didi-portrait.no-photo{border-radius:50%;background:#e8eefb;display:grid;place-items:center}
+.didi-portrait.no-photo>span{display:block;font:700 64px/1 Hind,serif;color:#1d4ed8}
 .didi-side h2{font-size:34px;line-height:1.2;letter-spacing:-.02em;color:var(--navy);margin:0 0 14px}
 .didi-langs{display:flex;flex-wrap:wrap;gap:7px;margin-top:20px}
 .didi-langs span{background:#fff;border:1px solid #d3dee7;border-radius:999px;padding:6px 11px;font:700 11.5px Manrope,sans-serif;color:#435466}
@@ -35,11 +39,12 @@
 .didi-composer-foot .voice-button{flex:0 0 38px;cursor:pointer}
 @media(max-width:900px){.didi-grid{grid-template-columns:1fr;gap:34px}.didi-side h2{font-size:32px}.didi-portrait{width:130px;height:130px}.didi-composer-foot{flex-wrap:wrap}.didi-composer-foot>span{order:3;flex:1 0 100%}}
 
-.didi-examples{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:11px}
-.didi-examples>span{font:800 9.5px Manrope,sans-serif;letter-spacing:.09em;text-transform:uppercase;color:#8a99a8}
-.didi-examples button{border:1px solid #dbe3ea;background:#fbfcfd;color:#48596b;border-radius:4px;padding:7px 10px;font:600 11.5px Manrope,sans-serif;cursor:pointer;text-align:left;max-width:100%}
-.didi-examples button:hover{border-color:var(--blue);color:var(--blue);background:#fff}
-
-/* Didi avatar: CSS only, no asset and no third-party scaffold. */
-.didi-portrait{width:74px;height:74px;border-radius:50%;display:grid;place-items:center;background:#e8eefb;border:2px solid #1d4ed8;overflow:hidden}
-.didi-portrait span{font:700 34px/1 Hind,serif;color:#1d4ed8}
+.didi-examples{margin-top:14px}
+.didi-examples-label{margin:0 0 9px;font:600 12px Manrope,sans-serif;color:#5d6b79}
+.didi-examples-grid{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:8px}
+.didi-examples-grid button{display:flex;align-items:flex-start;gap:8px;min-height:56px;border:1px solid #dbe3ea;background:#fbfcfd;color:#3d4d5d;border-radius:4px;padding:12px 13px;font:500 13px/1.4 Manrope,sans-serif;cursor:pointer;text-align:left;transition:border-color .15s,background .15s}
+.didi-examples-grid button::before{content:"“";flex:0 0 auto;font:700 20px/0.8 Hind,serif;color:#a9bccd}
+.didi-examples-grid button:hover{border-color:var(--blue);background:#fff}
+.didi-examples-grid button:hover::before{color:var(--blue)}
+.didi-examples-grid button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media(max-width:560px){.didi-examples-grid{grid-template-columns:1fr}}

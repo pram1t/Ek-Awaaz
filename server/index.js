@@ -63,7 +63,7 @@ app.use(express.static(PUBLIC, {
   redirect: false,
   setHeaders(res, filePath) {
     if (/\.(css|js|woff2?|png|jpe?g|svg)$/.test(filePath)) {
-      res.set('Cache-Control', 'public, max-age=3600');
+      res.set('Cache-Control', process.env.NODE_ENV === 'production' ? 'public, max-age=3600' : 'no-cache');
     }
   }
 }));
@@ -72,6 +72,14 @@ app.use(express.static(PUBLIC, {
 
 app.use((req, res) => {
   if (req.path.startsWith('/api')) return res.status(404).json({ error: 'No such endpoint.' });
+
+  /* A missing asset must stay a real 404. Serving the app shell for a .jpg or .css means the
+     browser receives HTML with a 200-shaped body, so <img onerror> never fires and a missing
+     image fails silently instead of showing its fallback. Only navigations get the shell. */
+  const looksLikeAsset = path.extname(req.path) !== '';
+  const wantsHtml = (req.get('accept') || '').includes('text/html');
+  if (looksLikeAsset || !wantsHtml) return res.status(404).type('txt').send('Not found');
+
   res.status(404).sendFile(path.join(PUBLIC, 'index.html'));
 });
 
