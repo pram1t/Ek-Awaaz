@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20260826-10" />
+    <link rel="stylesheet" href="styles.css?v=20260826-12" />
     <style>
       /* Temporary case visual: deliberately contained and non-photographic. */
       .case-image { overflow: hidden; background: #e8f0f6; color: #102a43; }
@@ -306,7 +306,7 @@
     <section class="auth-overlay" id="authOverlay" aria-hidden="true"><div class="auth-card" role="dialog" aria-modal="true" aria-labelledby="authTitle"><button class="auth-close" id="authClose" type="button" aria-label="Close account screen">×</button><div class="auth-brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span><strong>एक आवाज़</strong><small>EK AWAAZ</small></span></div><p class="eyebrow">Secure citizen access</p><h2 id="authTitle">Sign in to Ek Awaaz</h2><p class="auth-subtitle">Track your cases, add your voice, and receive updates.</p><div class="auth-tabs"><button class="auth-tab active" id="signInTab" type="button">Sign in</button><button class="auth-tab" id="signUpTab" type="button">Create account</button></div><form class="auth-form" id="signInForm"><label for="loginId">Mobile number or username</label><input id="loginId" type="text" placeholder="Enter mobile number or username" autocomplete="username" required /><label for="loginPassword">Password</label><input id="loginPassword" type="password" placeholder="Enter your password" autocomplete="current-password" required /><div class="auth-actions"><button class="button primary" type="submit">Enter <span>→</span></button><button class="forgot-button" type="button" id="forgotPassword">Forgot password?</button></div><p class="auth-note">For this prototype, no real login credentials are collected.</p></form><form class="auth-form hidden" id="signUpForm"><div class="form-section-title">Personal details</div><label for="signupName">Full name</label><input id="signupName" type="text" placeholder="Enter your full name" required /><label for="signupGender">Gender</label><select id="signupGender" required><option value="">Select gender</option><option>Female</option><option>Male</option><option>Other</option><option>Prefer not to say</option></select><div class="form-section-title">Address</div><label for="signupAddress">Address</label><textarea id="signupAddress" placeholder="House / street / village or town" rows="2" required></textarea><label for="signupLocality">Locality <span>(optional)</span></label><input id="signupLocality" type="text" placeholder="Locality or landmark" /><div class="form-row"><div><label for="signupCountry">Country</label><select id="signupCountry" required><option>India</option></select></div><div><label for="signupState">State</label><select id="signupState" required><option value="">Select state</option><option>Bihar</option><option>Delhi</option><option>Maharashtra</option><option>Rajasthan</option><option>Uttar Pradesh</option><option>West Bengal</option></select></div></div><div class="form-row"><div><label for="signupDistrict">District</label><select id="signupDistrict" required><option value="">Select district</option><option>Patna</option><option>Rajnagar</option><option>New Delhi</option><option>Pune</option><option>Jaipur</option></select></div><div><label for="signupPincode">Pincode <span>(optional)</span></label><input id="signupPincode" type="text" inputmode="numeric" placeholder="6-digit pincode" /></div></div><div class="form-section-title">Contact details</div><label for="signupMobile">Mobile number</label><input id="signupMobile" type="tel" inputmode="tel" placeholder="Enter mobile number" required /><label for="signupPhone">Phone number <span>(optional)</span></label><input id="signupPhone" type="tel" inputmode="tel" placeholder="Landline number" /><label for="signupEmail">Email address</label><input id="signupEmail" type="email" placeholder="you@example.com" required /><div class="captcha-box"><div class="captcha-code" id="captchaCode">EK7A2</div><button type="button" id="refreshCaptcha" aria-label="Refresh captcha">↻</button><input id="signupCaptcha" type="text" placeholder="Enter captcha" autocomplete="off" required /></div><button class="button primary" type="submit">Create account <span>→</span></button><p class="auth-note">Your details are used to manage your cases and updates. This prototype does not save them.</p></form></div></section>
     <footer id="footer"><div class="shell footer-grid"><div><a class="brand footer-brand" href="#home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span><strong>एक आवाज़</strong><small>EK AWAAZ</small></span></a><p>Citizen grievance routing &amp; remedy platform.</p></div><div><b>Prototype disclosure</b><p>This is an independent hackathon prototype, not an official government product. Filing, officer actions, dates, and identities shown here are simulated.</p></div><div><b>Built around people</b><p>Accessible, multilingual, privacy-conscious, and designed for low-bandwidth use.</p></div></div></footer>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="app.js?v=20260826-10"></script>
+    <script src="app.js?v=20260826-12"></script>
   <script>
       (function () {
         const stack = document.querySelector('#caseStack'), wipe = document.querySelector('#caseWipe');
@@ -319,9 +319,10 @@
         });
       })();
 </script>
-<script src="voice.js?v=20260826-10"></script>
-<script src="api-client.js?v=20260826-10"></script>
-<script src="session.js?v=20260826-10"></script>
+<script src="i18n.js?v=20260826-12"></script>
+<script src="voice.js?v=20260826-12"></script>
+<script src="api-client.js?v=20260826-12"></script>
+<script src="session.js?v=20260826-12"></script>
 <script>
   /* Login gate + join-a-case, replacing the old prototype auth stubs. */
   (function () {

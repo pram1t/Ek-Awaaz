@@ -113,10 +113,11 @@ const KEYWORDS = [
   ['office.inaction', /office|clerk|दफ्तर|दफ़्तर|no reply|pending|file stuck|sarkari|चक्कर/i]
 ];
 
-const GENERIC_ASKS = [
-  { q: 'Where exactly is this?', hint: 'A landmark is enough — a school, a shop, a bus stop.', ph: 'Example: near the primary school gate' },
-  { q: 'Since when?', hint: 'An approximate month is fine.', ph: 'Example: since the first rain in June' },
-  { q: 'Has it cost you anything, or hurt anyone?', hint: 'Say no if it has not.', ph: 'Example: my scooter axle broke on 4 August' }
+/* Last resort only, for a domain with no hand-written questions. Every domain in
+   routing.json has its own, so this should never actually be reached. */
+const LAST_RESORT = [
+  { q: 'Where exactly is this?', hint: 'A landmark is enough. A school, a shop, a bus stop.', ph: 'Example: near the primary school gate' },
+  { q: 'Since when?', hint: 'An approximate month is fine.', ph: 'Example: since the first rain in June' }
 ];
 
 function fallbackClassify(text) {
@@ -134,7 +135,9 @@ function fallbackClassify(text) {
     state: '',
     injury: /injur|hurt|accident|fell|fract|गिर|चोट|घायल|damag|broke|broken|टूट/i.test(t),
     language: devanagari ? 'hi-IN' : 'en-IN',
-    asks: GENERIC_ASKS.slice(0, 2),
+    /* The hand-written questions for this exact domain, not a generic set. This is what
+     makes a budget-exhausted demo still look like a product. */
+    asks: (routing.domains[hit ? hit[0] : 'other'] || {}).asks || LAST_RESORT,
     source: 'fallback'
   };
 }

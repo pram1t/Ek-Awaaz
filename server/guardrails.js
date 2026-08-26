@@ -202,7 +202,10 @@ const PRICES = {
 };
 const DEFAULT_PRICE = { in: 0.60, out: 2.40 }; // deliberately pessimistic for unknown models
 
-const CEILING_USD = Number(process.env.OPENAI_BUDGET_USD || 4);
+/* A circuit breaker against a runaway loop, not a rationing device. Set close to the whole
+   credit: the rate limiter is what protects the budget in normal use, and a judge must never
+   meet a throttled demo. */
+const CEILING_USD = Number(process.env.OPENAI_BUDGET_USD || 4.8);
 
 const spend = { usd: 0, inTokens: 0, outTokens: 0, calls: 0, blocked: 0, startedAt: new Date().toISOString() };
 
