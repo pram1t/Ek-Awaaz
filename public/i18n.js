@@ -28,9 +28,11 @@
       'nav.new': "New report",
       'didi.thread1': "Tell me what happened, or ask me what you are owed.",
       'didi.thread2': "I will find who owns the problem, what clock that office is on, and what you can do if they miss it. You see all of it before anything is sent.",
+      'nav.home': "Home",
+      'nav.faq': "FAQs / Help",
       'nav.how': 'How it works',
       'nav.near': 'Near you',
-      'nav.cases': 'My cases',
+      'nav.cases': 'My grievances',
       'nav.help': 'Help',
       'nav.signin': 'My cases',
       'lang.label': 'Language',
@@ -94,6 +96,8 @@
     },
 
     hi: {
+      'nav.home': "होम",
+      'nav.faq': "सामान्य प्रश्न / मदद",
       'nav.how': 'यह कैसे काम करता है',
       'nav.near': 'आपके पास',
       'nav.cases': 'मेरी शिकायतें',

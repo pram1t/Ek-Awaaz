@@ -271,7 +271,16 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && open) stop(false); });
     window.addEventListener('pagehide', () => { if (open) stop(false); });
 
-    return { start, stop, el: host, button: btn, panel: panel, supported: !!SR,
+    /* Let the page follow the site language selector without rebuilding the control. */
+    function setLang(code) {
+      const i = LANGS.findIndex((l) => l.code === code);
+      if (i < 0 || i === langIndex) return;
+      langIndex = i;
+      lang.textContent = LANGS[i].label;
+      if (rec) rec.lang = code;
+    }
+
+    return { start, stop, setLang, el: host, button: btn, panel: panel, supported: !!SR,
              isOpen: function () { return host.classList.contains('ea-open'); } };
   }
 
