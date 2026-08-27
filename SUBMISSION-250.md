@@ -1,9 +1,15 @@
-Between 2022 and 2024, CPGRAMS "resolved" roughly 70 million grievances. Citizen satisfaction stayed barely above 50%, and DARPG's own study of 5 lakh recurring grievances found that fast closure does not mean relief. Three reasons, and what we changed.
+Seventy million grievances "resolved" between 2022 and 2024. Satisfaction barely above 50%. DARPG's own study of five lakh recurring cases: fast closure is not relief.
 
-**Reach.** CPGRAMS routes to 92 central organisations and 36 integrated state portals — and still cannot reach a Gram Panchayat or a municipal body. Local government is Entry 5 of the State List, so a pothole was never a category here, and no standard Panchayat API exists anywhere in India. A collapsed anganwadi roof has nowhere to go. We route across five constitutional tiers, naming the officer answerable and the provision.
+CPGRAMS asks you to name your problem's owner from 92 organisations, then a category, then a sub-category. Ek Awaaz never asks.
 
-**Duplicates.** Fifty households reporting one road file fifty cases. Volume, not classification, is what breaks quality: DARPG had to add a spam box, auto-closure for frivolous cases, and blocking of habitual complainants. Ek Awaaz co-signs instead. One case, fifty names, one report — more citizens filing means less officer work.
+Speak, in any of eleven Indian languages — detected from your voice, never chosen from a menu. Smiti Didi asks two or three questions and answers aloud in the same one. She never asks for an Aadhaar, PAN or account number, and an emergency breaks out to 112.
 
-**Day 22.** The 21-day target comes from an office memorandum, not a law. When the Action Taken Report says "disposed" and nothing changed, the citizen has nothing left. We show what was always there: the RBI Ombudsman can award ₹20 lakh; Section 244A owes you interest; NFSA section 15 puts an officer in your district. Twelve mapped, eleven live — named before you file.
+**Routing across five constitutional tiers** — Panchayat, municipal, state, central scheme, Union — naming the officer answerable. A pothole was never a CPGRAMS category: local government is Entry 5 of the State List, and no Panchayat API exists in India.
 
-Built with Codex; Smiti Didi runs on the OpenAI API, by voice, in eleven Indian languages. Filing is simulated, and every case says so.
+**The stronger remedy you already hold, named before you file.** Twelve mapped, eleven live, gated by state: the RBI Ombudsman can award ₹20 lakh; NFSA section 15 puts an officer in your district.
+
+**Fifty duplicate complaints collapsed into one case with fifty names** — one report for the officer, escalating automatically at the threshold. One signature per verified mobile, enforced in the database. Two taps to join a nearby case.
+
+**And it refuses to close.** An officer's report reaches "awaiting your confirmation" and no further; "not fixed" reopens the same case; an overdue clock says by how much.
+
+Built with Codex; Smiti runs on the OpenAI API. Filing is simulated, and every case says so.
