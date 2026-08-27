@@ -308,11 +308,11 @@
    darker, less saturated relative of that same ivory — #6f5b45 at 9% reads as the paper itself in
    shadow, which is what keeps it monochrome instead of introducing a second colour.
 
-   Tiled smaller than the joinder panel — auto 34px against 46px — because this section is denser:
-   a portrait, a heading, four prompts and a live chat card. A large motif behind that competes; a
-   small one repeated many times reads as woven paper.
+   Tiled at auto 56px. The lace medallion carries far more internal detail than the joinder
+   panel's mandala, so shrinking it to the joinder's 46px turned the rings to mush; 56px keeps the
+   lace readable while still repeating many times across the width.
 
-   "auto 34px" again, never a fixed width: the width follows the artwork's own aspect at that
+   "auto 56px" and never a fixed width: the width follows the artwork's own aspect at that
    height, so the grid cannot squash the motif or letterbox it. */
 .didi-section{
   position: relative; isolation: isolate;
@@ -321,7 +321,7 @@
   content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background-color: #6f5b45;
   opacity: .09;
-  -webkit-mask: url("/img/ornament/motifs-663.svg") repeat 0 0 / auto 34px;
-  mask: url("/img/ornament/motifs-663.svg") repeat 0 0 / auto 34px;
+  -webkit-mask: url("/img/ornament/circle-lace-ornament-851.svg") repeat 0 0 / auto 56px;
+  mask: url("/img/ornament/circle-lace-ornament-851.svg") repeat 0 0 / auto 56px;
 }
 .didi-section > *{ position: relative; z-index: 1 }
