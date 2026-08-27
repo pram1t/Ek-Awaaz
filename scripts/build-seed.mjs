@@ -300,7 +300,7 @@ push({
   area: 'Kochi', state: 'kerala', cell: null,
   office: 'Appellate Authority of your operator',
   visibility: 'private', supporters: 1, target: null, status: 'open',
-  escalates_to: 'TRAI', recurrence: 1, filed_on: '2026-07-28',
+  escalates_to: 'TRAI', recurrence: 1, filed_on: '2026-08-22',
   phone: '9812300017', citizen_name: 'Anitha'
 });
 
@@ -325,7 +325,7 @@ push({
   office: 'Chief Vigilance Officer of the department concerned',
   reason: 'This is a vigilance matter, and it has no 21-day service clock — a different track entirely.',
   visibility: 'private', supporters: 1, target: null, status: 'open',
-  escalates_to: 'State Vigilance Commission', recurrence: 1, filed_on: '2026-08-04',
+  escalates_to: 'State Vigilance Commission', recurrence: 1, filed_on: '2026-08-25',
   phone: '9812300019'
 });
 
@@ -338,17 +338,17 @@ const wall = [
   ['EA-2026-07298', 'infra.power', 'Nine-hour daily cuts through the harvest',
    'Warangal rural', 'telangana', 'Executive Engineer, TGSPDCL', 84, 100, 'open', '2026-07-06'],
   ['EA-2026-07355', 'supply.ration', 'Fair price shop closed on issue days',
-   'Purnia district', 'bihar', 'District Grievance Redressal Officer under the National Food Security Act', 26, 40, 'open', '2026-07-22'],
+   'Purnia district', 'bihar', 'District Grievance Redressal Officer under the National Food Security Act', 26, 40, 'open', '2026-08-20'],
   ['EA-2026-07401', 'infra.water', 'Sewage standing in the lane for eleven days',
    'Ward 22, Kanpur', 'uttar pradesh', 'Executive Engineer, water supply, Kanpur', 44, 50, 'awaiting_confirmation', '2026-06-28'],
   ['EA-2026-07478', 'work.mgnrega', 'Job cards not issued after four months of applications',
    'Dumka district', 'jharkhand', 'Programme Officer, Dumka block', 31, 50, 'open', '2026-05-19'],
   ['EA-2026-07520', 'infra.road', 'Unlit level crossing approach, two near misses',
-   'Bhusawal', 'maharashtra', 'Divisional Railway Manager via RailMadad', 19, 40, 'open', '2026-08-01'],
+   'Bhusawal', 'maharashtra', 'Divisional Railway Manager via RailMadad', 19, 40, 'open', '2026-08-18'],
   ['EA-2026-07588', 'other', 'Primary school without a functioning toilet',
    'Koraput district', 'odisha', 'Block Education Officer', 57, 70, 'escalated', '2026-04-11'],
   ['EA-2026-07640', 'infra.power', 'Street lighting out across four lanes',
-   'Ward 6, Ludhiana', 'punjab', 'Executive Engineer, PSPCL', 23, 40, 'open', '2026-07-30'],
+   'Ward 6, Ludhiana', 'punjab', 'Executive Engineer, PSPCL', 23, 40, 'open', '2026-08-14'],
   ['EA-2026-07702', 'infra.water', 'Overhead tank not cleaned in two years',
    'Ward 14, Guwahati', 'assam', 'Executive Engineer, water supply, Guwahati', 16, 30, 'open', '2026-08-09']
 ];

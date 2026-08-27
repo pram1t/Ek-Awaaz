@@ -266,7 +266,13 @@ export function shape(row) {
     asks: JSON.parse(row.asks_json || '[]'),
     answers: JSON.parse(row.answers_json || '[]'),
     ageDays: age,
-    clock: row.status === 'confirmed_fixed' ? null : `Day ${Math.min(age + 1, 21)} of 21`,
+    /* Capping the day count at 21 made a case filed five months ago read "Day 21 of 21" —
+       a number that says the clock is nearly up when it ran out long ago. That is exactly the
+       kind of tidy, wrong figure this product exists to argue against, so an expired clock
+       says by how much it expired rather than pretending to still be running. */
+    clock: row.status === 'confirmed_fixed' ? null
+      : age > 21 ? `${age - 21} days past the 21-day limit`
+      : `Day ${age + 1} of 21`,
     overdue: row.status !== 'confirmed_fixed' && age > 21,
     seeded: !!row.seeded
   };
