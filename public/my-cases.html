@@ -62,7 +62,7 @@
 </head>
 <body>
   <div class="top"><div class="shell">Ek Awaaz · My grievances</div></div>
-  <header class="header"><div class="shell header-inner"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span><strong>एक आवाज़</strong><small>EK AWAAZ</small></span></a><div class="header-right"><span>Signed in as a prototype user</span><span data-lang-mount></span><a class="button" href="/" data-i18n="nav.new">New grievance</a></div></div></header>
+  <header class="header"><div class="shell header-inner"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span><strong>एक आवाज़</strong><small>EK AWAAZ</small></span></a><div class="header-right"><span>Signed in as a prototype user</span><a class="button" href="/">New grievance</a></div></div></header>
   <main class="main"><div class="shell"><div class="page-bar">
       <div><h1>Your cases</h1><p class="page-sub">2 open · 1 resolved · Last officer update 19 Aug 2026</p></div>
       <div class="tabs"><button type="button" class="entry-card tab active" data-target="yourCases">Your grievances <b>3</b></button><button type="button" class="entry-card tab" data-target="publicCases">Public cases <b>2</b></button></div>
@@ -336,7 +336,6 @@ const cases = {
   .supported-row .sbar i{display:block;height:100%;background:var(--blue)}
   @media(max-width:860px){.supported-row{grid-template-columns:1fr 1fr}}
 </style>
-<script src="i18n.js?v=20260826-12"></script>
 <script src="api-client.js?v=20260826-12"></script>
 <script src="session.js?v=20260826-12"></script>
 <script>
@@ -347,7 +346,7 @@ const cases = {
     const state = EA.read();
 
     if (!state.loggedIn) {
-      main.innerHTML = '<div class="ea-gate"><p class="eyebrow" data-i18n="cases.title">My grievances</p><h2>Log in to see your cases</h2><p>Enter your mobile number and the code we send you. Cases you filed and cases you support both live here.</p><button class="button" type="button" id="gateLogin">Log in with mobile&nbsp; →</button></div>';
+      main.innerHTML = '<div class="ea-gate"><p class="eyebrow">My grievances</p><h2>Log in to see your cases</h2><p>Enter your mobile number and the code we send you. Cases you filed and cases you support both live here.</p><button class="button" type="button" id="gateLogin">Log in with mobile&nbsp; →</button></div>';
       const start = () => EA.require('Your grievances are tied to your mobile number.', () => window.location.reload());
       document.querySelector('#gateLogin').addEventListener('click', start);
       start();
