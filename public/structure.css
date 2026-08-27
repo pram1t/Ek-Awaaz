@@ -112,14 +112,24 @@
 .panel-card:hover .body .go{ color: var(--madder) }
 
 /* ── 6 · the join panel ─────────────────────────────────────────────────────
-   Deeper ground and a blur behind it rather than a pattern. The count sitting on this panel
-   is the loudest number on the page and it needs something solid under it, not a texture
-   competing with it at the same contrast. */
-.joint-case, .join-dark{ position: relative; isolation: isolate; background: #1a120d }
+   The ground is a deep radial rather than a flat fill, so the count has something solid under
+   it. Over that, the mehndi mandala tiled small — monochrome, and struck in the panel's own
+   hue lifted a few percent rather than in a second colour, which is what keeps it reading as
+   texture in the surface instead of as a graphic laid on top.
+
+   The tile is sized "auto 46px": the width follows the artwork's own aspect at that height, so
+   the grid never squashes the motif and never letterboxes it. The same rule that fixed the
+   border bands. */
+.joint-case, .join-dark{
+  position: relative; isolation: isolate;
+  background: radial-gradient(120% 92% at 16% 26%, #2b1f17 0%, #1c140e 56%, #150f0a 100%);
+}
 .joint-case::before, .join-dark::before{
   content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: radial-gradient(120% 90% at 18% 30%, #2e2118 0%, #1a120d 58%, #140e0a 100%);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  background-color: var(--cream);
+  opacity: .075;
+  -webkit-mask: url("/img/ornament/mehndi-and-sangeet-595.svg") repeat 0 0 / auto 46px;
+  mask: url("/img/ornament/mehndi-and-sangeet-595.svg") repeat 0 0 / auto 46px;
 }
 .joint-case > *, .join-dark > *{ position: relative; z-index: 1 }
 
