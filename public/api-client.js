@@ -46,6 +46,9 @@
     /* One turn of the intake: the next question, given what has been said. */
     nextQuestion: (payload) => call('/next', { method: 'POST', body: payload }),
 
+    /* Our own fixed lines, in the citizen's language. */
+    say: (lines, lang) => call('/say', { method: 'POST', body: { lines, lang } }),
+
     /* Speech cannot go through call() — that parses JSON, and /tts answers with audio bytes.
        Returns a blob URL the caller plays, or an error it can ignore: if Smiti cannot be heard
        the words are still on screen, so silence is an acceptable failure and a dialog is not. */

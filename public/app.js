@@ -51,9 +51,9 @@ function closeAuth() { authOverlay.classList.remove('open', 'signup-mode'); auth
 
 const routingRules = [
   { keywords: ['road', 'pothole', 'street', 'drain', 'village'], office: 'Block Development Officer, Rajnagar block', route: 'A village road is the Panchayat’s job, so this does not go to Delhi.', remedy: '34 households have already reported this road — add your name instead of filing a new case.' },
-  { keywords: ['pf', 'provident', 'epf', 'uan', 'pension', 'employer'], office: 'EPFO grievance officer', route: 'EPFiGMS → regional PF office', remedy: 'If unresolved, the EPF escalation and appeal route may apply.' },
+  { keywords: ['pf', 'provident', 'epf', 'uan', 'pension', 'employer'], office: 'EPFO grievance officer', route: 'EPFiGMS → regional PF office', remedy: 'If nothing moves, you can take it higher inside EPFO and then appeal.' },
   { keywords: ['bank', 'debit', 'transaction', 'upi', 'fraud', 'account', 'loan'], office: 'Bank nodal officer', route: 'Bank complaint → RBI Ombudsman after 30 days', remedy: 'The RBI Integrated Ombudsman Scheme may be a stronger next remedy.' },
-  { keywords: ['ration', 'food', 'pds', 'wheat', 'rice'], office: 'District Grievance Redressal Officer', route: 'State ration department → food law grievance officer', remedy: 'The food law gives you a district officer who must answer.' }
+  { keywords: ['ration', 'food', 'pds', 'wheat', 'rice'], office: 'District Grievance Redressal Officer (the food law puts one in every district)', route: 'State ration department → food law grievance officer', remedy: 'The food law gives you a district officer who must answer.' }
 ];
 
 function analyseIssue(text) {

@@ -105,11 +105,11 @@ console.log('\nshe actually produces audio');
   ok(roman.lang === 'en-IN', 'it is rerouted to en-IN instead of erroring', String(roman.lang));
 }
 
-console.log('\nevery language the picker offers can actually be spoken');
+console.log('\nevery language we support can actually be spoken');
 
 {
-  /* The picker lists eleven locales. If one of them cannot produce audio the list is a lie, so each
-     is asked for a real sentence in its own script and checked for an MP3 frame header. */
+  /* Eleven locales are claimed. If one cannot produce audio the claim is a lie, so each is asked
+     for a real sentence in its own script and checked for an actual MP3 frame header. */
   const SAY = {
     'en-IN': 'Your grievance has been recorded.',
     'hi-IN': 'आपकी शिकायत दर्ज हो गई है।',
@@ -134,11 +134,15 @@ console.log('\nevery language the picker offers can actually be spoken');
      failed.length ? 'failing: ' + failed.join(', ') : '11/11');
 
   const voiceSrc = await fetch(BASE + '/voice.js').then((r) => r.text());
-  const offered = (voiceSrc.match(/code: '[a-z]{2}-IN'/g) || []).length;
-  ok(offered === 11, 'the picker offers exactly the 11 that work', offered + ' listed');
+  ok(!/createElement('select')/.test(voiceSrc) && !/const LANGS/.test(voiceSrc),
+     'there is no language picker at all', 'the language is detected from the audio');
   ok(/EAAPI\.listen\(blob/.test(voiceSrc), 'Saaras transcribes when the browser cannot',
      'most Indic languages have no browser recogniser at all');
-  ok(/createElement\('select'\)/.test(voiceSrc), 'the language control is a select, not a cycling chip');
+  ok(/EAAPI\.listen\(blob\)/.test(voiceSrc) && !/EAAPI\.listen\(blob,/.test(voiceSrc),
+     'the audio is sent with no language hint', 'Sarvam detects it and reports what it heard');
+  ok(!/rec = new SR\(\)/.test(voiceSrc),
+     'the browser recogniser no longer produces answers',
+     'it returned "I’m going to organ body control" for an Odia sentence');
 }
 
 console.log('\nthe turn ends when the speaking does');
@@ -166,8 +170,8 @@ console.log('\nthe turn ends when the speaking does');
 
   ok(/MAX_TURN_MS = \d+/.test(v), 'a turn cannot run forever',
      (v.match(/MAX_TURN_MS = (\d+)/) || [])[1] + 'ms cap');
-  ok(/use.textContent = 'Send now'/.test(v), 'the button is an override, not a requirement',
-     'it used to read "Use this" and be the only way to send');
+  ok(!/ea-voice-use/.test(v), 'there is no send button at all',
+     'silence ends the turn; a button for it was one gesture too many');
 
   const page = await fetch(BASE + '/report').then((r) => r.text());
   ok(!/class="legal"/.test(page), 'the composer footnote is gone');

@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Tiro+Devanagari+Hindi&family=Mukta:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20260826-12" />
+    <link rel="stylesheet" href="styles.css?v=78ee315348" />
     <style>
       /* Temporary case visual: deliberately contained and non-photographic. */
       .case-image { overflow: hidden; background: #f5ede0; color: #241a14; }
@@ -218,10 +218,40 @@
         .concern-track > .category-card { flex: 0 0 100%; padding: 24px; }
         .category-card h3 { font-size: 23px; }
       }
+    
+      /* ── before and after, on a loop ──────────────────────────────────────────
+         Four cases rather than one: a single pair reads as an anecdote, four reads as a pattern.
+         The rail moves with transform so it runs on the compositor; left/opacity would stutter on
+         a phone. Nothing here animates when the reader has asked for less motion. */
+      .before-after { position: relative; display: block; }
+      .ba-viewport { overflow: hidden; }
+      .ba-rail { display: flex; will-change: transform; transition: transform .6s cubic-bezier(.22,.61,.36,1); }
+      .ba-slide { flex: 0 0 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-content: start; }
+      .ba-slide .ba-tag { grid-column: 1 / -1; margin: 10px 0 0; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; }
+      .ba-tag b { font: 800 13px Mukta, sans-serif; color: #241a14; }
+      .ba-tag span { font-size: 11.5px; color: #7a6455; }
+      .evidence img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      .evidence::before { display: none; }
+      .after-evidence figcaption span { color: #b9e0c4; }
+      .ba-dots { display: flex; gap: 7px; justify-content: center; margin-top: 12px; }
+      .ba-dots button { width: 26px; height: 4px; padding: 0; border: 0; border-radius: 2px; background: #d8c9b4; cursor: pointer; transition: background .25s ease; }
+      .ba-dots button[aria-selected="true"] { background: #8c2416; }
+      @media (max-width: 800px) {
+        .ba-slide { grid-template-columns: 1fr; gap: 10px; }
+      }
+      @media (prefers-reduced-motion: reduce) { .ba-rail { transition: none; } }
+
+      /* the case cards: the before photograph, with the plate over it */
+      .case-image.has-photo { position: relative; }
+      .case-image .case-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      .case-image.has-photo .plate { background: linear-gradient(to top, #241a14f2 0%, #241a1499 45%, #241a1400 100%); border: 0; color: #fff; inset: auto 0 0 0; padding: 26px 28px 24px; }
+      .case-image.has-photo .plate b { color: #fff; }
+      .case-image.has-photo .plate span { color: #e7d9c6; }
+      .case-image.has-photo > p { position: absolute; left: 28px; bottom: 8px; margin: 0; color: #e7d9c6; font-size: 11px; z-index: 1; }
     </style>
-    <link rel="stylesheet" href="/heritage.css?v=20260827-h1" />
-  <link rel="stylesheet" href="/structure.css?v=20260827-s1" />
-  <link rel="stylesheet" href="/panels.css?v=20260827-p1" />
+    <link rel="stylesheet" href="/heritage.css?v=78ee315348" />
+  <link rel="stylesheet" href="/structure.css?v=78ee315348" />
+  <link rel="stylesheet" href="/panels.css?v=78ee315348" />
 </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -238,9 +268,9 @@
     <main id="main">
       <section class="hero has-orn" id="home">
         <div class="shell">
-          <div class="before-after" aria-label="A grievance case before and after repair">
-            <figure class="evidence before-evidence"><figcaption><span>Before</span><b>Reported 12 March 2026</b></figcaption><div class="evidence-empty"><i>⌖</i><p>Photo evidence: road damage before repair</p></div></figure>
-            <figure class="evidence after-evidence"><figcaption><span>After</span><b>Confirmed by 41 households · 2 April 2026</b></figcaption><div class="evidence-empty"><i>✓</i><p>Photo evidence: repair confirmed by residents</p></div></figure>
+          <div class="before-after" data-case-slider aria-label="Four grievances, before and after they were fixed" aria-roledescription="carousel">
+            <div class="ba-viewport"><div class="ba-rail" id="baRail"><div class="ba-slide" role="group" aria-label="Panchayat road, Rajnagar Ward 4"><figure class="evidence before-evidence"><figcaption><span>Before</span><b>Reported 12 March 2026</b></figcaption><img src="/img/cases/road-before.webp" alt="A broken village road with deep potholes, before repair" width="1100" height="760" loading="eager" fetchpriority="high" decoding="async" /></figure><figure class="evidence after-evidence"><figcaption><span>After</span><b>Confirmed by 41 households · 2 April 2026</b></figcaption><img src="/img/cases/road-after.webp" alt="The same stretch of road, resurfaced" width="1100" height="760" loading="eager" fetchpriority="high" decoding="async" /></figure><p class="ba-tag"><b>Panchayat road, Rajnagar Ward 4</b><span>Case EA–2026–04412 · fixed, and confirmed by the people who reported it</span></p></div><div class="ba-slide" role="group" aria-label="Burnt-out transformer, Kanjhawala feeder"><figure class="evidence before-evidence"><figcaption><span>Before</span><b>Reported 2 May 2026</b></figcaption><img src="/img/cases/transformer-before.webp" alt="A burnt-out distribution transformer" width="1100" height="760" loading="lazy" decoding="async" /></figure><figure class="evidence after-evidence"><figcaption><span>After</span><b>Confirmed by 63 households · 14 May 2026</b></figcaption><img src="/img/cases/transformer-after.webp" alt="A replaced transformer, working" width="1100" height="760" loading="lazy" decoding="async" /></figure><p class="ba-tag"><b>Burnt-out transformer, Kanjhawala feeder</b><span>Case EA–2026–04871 · fixed, and confirmed by the people who reported it</span></p></div><div class="ba-slide" role="group" aria-label="Street lights out, NH-44 km 118 to 121"><figure class="evidence before-evidence"><figcaption><span>Before</span><b>Reported 4 April 2026</b></figcaption><img src="/img/cases/light-before.webp" alt="An unlit highway stretch at night" width="1100" height="760" loading="lazy" decoding="async" /></figure><figure class="evidence after-evidence"><figcaption><span>After</span><b>Confirmed by 128 road users · 9 June 2026</b></figcaption><img src="/img/cases/light-after.webp" alt="The same stretch with the lights working" width="1100" height="760" loading="lazy" decoding="async" /></figure><p class="ba-tag"><b>Street lights out, NH-44 km 118 to 121</b><span>Case EA–2026–05230 · fixed, and confirmed by the people who reported it</span></p></div><div class="ba-slide" role="group" aria-label="Anganwadi kendra roof, Barkheda village"><figure class="evidence before-evidence"><figcaption><span>Before</span><b>Reported 11 June 2026</b></figcaption><img src="/img/cases/aganbadi-before.webp" alt="A collapsed anganwadi roof" width="1100" height="760" loading="lazy" decoding="async" /></figure><figure class="evidence after-evidence"><figcaption><span>After</span><b>Confirmed by 32 families · 28 July 2026</b></figcaption><img src="/img/cases/aganbadi-after.webp" alt="The rebuilt anganwadi roof" width="1100" height="760" loading="lazy" decoding="async" /></figure><p class="ba-tag"><b>Anganwadi kendra roof, Barkheda village</b><span>Case EA–2026–05604 · fixed, and confirmed by the people who reported it</span></p></div></div></div>
+            <div class="ba-dots" id="baDots" role="tablist" aria-label="Choose a case"></div>
           </div>
           <div class="orn orn-mandala" aria-hidden="true"></div>
           <div class="orn orn-wreath" aria-hidden="true"></div>
@@ -259,39 +289,39 @@
             <i class="disposed" data-w="95.8"></i><i class="pending" data-w="4.2"></i>
           </div>
           <div class="gap-legend">
-            <div><s class="disposed"></s><div><b data-count="181279">1,81,279</b><span>marked disposed within the month</span></div></div>
-            <div><s class="pending"></s><div><b data-count="7910">7,910</b><span>still open from that month's intake</span></div></div>
-            <div><div><b data-count="189189">1,89,189</b><span>lodged with central ministries</span></div></div>
+            <div><s class="disposed"></s><div><b data-count="181279">1,81,279</b><span>closed by an officer that month</span></div></div>
+            <div><s class="pending"></s><div><b data-count="7910">7,910</b><span>still open from that month</span></div></div>
+            <div><div><b data-count="189189">1,89,189</b><span>filed with central ministries</span></div></div>
           </div>
-          <p class="gap-claim">A <b>95.8% disposal rate</b> — and that number is the reason this project exists. <b>Disposed means a file was closed, not that a road was repaired.</b> Nothing in the figure records whether the person who complained agrees, and nothing asks them.</p>
-          <p class="gap-source">Figures as published in the CPGRAMS monthly report for March 2026. A separate 81,187 shown as pending at month end includes cases carried forward from earlier months, which is why it exceeds this month's remainder.</p>
+          <p class="gap-claim">That is <b>95.8% closed</b>, and that number is why we built this. <b>Closed means an officer shut the file. It does not mean the road got fixed.</b> Nobody asked the person who complained whether the problem went away.</p>
+          <p class="gap-source">These are the government’s own published numbers for March 2026. The report also shows 81,187 still pending at the end of the month — that figure includes older cases carried over, which is why it is larger.</p>
         </div>
 
         <div class="gap-aside" data-reveal data-reveal-children>
-          <div><b>13 days</b><span>Average time to disposal, central ministries</span><i>published</i></div>
-          <div><b>21 days</b><span>The disposal target the system sets for itself</span><i>policy</i></div>
-          <div><b>81,187</b><span>Still pending when the month closed — 43% of its own intake</span><i>published</i></div>
-          <div><b>66,776</b><span>In three ministries alone: labour, banking, petroleum</span><i>published</i></div>
-          <div><b>12</b><span>Stronger options we point you to, each better than a complaint</span><i>in this build</i></div>
+          <div><b>13 days</b><span>Average time an officer takes to close a case</span><i>published</i></div>
+          <div><b>21 days</b><span>The 21 days the system promises itself</span><i>policy</i></div>
+          <div><b>81,187</b><span>Still waiting when the month ended — 43% of that month’s cases</span><i>published</i></div>
+          <div><b>66,776</b><span>From just three ministries: labour, banking, petroleum</span><i>published</i></div>
+          <div><b>12</b><span>Stronger options we point you to, each better than a plain complaint</span><i>in this build</i></div>
         </div>
       </div>
     </section>
 
-      <section class="section section-soft" id="how-it-works"><div class="shell"><div class="section-heading"><div><p class="eyebrow">How Ek Awaaz helps</p><h2>Start with your problem,<br />not a department.</h2></div><p>You should not have to know how the government is arranged to get help. We show you which office it goes to before anything is sent.</p></div><div class="feature-grid" data-reveal data-reveal-children><article><span class="feature-icon blue">⌁</span><h3>Right office</h3><p>From your problem and your location, we work out which office can actually fix it.</p></article><article><span class="feature-icon teal">✓</span><h3>Stronger remedy</h3><p>If a statutory appeal, ombudsman, or entitlement provides a stronger path, we show it before you commit.</p></article><article><span class="feature-icon amber">+</span><h3>One shared case</h3><p>If someone near you has already reported it, add your name to their case instead of starting a new one.</p></article></div></div></section>
+      <section class="section section-soft" id="how-it-works"><div class="shell"><div class="section-heading"><div><p class="eyebrow">How Ek Awaaz helps</p><h2>Start with your problem,<br />not a department.</h2></div><p>You should not have to know how the government is arranged to get help. We show you which office it goes to before anything is sent.</p></div><div class="feature-grid" data-reveal data-reveal-children><article><span class="feature-icon blue">⌁</span><h3>Right office</h3><p>From your problem and your location, we work out which office can actually fix it.</p></article><article><span class="feature-icon teal">✓</span><h3>Stronger remedy</h3><p>If there is a stronger route — an appeal set out in law, an ombudsman, or money you are owed — we show it before you send anything.</p></article><article><span class="feature-icon amber">+</span><h3>One shared case</h3><p>If someone near you has already reported it, add your name to their case instead of starting a new one.</p></article></div></div></section>
 
       <section class="section categories"><div class="shell">
       <div class="section-heading compact concern-heading">
         <div><p class="eyebrow">Common concerns</p><h2>What do you need help with?</h2><p class="route-lede">Behind each of these is something stronger than a complaint — a deadline the office must meet, someone outside the department who can decide, sometimes money you are owed. Most portals show you only the first office. We name both, before you file.</p></div>
         <div class="concern-nav"><span id="concernStatus">1 / 4</span><button type="button" id="concernPrev" aria-label="Previous concerns">←</button><button type="button" id="concernNext" aria-label="More concerns">→</button></div>
       </div>
-      <div class="concern-carousel"><div class="concern-track" data-reveal data-reveal-children id="concernTrack"><article class="category-card c1"><span class="card-number">01</span><p class="hindi">सड़क और गड्ढे</p><h3>Roads &amp; potholes</h3><div><b>Where it actually goes</b><p>Gram Panchayat or Block Development Officer. NHAI only if it is a national highway.</p></div><footer class="card-remedy"><b>If nothing happens in 21 days</b><p>District Collector. For highways, the NHAI helpline 1033.</p></footer><a href="/report?topic=road">Report a road issue <span aria-hidden="true">→</span></a></article><article class="category-card c2"><span class="card-number">02</span><p class="hindi">बिजली</p><h3>Electricity &amp; billing</h3><div><b>Where it actually goes</b><p>The discom’s consumer grievance redressal forum.</p></div><footer class="card-remedy"><b>If nothing happens in 45 days</b><p>Electricity Ombudsman of the State Commission, under s.42 of the Electricity Act.</p></footer><a href="/report?topic=power">Report an electricity issue <span aria-hidden="true">→</span></a></article><article class="category-card c3"><span class="card-number">03</span><p class="hindi">बैंक और भुगतान</p><h3>Banking &amp; payments</h3><div><b>Where it actually goes</b><p>Your bank’s own grievance redressal officer.</p></div><footer class="card-remedy"><b>If nothing happens in 30 days</b><p>RBI Ombudsman at cms.rbi.org.in. Free to approach.</p></footer><a href="/report?topic=bank">Report a banking issue <span aria-hidden="true">→</span></a></article><article class="category-card c4"><span class="card-number">04</span><p class="hindi">पीएफ़ और रोज़गार</p><h3>PF &amp; employment</h3><div><b>Where it actually goes</b><p>EPFiGMS, then the Regional PF Commissioner.</p></div><footer class="card-remedy"><b>If nothing happens in 30 days</b><p>EPFO appellate authority, then the Central PF Commissioner.</p></footer><a href="/report?topic=pf">Report a PF issue <span aria-hidden="true">→</span></a></article><article class="category-card c5"><span class="card-number">05</span><p class="hindi">राशन</p><h3>Ration &amp; PDS</h3><div><b>Where it actually goes</b><p>District Supply Officer, or the District Grievance Redressal Officer.</p></div><footer class="card-remedy"><b>If nothing happens in 30 days</b><p>State Food Commission, under s.15 of the NFSA.</p></footer><a href="/report?topic=ration">Report a ration issue <span aria-hidden="true">→</span></a></article><article class="category-card c1"><span class="card-number">06</span><p class="hindi">पानी और सफ़ाई</p><h3>Water &amp; sanitation</h3><div><b>Where it actually goes</b><p>Municipal engineer, or the Jal Board ward office.</p></div><footer class="card-remedy"><b>If nothing happens in 15 days</b><p>Municipal Commissioner, then the District Collector.</p></footer><a href="/report?topic=water">Report a water issue <span aria-hidden="true">→</span></a></article><article class="category-card c2"><span class="card-number">07</span><p class="hindi">बीमा</p><h3>Insurance claims</h3><div><b>Where it actually goes</b><p>The insurer’s own grievance redressal officer.</p></div><footer class="card-remedy"><b>If nothing happens in 15 days</b><p>IRDAI Bima Bharosa, then the Insurance Ombudsman.</p></footer><a href="/report?topic=other">Report an insurance issue <span aria-hidden="true">→</span></a></article><article class="category-card c3"><span class="card-number">08</span><p class="hindi">पेंशन</p><h3>Pension</h3><div><b>Where it actually goes</b><p>CPENGRAMS, or the pension disbursing bank.</p></div><footer class="card-remedy"><b>If nothing happens in 30 days</b><p>Department of Pension &amp; Pensioners’ Welfare.</p></footer><a href="/report?topic=other">Report a pension issue <span aria-hidden="true">→</span></a></article><article class="category-card c4"><span class="card-number">09</span><p class="hindi">पहचान पत्र</p><h3>PAN, Aadhaar &amp; govt ID</h3><div><b>Where it actually goes</b><p>The issuing agency first — NSDL or UTIITSL for PAN, the UIDAI regional office for Aadhaar.</p></div><footer class="card-remedy"><b>If nothing happens in 30 days</b><p>Appeal to the appellate authority through CPGRAMS.</p></footer><a href="/report?topic=id">Report an ID issue <span aria-hidden="true">→</span></a></article><article class="category-card c5"><span class="card-number">10</span><p class="hindi">रेलवे</p><h3>Railways &amp; tickets</h3><div><b>Where it actually goes</b><p>RailMadad and helpline 139, then the divisional railway office.</p></div><footer class="card-remedy"><b>If nothing happens in 7 days</b><p>Railway Claims Tribunal for refunds and compensation.</p></footer><a href="/report?topic=rail">Report a railway issue <span aria-hidden="true">→</span></a></article><article class="category-card c1"><span class="card-number">11</span><p class="hindi">पुलिस निष्क्रियता</p><h3>Police inaction</h3><div><b>Where it actually goes</b><p>Superintendent of Police, or the DCP grievance cell.</p></div><footer class="card-remedy"><b>If nothing happens in 15 days</b><p>Magistrate under s.175(3) of the BNSS.</p></footer><a href="/report?topic=other">Report a police issue <span aria-hidden="true">→</span></a></article><article class="category-card c2"><span class="card-number">12</span><p class="hindi">सूचना का अधिकार</p><h3>RTI not answered</h3><div><b>Where it actually goes</b><p>The First Appellate Authority inside the same office.</p></div><footer class="card-remedy"><b>If nothing happens in 30 days</b><p>State or Central Information Commission, under s.19 of the RTI Act.</p></footer><a href="/report?topic=other">Report an RTI issue <span aria-hidden="true">→</span></a></article></div></div>
+      <div class="concern-carousel"><div class="concern-track" data-reveal data-reveal-children id="concernTrack"><article class="category-card c1"><span class="card-number">01</span><p class="hindi">सड़क और गड्ढे</p><h3>Roads &amp; potholes</h3><div><b>Where it actually goes</b><p>Gram Panchayat or Block Development Officer. NHAI only if it is a national highway.</p></div><footer class="card-remedy"><b>If nothing happens in 21 days</b><p>District Collector. For highways, the NHAI helpline 1033.</p></footer><a href="/report?topic=road">Report a road issue <span aria-hidden="true">→</span></a></article><article class="category-card c2"><span class="card-number">02</span><p class="hindi">बिजली</p><h3>Electricity &amp; billing</h3><div><b>Where it actually goes</b><p>Your electricity company’s own complaint forum — the Consumer Grievance Redressal Forum.</p></div><footer class="card-remedy"><b>If nothing happens in 45 days</b><p>Electricity Ombudsman of the State Commission, under s.42 of the Electricity Act.</p></footer><a href="/report?topic=power">Report an electricity issue <span aria-hidden="true">→</span></a></article><article class="category-card c3"><span class="card-number">03</span><p class="hindi">बैंक और भुगतान</p><h3>Banking &amp; payments</h3><div><b>Where it actually goes</b><p>Your bank’s own complaints officer, called the Grievance Redressal Officer.</p></div><footer class="card-remedy"><b>If nothing happens in 30 days</b><p>RBI Ombudsman at cms.rbi.org.in. Free to approach.</p></footer><a href="/report?topic=bank">Report a banking issue <span aria-hidden="true">→</span></a></article><article class="category-card c4"><span class="card-number">04</span><p class="hindi">पीएफ़ और रोज़गार</p><h3>PF &amp; employment</h3><div><b>Where it actually goes</b><p>EPFiGMS first, then the Regional PF Commissioner.</p></div><footer class="card-remedy"><b>If nothing happens in 30 days</b><p>Appeal inside EPFO, then the Central PF Commissioner.</p></footer><a href="/report?topic=pf">Report a PF issue <span aria-hidden="true">→</span></a></article><article class="category-card c5"><span class="card-number">05</span><p class="hindi">राशन</p><h3>Ration &amp; PDS</h3><div><b>Where it actually goes</b><p>The District Supply Officer, or the officer the food law puts in every district — the District Grievance Redressal Officer.</p></div><footer class="card-remedy"><b>If nothing happens in 30 days</b><p>State Food Commission, under s.15 of the NFSA.</p></footer><a href="/report?topic=ration">Report a ration issue <span aria-hidden="true">→</span></a></article><article class="category-card c1"><span class="card-number">06</span><p class="hindi">पानी और सफ़ाई</p><h3>Water &amp; sanitation</h3><div><b>Where it actually goes</b><p>Municipal engineer, or the Jal Board ward office.</p></div><footer class="card-remedy"><b>If nothing happens in 15 days</b><p>Municipal Commissioner, then the District Collector.</p></footer><a href="/report?topic=water">Report a water issue <span aria-hidden="true">→</span></a></article><article class="category-card c2"><span class="card-number">07</span><p class="hindi">बीमा</p><h3>Insurance claims</h3><div><b>Where it actually goes</b><p>Your insurer’s own complaints officer, called the Grievance Redressal Officer.</p></div><footer class="card-remedy"><b>If nothing happens in 15 days</b><p>IRDAI Bima Bharosa, then the Insurance Ombudsman.</p></footer><a href="/report?topic=other">Report an insurance issue <span aria-hidden="true">→</span></a></article><article class="category-card c3"><span class="card-number">08</span><p class="hindi">पेंशन</p><h3>Pension</h3><div><b>Where it actually goes</b><p>CPENGRAMS, or the pension disbursing bank.</p></div><footer class="card-remedy"><b>If nothing happens in 30 days</b><p>Department of Pension &amp; Pensioners’ Welfare.</p></footer><a href="/report?topic=other">Report a pension issue <span aria-hidden="true">→</span></a></article><article class="category-card c4"><span class="card-number">09</span><p class="hindi">पहचान पत्र</p><h3>PAN, Aadhaar &amp; govt ID</h3><div><b>Where it actually goes</b><p>The issuing agency first — NSDL or UTIITSL for PAN, the UIDAI regional office for Aadhaar.</p></div><footer class="card-remedy"><b>If nothing happens in 30 days</b><p>File an appeal through CPGRAMS — it goes to the officer above the one who handled it.</p></footer><a href="/report?topic=id">Report an ID issue <span aria-hidden="true">→</span></a></article><article class="category-card c5"><span class="card-number">10</span><p class="hindi">रेलवे</p><h3>Railways &amp; tickets</h3><div><b>Where it actually goes</b><p>RailMadad and helpline 139, then the divisional railway office.</p></div><footer class="card-remedy"><b>If nothing happens in 7 days</b><p>Railway Claims Tribunal for refunds and compensation.</p></footer><a href="/report?topic=rail">Report a railway issue <span aria-hidden="true">→</span></a></article><article class="category-card c1"><span class="card-number">11</span><p class="hindi">पुलिस निष्क्रियता</p><h3>Police inaction</h3><div><b>Where it actually goes</b><p>Superintendent of Police, or the DCP grievance cell.</p></div><footer class="card-remedy"><b>If nothing happens in 15 days</b><p>Magistrate under s.175(3) of the BNSS.</p></footer><a href="/report?topic=other">Report a police issue <span aria-hidden="true">→</span></a></article><article class="category-card c2"><span class="card-number">12</span><p class="hindi">सूचना का अधिकार</p><h3>RTI not answered</h3><div><b>Where it actually goes</b><p>Ask the same office again in writing. This is called a first appeal, and it has its own deadline.</p></div><footer class="card-remedy"><b>If nothing happens in 30 days</b><p>State or Central Information Commission, under s.19 of the RTI Act.</p></footer><a href="/report?topic=other">Report an RTI issue <span aria-hidden="true">→</span></a></article></div></div>
       <p class="concern-note">These reply times are the usual ones and change from state to state. Once your case is filed, we show you the days counting down.</p>
       </div></section>
 
       <section class="section joint-case" id="cases"><div class="shell join-grid"><div class="count-panel"><p>Rajnagar Ward 4</p><div class="count"><b>34</b><span>of 50</span></div><div class="meter" aria-label="34 of 50 households have joined"><i></i></div><span class="count-note">households have reported the same road</span></div><div class="join-copy"><p class="eyebrow">A shared voice carries further</p><h2>Don’t file another case.<br />Join the one that exists.</h2><p>One case, one office answerable for it, and a count of the households anyone can see. At 50 names, it goes to the District Collector on its own.</p><div class="status-row"><span>Day 4 of 21</span><span>3rd recurrence</span><span>Escalates at 50</span></div><button class="button light" type="button" id="joinCase"><span>Add my support</span> <span aria-hidden="true">→</span></button><p class="privacy-note">Your name is never shown to the other people on the case.</p></div></div></section>
 
       <div class="rule-band tight" aria-hidden="true"></div>
-    <section class="section case-section"><div class="shell"><div class="section-heading compact"><div><p class="eyebrow">Past public grievance resolutions</p><h2>A case stays open until citizens confirm it is fixed.</h2></div></div><div class="case-stack" id="caseStack" data-reveal><article class="case-card on"><div class="case-image"><div class="plate"><b>CASE EA–2026–04412</b><span>Rajnagar Ward 4 · Route verified · Local road</span></div><p>Before &amp; after: Panchayat road, Rajnagar Ward 4</p></div><div class="case-content"><span class="status success">Resolved and confirmed</span><h3>Panchayat road, Rajnagar Ward 4</h3><p>People reported a broken 40-metre stretch after the first rain. It went to the Block Development Officer, not Delhi, because a village road is his job.</p><dl><div><dt>Route</dt><dd>Block Development Officer</dd></div><div><dt>Joined by</dt><dd>41 households</dd></div><div><dt>Officer response</dt><dd>28 March 2026</dd></div><div><dt>Citizen confirmation</dt><dd>2 April 2026</dd></div></dl></div></article><article class="case-card"><div class="case-image"><div class="plate"><b>CASE EA–2026–04871</b><span>Kanjhawala feeder · Route verified · Distribution transformer</span></div><p>Before &amp; after: Burnt-out transformer, Kanjhawala feeder</p></div><div class="case-content"><span class="status success">Resolved and confirmed</span><h3>Burnt-out transformer, Kanjhawala feeder</h3><p>A transformer burnt out and eleven streets were dark for nine days. The case went to the discom executive engineer. If he missed 21 days, the next step was already named: the state electricity regulator.</p><dl><div><dt>Route</dt><dd>Discom Executive Engineer</dd></div><div><dt>Joined by</dt><dd>63 households</dd></div><div><dt>Officer response</dt><dd>11 May 2026</dd></div><div><dt>Citizen confirmation</dt><dd>14 May 2026</dd></div></dl></div></article><article class="case-card"><div class="case-image"><div class="plate"><b>CASE EA–2026–05230</b><span>NH-44, km 118–121 · Route verified · National highway</span></div><p>Before &amp; after: Dark highway stretch, NH-44 km 118–121</p></div><div class="case-content"><span class="status success">Resolved and confirmed</span><h3>Street lights out, NH-44 km 118–121</h3><p>Three kilometres of highway lights had been dead for two months, on a bend where crashes happen. It is a national highway, so it went to the NHAI project director, not the municipality.</p><dl><div><dt>Route</dt><dd>NHAI Project Director</dd></div><div><dt>Joined by</dt><dd>128 road users</dd></div><div><dt>Officer response</dt><dd>2 June 2026</dd></div><div><dt>Citizen confirmation</dt><dd>9 June 2026</dd></div></dl></div></article><article class="case-card"><div class="case-image"><div class="plate"><b>CASE EA–2026–05604</b><span>Barkheda village · Route verified · Anganwadi building</span></div><p>Before &amp; after: Anganwadi kendra roof, Barkheda village</p></div><div class="case-content"><span class="status success">Resolved and confirmed</span><h3>Anganwadi kendra roof, Barkheda village</h3><p>A roof fell in and thirty-two children sat outside through the monsoon. The mothers filed one case together. It went to the Child Development Project Officer, with the district programme officer above him if nothing moved.</p><dl><div><dt>Route</dt><dd>Child Development Project Officer</dd></div><div><dt>Joined by</dt><dd>32 families</dd></div><div><dt>Officer response</dt><dd>19 July 2026</dd></div><div><dt>Citizen confirmation</dt><dd>28 July 2026</dd></div></dl></div></article></div><div class="case-track" id="caseTrack" aria-hidden="true"><i class="fill"></i><i class="wipe" id="caseWipe"></i></div></div></section>
+    <section class="section case-section"><div class="shell"><div class="section-heading compact"><div><p class="eyebrow">Past public grievance resolutions</p><h2>A case stays open until citizens confirm it is fixed.</h2></div></div><div class="case-stack" id="caseStack" data-reveal><article class="case-card on"><div class="case-image has-photo"><img class="case-photo" src="/img/cases/road-before.webp" alt="A broken village road with deep potholes, before repair" width="1100" height="760" loading="eager" decoding="async" /><div class="plate"><b>CASE EA–2026–04412</b><span>Rajnagar Ward 4 · Route verified · Local road</span></div><p>Before &amp; after: Panchayat road, Rajnagar Ward 4</p></div><div class="case-content"><span class="status success">Resolved and confirmed</span><h3>Panchayat road, Rajnagar Ward 4</h3><p>People reported a broken 40-metre stretch after the first rain. It went to the Block Development Officer, not Delhi, because a village road is his job.</p><dl><div><dt>Route</dt><dd>Block Development Officer</dd></div><div><dt>Joined by</dt><dd>41 households</dd></div><div><dt>Officer response</dt><dd>28 March 2026</dd></div><div><dt>Citizen confirmation</dt><dd>2 April 2026</dd></div></dl></div></article><article class="case-card"><div class="case-image has-photo"><img class="case-photo" src="/img/cases/transformer-before.webp" alt="A burnt-out distribution transformer" width="1100" height="760" loading="eager" decoding="async" /><div class="plate"><b>CASE EA–2026–04871</b><span>Kanjhawala feeder · Route verified · Distribution transformer</span></div><p>Before &amp; after: Burnt-out transformer, Kanjhawala feeder</p></div><div class="case-content"><span class="status success">Resolved and confirmed</span><h3>Burnt-out transformer, Kanjhawala feeder</h3><p>A transformer burnt out and eleven streets were dark for nine days. The case went to the discom executive engineer. If he missed 21 days, the next step was already named: the state electricity regulator.</p><dl><div><dt>Route</dt><dd>Discom Executive Engineer</dd></div><div><dt>Joined by</dt><dd>63 households</dd></div><div><dt>Officer response</dt><dd>11 May 2026</dd></div><div><dt>Citizen confirmation</dt><dd>14 May 2026</dd></div></dl></div></article><article class="case-card"><div class="case-image has-photo"><img class="case-photo" src="/img/cases/light-before.webp" alt="An unlit highway stretch at night" width="1100" height="760" loading="eager" decoding="async" /><div class="plate"><b>CASE EA–2026–05230</b><span>NH-44, km 118–121 · Route verified · National highway</span></div><p>Before &amp; after: Dark highway stretch, NH-44 km 118–121</p></div><div class="case-content"><span class="status success">Resolved and confirmed</span><h3>Street lights out, NH-44 km 118–121</h3><p>Three kilometres of highway lights had been dead for two months, on a bend where crashes happen. It is a national highway, so it went to the NHAI project director, not the municipality.</p><dl><div><dt>Route</dt><dd>NHAI Project Director</dd></div><div><dt>Joined by</dt><dd>128 road users</dd></div><div><dt>Officer response</dt><dd>2 June 2026</dd></div><div><dt>Citizen confirmation</dt><dd>9 June 2026</dd></div></dl></div></article><article class="case-card"><div class="case-image has-photo"><img class="case-photo" src="/img/cases/aganbadi-before.webp" alt="A collapsed anganwadi roof" width="1100" height="760" loading="eager" decoding="async" /><div class="plate"><b>CASE EA–2026–05604</b><span>Barkheda village · Route verified · Anganwadi building</span></div><p>Before &amp; after: Anganwadi kendra roof, Barkheda village</p></div><div class="case-content"><span class="status success">Resolved and confirmed</span><h3>Anganwadi kendra roof, Barkheda village</h3><p>A roof fell in and thirty-two children sat outside through the monsoon. The mothers filed one case together. It went to the Child Development Project Officer, with the district programme officer above him if nothing moved.</p><dl><div><dt>Route</dt><dd>Child Development Project Officer</dd></div><div><dt>Joined by</dt><dd>32 families</dd></div><div><dt>Officer response</dt><dd>19 July 2026</dd></div><div><dt>Citizen confirmation</dt><dd>28 July 2026</dd></div></dl></div></article></div><div class="case-track" id="caseTrack" aria-hidden="true"><i class="fill"></i><i class="wipe" id="caseWipe"></i></div></div></section>
 
       <section class="section didi-section" id="report"><div class="shell didi-grid">
         <div class="didi-side">
@@ -331,13 +361,13 @@
         </form>
       </div></section>
 
-      <section class="section faq-section" id="faq"><div class="shell faq-layout"><div><p class="eyebrow">Questions people ask</p><h2>Clear answers, before you start.</h2><p>Ek Awaaz is built to show you what is happening, not add one more thing you cannot see.</p></div><div class="faq-list"><details><summary>Do I have to pick a ministry or a category?<span>+</span></summary><p>No. Tell us what happened and where. The route is suggested in plain language for you to review.</p></details><details><summary>Is filing a grievance always my best option?<span>+</span></summary><p>Not always. When a sector has a stronger statutory remedy or ombudsman, we show that path before you file.</p></details><details><summary>Do you need my Aadhaar?<span>+</span></summary><p>No. The prototype uses mock identity details only and never asks for Aadhaar, PAN, payment information, or a real OTP.</p></details><details><summary>What is real here, and what is mocked?<span>+</span></summary><p>Routing logic, remedy guidance, and case joining are demonstrated in this prototype. Filing into government systems and identity verification are mocked.</p></details></div></div></section>
+      <section class="section faq-section" id="faq"><div class="shell faq-layout"><div><p class="eyebrow">Questions people ask</p><h2>Clear answers, before you start.</h2><p>Ek Awaaz is built to show you what is happening, not add one more thing you cannot see.</p></div><div class="faq-list"><details><summary>Do I have to pick a ministry or a category?<span>+</span></summary><p>No. Tell us what happened and where. The route is suggested in plain language for you to review.</p></details><details><summary>Is filing a grievance always my best option?<span>+</span></summary><p>Not always. If the law gives you something stronger, or there is an ombudsman for it, we show you that first.</p></details><details><summary>Do you need my Aadhaar?<span>+</span></summary><p>No. The prototype uses mock identity details only and never asks for Aadhaar, PAN, payment information, or a real OTP.</p></details><details><summary>What is real here, and what is mocked?<span>+</span></summary><p>Finding the right office, showing you stronger options, and joining a case all really work here. Sending it to the government, and checking who you are, are pretend.</p></details></div></div></section>
     </main>
     <section class="auth-overlay" id="authOverlay" aria-hidden="true"><div class="auth-card" role="dialog" aria-modal="true" aria-labelledby="authTitle"><button class="auth-close" id="authClose" type="button" aria-label="Close account screen">×</button><div class="auth-brand"><span class="ea-mark" aria-hidden="true"></span><span><strong>एक आवाज़</strong><small>EK AWAAZ</small></span></div><p class="eyebrow">Secure citizen access</p><h2 id="authTitle">Sign in to Ek Awaaz</h2><p class="auth-subtitle">Track your cases, add your voice, and receive updates.</p><div class="auth-tabs"><button class="auth-tab active" id="signInTab" type="button">Sign in</button><button class="auth-tab" id="signUpTab" type="button">Create account</button></div><form class="auth-form" id="signInForm"><label for="loginId">Mobile number or username</label><input id="loginId" type="text" placeholder="Enter mobile number or username" autocomplete="username" required /><label for="loginPassword">Password</label><input id="loginPassword" type="password" placeholder="Enter your password" autocomplete="current-password" required /><div class="auth-actions"><button class="button primary" type="submit">Enter <span>→</span></button><button class="forgot-button" type="button" id="forgotPassword">Forgot password?</button></div><p class="auth-note">For this prototype, no real login credentials are collected.</p></form><form class="auth-form hidden" id="signUpForm"><div class="form-section-title">Personal details</div><label for="signupName">Full name</label><input id="signupName" type="text" placeholder="Enter your full name" required /><label for="signupGender">Gender</label><select id="signupGender" required><option value="">Select gender</option><option>Female</option><option>Male</option><option>Other</option><option>Prefer not to say</option></select><div class="form-section-title">Address</div><label for="signupAddress">Address</label><textarea id="signupAddress" placeholder="House / street / village or town" rows="2" required></textarea><label for="signupLocality">Locality <span>(optional)</span></label><input id="signupLocality" type="text" placeholder="Locality or landmark" /><div class="form-row"><div><label for="signupCountry">Country</label><select id="signupCountry" required><option>India</option></select></div><div><label for="signupState">State</label><select id="signupState" required><option value="">Select state</option><option>Bihar</option><option>Delhi</option><option>Maharashtra</option><option>Rajasthan</option><option>Uttar Pradesh</option><option>West Bengal</option></select></div></div><div class="form-row"><div><label for="signupDistrict">District</label><select id="signupDistrict" required><option value="">Select district</option><option>Patna</option><option>Rajnagar</option><option>New Delhi</option><option>Pune</option><option>Jaipur</option></select></div><div><label for="signupPincode">Pincode <span>(optional)</span></label><input id="signupPincode" type="text" inputmode="numeric" placeholder="6-digit pincode" /></div></div><div class="form-section-title">Contact details</div><label for="signupMobile">Mobile number</label><input id="signupMobile" type="tel" inputmode="tel" placeholder="Enter mobile number" required /><label for="signupPhone">Phone number <span>(optional)</span></label><input id="signupPhone" type="tel" inputmode="tel" placeholder="Landline number" /><label for="signupEmail">Email address</label><input id="signupEmail" type="email" placeholder="you@example.com" required /><div class="captcha-box"><div class="captcha-code" id="captchaCode">EK7A2</div><button type="button" id="refreshCaptcha" aria-label="Refresh captcha">↻</button><input id="signupCaptcha" type="text" placeholder="Enter captcha" autocomplete="off" required /></div><button class="button primary" type="submit">Create account <span>→</span></button><p class="auth-note">Your details are used to manage your cases and updates. This prototype does not save them.</p></form></div></section>
     <div class="rule-braid" aria-hidden="true"></div>
-    <footer id="footer"><div class="shell footer-grid"><div><a class="brand footer-brand" href="#home"><span class="ea-mark" aria-hidden="true"></span><span><strong>एक आवाज़</strong><small>EK AWAAZ</small></span></a><p>Citizen grievance routing &amp; remedy platform.</p></div><div><b>Prototype disclosure</b><p>This is an independent hackathon prototype, not an official government product. Filing, officer actions, dates, and identities shown here are simulated.</p></div><div><b>Built around people</b><p>Accessible, multilingual, privacy-conscious, and designed for low-bandwidth use.</p></div></div></footer>
+    <footer id="footer"><div class="shell footer-grid"><div><a class="brand footer-brand" href="#home"><span class="ea-mark" aria-hidden="true"></span><span><strong>एक आवाज़</strong><small>EK AWAAZ</small></span></a><p>Citizen grievance routing &amp; remedy platform.</p></div><div><b>Prototype disclosure</b><p>This is an independent hackathon prototype, not an official government product. Filing, officer actions, dates, and identities shown here are simulated.</p></div><div><b>Built around people</b><p>Works with a screen reader, speaks your language, keeps your details private, and loads on a slow connection.</p></div></div></footer>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="app.js?v=20260826-12"></script>
+    <script src="app.js?v=78ee315348"></script>
   <script>
       (function () {
         const stack = document.querySelector('#caseStack'), wipe = document.querySelector('#caseWipe');
@@ -350,9 +380,9 @@
         });
       })();
 </script>
-<script src="voice.js?v=20260827-01"></script>
-<script src="api-client.js?v=20260826-12"></script>
-<script src="session.js?v=20260826-12"></script>
+<script src="voice.js?v=78ee315348"></script>
+<script src="api-client.js?v=78ee315348"></script>
+<script src="session.js?v=78ee315348"></script>
 <script>
   /* Login gate + join-a-case, replacing the old prototype auth stubs. */
   (function () {
@@ -422,14 +452,12 @@
       const label = document.querySelector('#voiceLabel');
       if (!mount || !box || !window.EAVoice) return;
 
-      if (!EAVoice.transcriptionSupported) {
-        label.textContent = 'Speak to record — this browser cannot transcribe, so type your words';
-      }
+      /* Transcription no longer depends on the browser, so there is nothing to warn about:
+         the recording is transcribed on the server, in whatever language it was spoken. */
 
       const v = EAVoice.attach({
         button: true,
         mount: mount,
-        lang: 'en-IN',
         onOpen: function () { label.style.display = 'none'; },
         onClose: function () { label.style.display = ''; },
         onFinal: function (said) {
@@ -442,7 +470,71 @@
 
     })();
   </script>
-<script src="kolam.js?v=20260827-s1"></script>
-<script src="panels.js?v=20260827-p1"></script>
+<script src="kolam.js?v=78ee315348"></script>
+<script src="panels.js?v=78ee315348"></script>
+
+<script>
+/* The before/after loop.
+   2s on a case, 600ms to move. It pauses on hover and on focus, because each pair carries a date
+   and a household count and something that slides away mid-sentence is hostile. It stops entirely
+   when the reader prefers reduced motion, and does not advance while the tab is hidden. */
+(function () {
+  var rail = document.getElementById('baRail');
+  var dots = document.getElementById('baDots');
+  if (!rail || !dots) return;
+
+  var slides = rail.children.length;
+  if (!slides) return;
+
+  var at = 0, timer = 0, held = false;
+  var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  for (var i = 0; i < slides; i++) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-label', 'Case ' + (i + 1) + ' of ' + slides);
+    b.addEventListener('click', (function (n) { return function () { show(n); hold(); }; })(i));
+    dots.appendChild(b);
+  }
+
+  function show(n) {
+    at = (n + slides) % slides;
+    rail.style.transform = 'translate3d(' + (-100 * at) + '%,0,0)';
+    for (var k = 0; k < dots.children.length; k++) {
+      dots.children[k].setAttribute('aria-selected', k === at ? 'true' : 'false');
+    }
+  }
+
+  function tick() {
+    if (held || document.hidden) return;
+    show(at + 1);
+  }
+
+  function run() { clearInterval(timer); if (!still) timer = setInterval(tick, 2000); }
+  function hold() { held = true; }
+  function release() { held = false; }
+
+  var box = rail.closest('[data-case-slider]');
+  box.addEventListener('mouseenter', hold);
+  box.addEventListener('mouseleave', release);
+  box.addEventListener('focusin', hold);
+  box.addEventListener('focusout', release);
+
+  show(0);
+  run();
+
+  /* Lazy images inside a rail moved by transform never enter view as far as the browser is
+     concerned, so slides two to four stayed blank. The first slide is eager because it is above
+     the fold; the rest are promoted once the page has finished loading, which keeps the first
+     paint cheap and still has them ready well before the loop reaches them at two seconds a slide. */
+  function preloadRest() {
+    var imgs = rail.querySelectorAll('img[loading="lazy"]');
+    for (var k = 0; k < imgs.length; k++) imgs[k].loading = 'eager';
+  }
+  if (document.readyState === 'complete') setTimeout(preloadRest, 300);
+  else window.addEventListener('load', function () { setTimeout(preloadRest, 300); });
+})();
+</script>
 </body>
 </html>

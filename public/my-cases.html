@@ -59,8 +59,8 @@
     .stages div.on span{color:var(--navy)}
     @media(max-width:860px){.case-list .case-row{grid-template-columns:1fr 1fr;gap:16px}.case-list .case-row .chev{display:none}.stages span{font-size:8px}}
   </style>
-  <link rel="stylesheet" href="/heritage.css?v=20260827-h1" />
-  <link rel="stylesheet" href="/structure.css?v=20260827-s1" />
+  <link rel="stylesheet" href="/heritage.css?v=78ee315348" />
+  <link rel="stylesheet" href="/structure.css?v=78ee315348" />
 </head>
 <body>
   <div class="top"><div class="shell">Ek Awaaz · My grievances</div></div>
@@ -73,19 +73,19 @@
     <section class="case-area active" id="yourCases">
       <div class="attention">
         <div class="attention-top"><p class="eyebrow">Needs attention</p><span>2 cases</span></div>
-        <div class="attention-row" data-case="pf"><span class="dot pending"></span><div><b>Provident fund claim</b><span>12 days with the Regional EPFO office. No officer response has been recorded.</span></div><div class="attention-act"><b>Escalation available</b><span>EA–2026–02271</span></div></div>
+        <div class="attention-row" data-case="pf"><span class="dot pending"></span><div><b>Provident fund claim</b><span>12 days with the Regional EPFO office. No officer response has been recorded.</span></div><div class="attention-act"><b>Can go higher</b><span>EA–2026–02271</span></div></div>
         <div class="attention-row" data-case="bank"><span class="dot progress"></span><div><b>Bank debit dispute</b><span>Day 12 of 30. If the bank does not respond, the RBI Ombudsman route opens on 17 Sep.</span></div><div class="attention-act"><b>18 days left</b><span>EA–2026–01984</span></div></div>
       </div>
       <p class="eyebrow">All your cases</p>
       <div class="status-filters" data-filter-for="yourCases"><button class="filter active" data-status="all">All <b>3</b></button><button class="filter" data-status="progress">In progress <b>1</b></button><button class="filter" data-status="pending">Awaiting action <b>1</b></button><button class="filter" data-status="resolved">Resolved <b>1</b></button></div>
       <div class="case-list">
-        <article class="case-card case-row" data-status="progress" data-case="bank"><div><span class="status progress">In progress</span><h3>Bank debit dispute</h3><p class="cid">EA–2026–01984</p></div><div class="rfact"><small>With</small><b>Bank nodal officer</b></div><div class="rfact"><small>Elapsed</small><b>Day 12 of 30</b></div><div class="rfact due"><small>Next due</small><b>Response by 17 Sep</b></div><span class="chev">→</span><div class="stages">
+        <article class="case-card case-row" data-status="progress" data-case="bank"><div><span class="status progress">In progress</span><h3>Bank debit dispute</h3><p class="cid">EA–2026–01984</p></div><div class="rfact"><small>With</small><b>The bank’s senior complaints officer</b></div><div class="rfact"><small>Elapsed</small><b>Day 12 of 30</b></div><div class="rfact due"><small>Next due</small><b>Response by 17 Sep</b></div><span class="chev">→</span><div class="stages">
         <div class="on"><i class="done"></i><span>Filed</span></div>
         <div class="on"><i class="done"></i><span>Routed</span></div>
         <div class="on"><i class="now"></i><span>Officer response</span></div>
         <div><i class=""></i><span>You confirm</span></div>
       </div></article>
-        <article class="case-card case-row" data-status="pending" data-case="pf"><div><span class="status pending">Awaiting action</span><h3>Provident fund claim</h3><p class="cid">EA–2026–02271</p></div><div class="rfact"><small>With</small><b>Regional EPFO office</b></div><div class="rfact"><small>Elapsed</small><b>12 days · no response</b></div><div class="rfact due"><small>Next step</small><b>Escalation available</b></div><span class="chev">→</span><div class="stages">
+        <article class="case-card case-row" data-status="pending" data-case="pf"><div><span class="status pending">Awaiting action</span><h3>Provident fund claim</h3><p class="cid">EA–2026–02271</p></div><div class="rfact"><small>With</small><b>Regional EPFO office</b></div><div class="rfact"><small>Elapsed</small><b>12 days · no response</b></div><div class="rfact due"><small>Next step</small><b>Can go higher</b></div><span class="chev">→</span><div class="stages">
         <div class="on"><i class="done"></i><span>Filed</span></div>
         <div class="on"><i class="done"></i><span>Routed</span></div>
         <div class="on"><i class="now"></i><span>Officer response</span></div>
@@ -138,7 +138,7 @@ const cases = {
         status: 'In progress · with the bank',
         title: 'Bank debit dispute · EA–2026–01984',
         summary: 'An unauthorised debit of ₹18,400 was disputed with the bank on 18 August. The nodal officer has not issued a final response.',
-        facts: [['Route', 'Bank nodal officer'], ['Window', 'Day 12 of 30'], ['Ombudsman opens', '17 Sep 2026']],
+        facts: [['Route', 'The bank’s senior complaints officer'], ['Window', 'Day 12 of 30'], ['Ombudsman opens', '17 Sep 2026']],
         holder: {
           title: 'Who holds it now',
           office: 'Nodal Officer, Customer Grievance Redressal Cell',
@@ -320,7 +320,7 @@ const cases = {
   <script>
     document.querySelectorAll('.attention-row').forEach((row) => row.addEventListener('click', () => openCase(row.dataset.case)));
   </script>
-<script src="kolam.js?v=20260827-s1"></script>
+<script src="kolam.js?v=78ee315348"></script>
 </body></html>
 <style>
   .ea-gate{max-width:520px;margin:70px auto 120px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:34px}
@@ -341,8 +341,8 @@ const cases = {
   .supported-row .sbar i{display:block;height:100%;background:var(--blue)}
   @media(max-width:860px){.supported-row{grid-template-columns:1fr 1fr}}
 </style>
-<script src="api-client.js?v=20260826-12"></script>
-<script src="session.js?v=20260826-12"></script>
+<script src="api-client.js?v=78ee315348"></script>
+<script src="session.js?v=78ee315348"></script>
 <script>
   /* The dashboard only exists for a logged-in session. Cases come from the server, keyed on
      the verified mobile number; sessionStorage is only the offline fallback. */
@@ -388,7 +388,7 @@ const cases = {
     }
 
     const STATUS = {
-      open: 'Open', escalated: 'Escalated', awaiting_confirmation: 'Awaiting your confirmation',
+      open: 'Open', escalated: 'Escalated', awaiting_confirmation: 'Waiting for you to confirm',
       confirmed_fixed: 'Confirmed fixed', reopened: 'Reopened', partly_fixed: 'Partly fixed',
       awaiting_routing: 'Awaiting routing'
     };

@@ -10,9 +10,11 @@
      control says so plainly and keeps the meter running, rather than pretending to listen.
 
    Usage:
-     EAVoice.attach({ button, mount, onFinal, onInterim, lang });          */
+     EAVoice.attach({ button, mount, onFinal });          */
 
 (function () {
+  /* Kept only to report whether the browser has its own recogniser. It is no longer used to
+     transcribe: it is confidently wrong for the languages this exists for. */
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
   const BARS = 28;
 
@@ -83,10 +85,7 @@
   .ea-voice-lang{max-width:118px;font:700 11.5px Mukta,sans-serif;color:#4a3728;padding:6px 8px;cursor:pointer}
   .ea-voice-lang:focus{outline:2px solid #8c2416;outline-offset:1px}
   .ea-voice-lang:hover{border-color:#8c2416;color:#8c2416}
-  .ea-voice-use{flex:0 0 auto;border:0;border-radius:3px;background:#8c2416;color:#fff;
     padding:8px 11px;font:800 11px Mukta,sans-serif;cursor:pointer;visibility:hidden}
-  .ea-voice-use.on{visibility:visible}
-  .ea-voice-use:hover{background:#6e1b10}
   `;
 
   const MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">'
@@ -105,33 +104,19 @@
 
   /* The eleven Sarvam supports. Labels in each language’s own script, because a person
      looking for Malayalam is looking for മലയാളം, not for "ML". */
-  const LANGS = [
-    { code: 'en-IN', label: 'English' },
-    { code: 'hi-IN', label: 'हिन्दी' },
-    { code: 'bn-IN', label: 'বাংলা' },
-    { code: 'mr-IN', label: 'मराठी' },
-    { code: 'ta-IN', label: 'தமிழ்' },
-    { code: 'te-IN', label: 'తెలుగు' },
-    { code: 'kn-IN', label: 'ಕನ್ನಡ' },
-    { code: 'ml-IN', label: 'മലയാളം' },
-    { code: 'gu-IN', label: 'ગુજરાતી' },
-    { code: 'pa-IN', label: 'ਪੰਜਾਬੀ' },
-    { code: 'od-IN', label: 'ଓଡି଼ଆ' },
-  ];
 
   function attach(opts) {
-    const { button, mount, onFinal, onInterim } = opts;
+    const { button, mount, onFinal } = opts;
     if (!button || !mount) return null;
     injectCss();
 
-    let langIndex = LANGS.findIndex((l) => l.code === (opts.lang || 'en-IN'));
-    if (langIndex < 0) langIndex = 0;
 
     /* SARVAM_FALLBACK — the browser is not the only transcriber any more.
        recorder captures the same audio the browser is listening to, so if the browser returns
        nothing (no support for this language, or no support at all) we still have the words. */
-    let picked = false;
     let recorder = null, chunks = [];
+    /* The language Sarvam heard, so the reply can be spoken in it. */
+    let detected = null;
     /* Live-commit state: whether we have heard anything yet, when the quiet began, and the
        two timers that end a turn. */
     let heardSpeech = false, quietSince = 0, autoTimer = 0, capTimer = 0, watchTimer = 0;
@@ -161,18 +146,9 @@
 
     /* A select, not a chip that cycles: eleven options cannot be tapped through, and a select
        is already what a screen reader and a phone keyboard know how to drive. */
-    const lang = document.createElement('select');
-    lang.className = 'ea-voice-lang';
-    lang.innerHTML = LANGS.map((l, i) =>
-      '<option value="' + l.code + '"' + (i === langIndex ? ' selected' : '') + '>' + l.label + '</option>').join('');
-    lang.setAttribute('aria-label', 'The language you are speaking');
 
-    const use = document.createElement('button');
-    use.type = 'button';
-    use.className = 'ea-voice-use';
-    use.textContent = 'Send now';
 
-    panel.append(meter, text, lang, use);
+    panel.append(meter, text);
     mount.replaceWith(btn);
     btn.after(panel);
     const host = btn.parentElement;
@@ -200,13 +176,13 @@
       const has = (finalText + interimText).trim();
       text.classList.toggle('hint', !has);
       text.classList.toggle('live', !!has);
-      if (!has) { text.textContent = rec ? 'Listening…' : 'Recording…'; use.classList.remove('on'); return; }
+      if (!has) { text.textContent = 'Listening…'; return; }
       text.innerHTML = '<span>' + esc(finalText) + (interimText ? '<i class="interim"> ' + esc(interimText) + '</i>' : '') + '</span>';
-      use.classList.toggle('on', !!finalText.trim());
+
     }
     const esc = (t) => String(t).replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
 
-    function say(msg) { finalText = ''; interimText = ''; text.classList.add('hint'); text.classList.remove('live'); text.textContent = msg; use.classList.remove('on'); }
+    function say(msg) { finalText = ''; interimText = ''; text.classList.add('hint'); text.classList.remove('live'); text.textContent = msg;  }
 
     function loop() {
       if (!analyser) return;
@@ -274,31 +250,17 @@
         }
       } catch (e) { recorder = null; }
 
-      if (!SR) {
-        say(recorder ? 'Listening…' : 'This browser cannot record or transcribe. Please type instead.');
+      /* AUTODETECT — the browser does not transcribe here any more.
+         Chrome has no recogniser for most Indian languages, and when handed one it does not
+         know it returns confident English nonsense: an Odia sentence came back as
+         "I'm going to organ body control". A confident wrong answer is worse than a slow
+         right one, so the recording goes to Sarvam, which detects the language from the audio
+         and returns the sentence in its own script. */
+      if (!recorder) {
+        say('This browser cannot record. Please type instead.');
         return;
       }
-
-      rec = new SR();
-      rec.lang = LANGS[langIndex].code;
-      rec.continuous = true;
-      rec.interimResults = true;
-      rec.onresult = (event) => {
-        interimText = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const chunk = event.results[i][0].transcript;
-          if (event.results[i].isFinal) finalText = (finalText + ' ' + chunk).trim();
-          else interimText += chunk;
-        }
-        paint();
-        if (onInterim) onInterim((finalText + ' ' + interimText).trim());
-      };
-      rec.onerror = (e) => {
-        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') say('Speech recognition is blocked. Type instead.');
-        else if (e.error === 'no-speech') say('I did not catch that. Say it again.');
-      };
-      rec.onend = () => { if (open) { try { rec.start(); } catch (_) {} } };
-      try { rec.start(); } catch (_) { say('Could not start listening. Type instead.'); }
+      say('Listening…');
     }
 
     /* A status line that does not wipe the transcript. say() clears the text; this only
@@ -364,60 +326,52 @@
       if (stream) { stream.getTracks().forEach((t) => t.stop()); stream = null; }
       bars.forEach((b) => { b.style.transform = 'scaleY(.12)'; });
 
-      const said = (finalText + ' ' + interimText).trim();
       finalText = ''; interimText = '';
 
-      /* Stop the recorder and decide who transcribed. The browser wins when it produced
-         something, because it is instant and already done; Saaras is asked only when the
-         browser gave us nothing, which for most Indic languages is every time. */
       const hadRecorder = recorder;
       if (recorder) { try { recorder.stop(); } catch (_) {} recorder = null; }
 
       if (!commit) { chunks = []; return; }
-
-      if (said) { chunks = []; if (onFinal) onFinal(said); return; }
-
       if (!hadRecorder || !chunks.length || !window.EAAPI || !EAAPI.listen) { chunks = []; return; }
 
       const blob = new Blob(chunks, { type: hadRecorder.mimeType || 'audio/webm' });
       chunks = [];
+
+      /* Reopen the bar just to say what is happening: transcription takes about a second, and
+         a screen that goes blank in that second reads as a failure. */
+      host.classList.add('ea-open');
+      reveal();
+      say('Writing down what you said…');
       if (opts.onTranscribing) opts.onTranscribing();
-      EAAPI.listen(blob, LANGS[langIndex].code).then((out) => {
-        const text = out && !out.error ? String(out.text || out.transcript || '').trim() : '';
-        if (text) { if (onFinal) onFinal(text); return; }
+
+      /* No language hint. Sarvam detects it from the audio, and the language it reports is what
+         Smiti will answer in. */
+      EAAPI.listen(blob).then((out) => {
+        const heard = out && !out.error ? String(out.text || out.transcript || '').trim() : '';
+        conceal();
+        host.classList.remove('ea-open');
+        if (heard) {
+          detected = out.lang || null;
+          if (onFinal) onFinal(heard, detected);
+          return;
+        }
         /* Never silently drop what somebody said. */
         if (opts.onTranscribeFailed) opts.onTranscribeFailed(out && out.error);
       });
     }
 
     btn.addEventListener('click', () => (open ? stop(true) : start()));
-    use.addEventListener('click', () => stop(true));
-    lang.addEventListener('change', () => {
-      const i = LANGS.findIndex((l) => l.code === lang.value);
-      if (i < 0) return;
-      langIndex = i;
-      picked = true;              /* an explicit choice outranks anything we detected */
-      if (rec) { rec.lang = LANGS[i].code; rec.onend = null; try { rec.stop(); } catch (_) {} rec = null; open = false; start(); }
-    });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && open) stop(false); });
     window.addEventListener('pagehide', () => { if (open) stop(false); });
 
     /* Let the page follow the site language selector without rebuilding the control. */
-    function setLang(code) {
-      const i = LANGS.findIndex((l) => l.code === code);
-      if (i < 0 || i === langIndex) return;
-      langIndex = i;
-      lang.textContent = LANGS[i].label;
-      if (rec) rec.lang = code;
-    }
 
-    return { start, stop, setLang, el: host, button: btn, panel: panel, supported: !!SR,
-             /* Which language the mic is set to, so a reply can be spoken in the same one. */
-             get langCode() { return LANGS[langIndex].code; },
-             /* True once the person has chosen a language themselves, which outranks detection. */
-             get langPicked() { return picked; },
+    return { start, stop, el: host, button: btn, panel: panel,
+             /* Whatever language the citizen was actually heard speaking. */
+             get langCode() { return detected; },
+             get langPicked() { return Boolean(detected); },
              isOpen: function () { return host.classList.contains('ea-open'); } };
   }
 
-  window.EAVoice = { attach, transcriptionSupported: !!SR };
+  window.EAVoice = { attach, browserRecogniser: !!SR };
 })();

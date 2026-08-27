@@ -125,7 +125,7 @@
       "dedup_asset_type": "discom_feeder",
       "tier": "State utility",
       "office": "Executive Engineer, {discom}",
-      "reason": "Your distribution company answers first, and there is a statutory forum above it.",
+      "reason": "Your electricity company answers first, and the law puts a forum above it if they do not.",
       "legal_basis": "Electricity Act 2003",
       "route": "state_portal",
       "remedy": "electricity.cgrf",
@@ -149,7 +149,7 @@
       "tier": "Central",
       "office": "Regional Provident Fund Commissioner",
       "reason": "EPFO handles this through its own grievance system before anything else.",
-      "legal_basis": "Employees' Provident Funds and Miscellaneous Provisions Act 1952",
+      "legal_basis": "Employees' Provident Funds Act, 1952",
       "route": "epfigms",
       "remedy": "pf.ombudsman",
       "identifiers": [
@@ -185,7 +185,7 @@
       "dedup_asset_type": null,
       "tier": "Central",
       "office": "Centralised Processing Centre, Income Tax Department",
-      "reason": "Refund delays are handled by CPC, and interest on the delay is your statutory right.",
+      "reason": "The processing centre handles refund delays, and the law says you get interest on the delay.",
       "legal_basis": "Income-tax Act 1961",
       "route": "e_nivaran",
       "remedy": "tax.244a",
@@ -263,7 +263,7 @@
       "legal_basis": "National Food Security Act 2013, sections 14, 15 and 16",
       "route": "state_portal",
       "remedy": "ration.nfsa",
-      "note": "One report can create two records: a private case for your own entitlement, and a joinable public case about the shop.",
+      "note": "One report can make two cases: a private one about what you are owed, and a shared one about the shop that neighbours can join.",
       "asks": [
         {
           "q": "What were you refused, and in which month?",
@@ -306,7 +306,7 @@
       "dedup_asset_type": null,
       "tier": "Central + State",
       "office": "State Nodal Officer, PM-KISAN",
-      "reason": "Portal-level issues are fixed at tier one; land seeding and eligibility escalate to the state nodal officer.",
+      "reason": "Simple portal problems are fixed at the first level. Land records and eligibility go up to the senior state officer for the scheme.",
       "legal_basis": "Central scheme of the Ministry of Agriculture and Farmers Welfare",
       "route": "pmkisan",
       "remedy": "pmkisan.escalation",
@@ -329,7 +329,7 @@
       "dedup_asset_type": "project_id",
       "tier": "State regulator",
       "office": "State Real Estate Regulatory Authority",
-      "reason": "RERA has an adjudicating officer who can award compensation, with a 60-day clock.",
+      "reason": "RERA has an officer who can order the builder to pay you, and has to decide within 60 days.",
       "legal_basis": "Real Estate (Regulation and Development) Act 2016",
       "route": "state_portal",
       "remedy": "housing.rera",
@@ -352,7 +352,7 @@
       "dedup_asset_type": null,
       "tier": "Central",
       "office": "Divisional Railway Manager via RailMadad",
-      "reason": "RailMadad and helpline 139 handle this, and CPGRAMS is genuinely the correct escalation above it. We say so rather than pretending otherwise.",
+      "reason": "RailMadad and helpline 139 handle this, and CPGRAMS really is the right place above them. We say so instead of pretending we are better.",
       "legal_basis": "Railways Act 1989",
       "route": "railmadad",
       "remedy": null,
@@ -387,7 +387,7 @@
         },
         {
           "q": "Have you complained to them, and did they give you a docket number?",
-          "hint": "That docket is what an appellate authority will ask for.",
+          "hint": "That number is the first thing an appeal officer will ask you for.",
           "ph": "Example: yes, docket 8891234, nothing since"
         }
       ]
@@ -399,7 +399,7 @@
       "tier": "Depends on the office",
       "office": "The grievance officer of the department concerned",
       "reason": "We route to the department's own grievance officer and start the clock.",
-      "legal_basis": "DARPG Office Memorandum, 23 August 2024 — administrative, not statutory",
+      "legal_basis": "A government instruction of 23 August 2024 — an internal rule, not a law",
       "route": "cpgrams",
       "remedy": "service.rts_act",
       "asks": [

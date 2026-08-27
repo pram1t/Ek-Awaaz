@@ -155,13 +155,13 @@ textarea:disabled{background:#f9f3e9;color:#9a8674}
 .head-home{margin-left:14px;white-space:nowrap}
 @media(max-width:700px){.head-home{display:none}}
 </style>
-  <link rel="stylesheet" href="/heritage.css?v=20260827-h1" />
-  <link rel="stylesheet" href="/structure.css?v=20260827-s1" />
+  <link rel="stylesheet" href="/heritage.css?v=78ee315348" />
+  <link rel="stylesheet" href="/structure.css?v=78ee315348" />
 </head>
 <body>
-<script src="api-client.js?v=20260826-12"></script>
-<script src="session.js?v=20260826-12"></script>
-<script src="voice.js?v=20260827-01"></script>
+<script src="api-client.js?v=78ee315348"></script>
+<script src="session.js?v=78ee315348"></script>
+<script src="voice.js?v=78ee315348"></script>
 <div class="top"><div class="shell">Ek Awaaz · Lodging a grievance</div></div>
 
 <header class="head"><div class="shell head-in">
@@ -517,18 +517,48 @@ function askForCoords() {
   });
 }
 
+/* What "where" means depends on the problem.
+   A village and block decide who owns a broken road. They decide nothing about a stuck PF claim,
+   a wrong bank debit or a train refund — asking a person for their block when their provident fund
+   is stuck is the same failure as asking them to pick a ministry: a question shaped by our table
+   rather than by their situation. For those, the useful answer is the branch, the office or the
+   train, plus a city so the case can still be routed to the right region. */
+const PLACE_ASK = {
+  road:   { q: 'Where is this? Village or ward, then block and district.',
+            hint: 'A landmark helps on top of that. This is what decides which office holds the case.' },
+  water:  { q: 'Where is this? Village or ward, then block and district.',
+            hint: 'The street or the handpump is enough for the first part.' },
+  power:  { q: 'Which area, and which electricity office serves you?',
+            hint: 'The ward or village, and the sub-division on your bill if you have it to hand.' },
+  ration: { q: 'Which ration shop, and in which village or ward?',
+            hint: 'The shop name or its number, and where it is.' },
+  bank:   { q: 'Which bank branch, and in which city?',
+            hint: 'The branch name is enough. Never type your account number.' },
+  pf:     { q: 'Which city do you work in, and who is your employer?',
+            hint: 'This tells me which EPFO office holds your account. Never type your UAN here.' },
+  tax:    { q: 'Which city are you assessed in?',
+            hint: 'The city on your return. Never type your PAN.' },
+  rail:   { q: 'Which train or station?',
+            hint: 'A train number, or the station name, and the date if it was a journey.' },
+  id:     { q: 'Which city or district did you apply from?',
+            hint: 'The centre or office you applied at, if you remember it.' },
+  bribe:  { q: 'Which office was this at?',
+            hint: 'The office and the town. Only what you are willing to have on record.' },
+  other:  { q: 'Where is this? Village or ward, then block and district.',
+            hint: 'A landmark helps. This is what decides which office holds the case.' },
+};
+
 function locationStep() {
+  const shape = PLACE_ASK[domain && domain.key] || PLACE_ASK.other;
   if (coords) {
     return { key: 'location', label: 'Location', kind: 'location',
-      q: 'Where is this? Tell me the name of the place.',
+      q: shape.q,
       hint: 'Your phone puts you near ' + coords.lat + ', ' + coords.lon + ' (about ' + coords.accuracy
-          + ' m). I still need the name — village or ward, then block and district — because that is '
-          + 'what decides which office holds the case.' };
+          + ' m). I still need it in words, because that is what decides which office holds the case.' };
   }
   return { key: 'location', label: 'Location', kind: 'location',
-    q: 'Where is this? Village or ward, then block and district.',
-    hint: (coordsAsked ? 'Your phone did not share a location, so tell me in words. ' : '')
-        + 'A landmark helps on top of that. This is what decides which office holds the case.' };
+    q: shape.q,
+    hint: (coordsAsked ? 'Your phone did not share a location, so tell me in words. ' : '') + shape.hint };
 }
 
 const thread = document.querySelector('#thread'), wrap = document.querySelector('#threadWrap');
@@ -623,11 +653,28 @@ const progressLabels = ['Reading your grievance', 'Narrowing the office', 'Check
 
 function save() { if (window.EA) EA.patch({ draft: { issue: issue, step: step, answers: answers, domain: domain.key, at: Date.now() } }); }
 
+/* The model's questions already come back in the citizen's language. These two do not, because
+   we wrote them — so they are translated before being asked. English is the silent fallback. */
+async function askLocalised(entry) {
+  const lang = spokenLang();
+  if (!lang || /^en/i.test(lang) || !window.EAAPI || !EAAPI.say) {
+    ask(entry.q, entry.hint, entry.chips);
+    return;
+  }
+  const wanted = [entry.q, entry.hint || ''].filter(Boolean);
+  const out = await EAAPI.say(wanted, lang);
+  const got = out && !out.error && Array.isArray(out.lines) && out.lines.length === wanted.length
+    ? out.lines : wanted;
+  ask(got[0], entry.hint ? got[1] : null, entry.chips);
+}
+
 function advance() {
   progressText.textContent = progressLabels[Math.min(step, progressLabels.length - 1)];
   if (step >= steps.length) { route(); return; }
   const entry = steps[step];
-  ask(entry.q, entry.hint, entry.chips);
+  /* Only our own lines need translating; the model's asks arrive already in their language. */
+  if (entry.key === 'evidence' || entry.key === 'location') askLocalised(entry);
+  else ask(entry.q, entry.hint, entry.chips);
 }
 
 function send(text) {
@@ -1216,7 +1263,7 @@ if (draft && draft.step > 0 && (!issue || draft.issue === issue)) {
   advance();
 }
 </script>
-<script src="kolam.js?v=20260827-s1"></script>
+<script src="kolam.js?v=78ee315348"></script>
 <script>
 /* portrait fallback, delegated. A broken image in a chat avatar should degrade to her
    initial, and doing it here rather than with an inline onerror keeps the generated

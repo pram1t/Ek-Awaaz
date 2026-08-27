@@ -303,7 +303,7 @@ export function rateLimit(key) {
              reason: 'Too many requests in a minute.' };
   }
   if (rec.day >= PER_DAY) {
-    return { ok: false, retryAfter: 3600, reason: 'Daily limit for this prototype reached.' };
+    return { ok: false, retryAfter: 3600, reason: 'This demo has hit its limit for today.' };
   }
 
   rec.recent.push(now);

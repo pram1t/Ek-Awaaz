@@ -198,7 +198,7 @@ export async function speak(text, { lang = 'hi-IN', speaker = VOICE, pace = 0.95
 
   if (spend.inr + trimmed.length * RATE_TTS_PER_CHAR > CEILING_INR) {
     spend.blocked += 1;
-    return { error: 'Speech budget for this prototype is used up.' };
+    return { error: 'The voice budget for this demo is finished.' };
   }
 
   try {
@@ -225,7 +225,7 @@ export async function speak(text, { lang = 'hi-IN', speaker = VOICE, pace = 0.95
   } catch (err) {
     const second = await openaiSpeak(trimmed, use);
     if (!second.error) return second;
-    return { error: 'Could not reach the speech service.' };
+    return { error: 'We could not reach the voice service.' };
   }
 }
 
@@ -245,7 +245,7 @@ export async function listen(audio, { lang = 'unknown', filename = 'clip.webm', 
   const seconds = Math.max(1, Math.round(audio.length / 3000));
   if (spend.inr + seconds * RATE_STT_PER_SECOND > CEILING_INR) {
     spend.blocked += 1;
-    return { error: 'Speech budget for this prototype is used up.' };
+    return { error: 'The voice budget for this demo is finished.' };
   }
 
   try {
@@ -278,7 +278,7 @@ export async function listen(audio, { lang = 'unknown', filename = 'clip.webm', 
   } catch (err) {
     const second = await openaiListen(audio, { lang, filename, mime });
     if (!second.error) return second;
-    return { error: 'Could not reach the speech service.' };
+    return { error: 'We could not reach the voice service.' };
   }
 }
 

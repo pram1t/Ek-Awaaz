@@ -11,7 +11,7 @@
 import express, { Router } from 'express';
 import * as db from './db.js';
 import { routing, remedies } from './db.js';
-import { classify, pickOption, plainLanguage, routingSentence, aiAvailable, answerAboutCase, nextQuestion, MAX_QUESTIONS, summariseIntake } from './ai.js';
+import { classify, pickOption, plainLanguage, routingSentence, aiAvailable, answerAboutCase, nextQuestion, MAX_QUESTIONS, summariseIntake , localise } from './ai.js';
 import { sanitizeInput, detectEmergency, rateLimit, budgetReport, cacheReport, MAX_INPUT_CHARS } from './guardrails.js';
 import { speak, listen, speechAvailable, speechReport, ttsLanguages, etag, VOICE } from './speech.js';
 
@@ -133,7 +133,7 @@ function metered(req, res, next) {
   const gate = rateLimit(who);
   if (!gate.ok) {
     res.set('Retry-After', String(gate.retryAfter));
-    return res.status(429).json({ error: gate.reason + ' This is a prototype on a small budget.', retryAfter: gate.retryAfter });
+    return res.status(429).json({ error: gate.reason + ' This is a demo running on a small budget.', retryAfter: gate.retryAfter });
   }
   next();
 }
@@ -324,7 +324,7 @@ api.post('/next', metered, async (req, res) => {
 api.post('/cases', (req, res) => {
   const b = req.body || {};
   const phone = digits(b.phone);
-  if (phone.length !== 10) return res.status(401).json({ error: 'Verify your mobile number first.' });
+  if (phone.length !== 10) return res.status(401).json({ error: 'Please confirm your mobile number first.' });
   if (digits(b.otp) !== MOCK_OTP) return res.status(401).json({ error: `Demo mode — the code is ${MOCK_OTP}.` });
 
   const resolved = resolve(b.domain, b.optionKey, { area: b.area, state: b.state });
@@ -376,7 +376,7 @@ api.get('/cases/:code', (req, res) => {
 api.post('/cases/:code/support', (req, res) => {
   const b = req.body || {};
   const phone = digits(b.phone);
-  if (phone.length !== 10) return res.status(401).json({ error: 'Verify your mobile number first.' });
+  if (phone.length !== 10) return res.status(401).json({ error: 'Please confirm your mobile number first.' });
   if (digits(b.otp) !== MOCK_OTP) return res.status(401).json({ error: `Demo mode — the code is ${MOCK_OTP}.` });
 
   const out = db.addSignature(req.params.code, phone, b.note);
@@ -409,7 +409,7 @@ api.get('/cases/:code/timeline', (req, res) => {
 api.post('/cases/:code/reply', (req, res) => {
   const b = req.body || {};
   const phone = digits(b.phone);
-  if (phone.length !== 10) return res.status(401).json({ error: 'Verify your mobile number first.' });
+  if (phone.length !== 10) return res.status(401).json({ error: 'Please confirm your mobile number first.' });
   if (digits(b.otp) !== MOCK_OTP) return res.status(401).json({ error: `Demo mode — the code is ${MOCK_OTP}.` });
 
   const clean = sanitizeInput(b.text);
@@ -446,7 +446,7 @@ api.post('/cases/:code/confirm', (req, res) => {
   const phone = digits(b.phone);
   const verdict = ['fixed', 'not_fixed', 'partly'].includes(b.verdict) ? b.verdict : null;
   if (!verdict) return res.status(400).json({ error: 'Say fixed, not fixed, or partly.' });
-  if (phone.length !== 10) return res.status(401).json({ error: 'Verify your mobile number first.' });
+  if (phone.length !== 10) return res.status(401).json({ error: 'Please confirm your mobile number first.' });
 
   const out = db.confirmCase(req.params.code, phone, verdict);
   if (out.error) return res.status(404).json({ error: 'No case with that number.' });
@@ -533,6 +533,15 @@ api.post('/stt', metered, express.raw({ type: 'audio/*', limit: '8mb' }), async 
   });
 });
 
+/** Our own fixed lines, in the citizen's language. Metered like any other model call. */
+api.post('/say', metered, async (req, res) => {
+  const lines = Array.isArray(req.body?.lines) ? req.body.lines.slice(0, 12) : [];
+  const lang = String(req.body?.lang || 'en-IN').slice(0, 8);
+  if (!lines.length) return res.json({ lines: [], source: 'empty' });
+  const out = await localise(lines, lang);
+  res.json(out);
+});
+
 api.get('/speech/languages', (_req, res) => res.json({
   speak: ttsLanguages(),
   voice: VOICE,
@@ -549,7 +558,7 @@ api.get('/me/:phone', (req, res) => {
 /** The one fact no grievance can supply. Optional: nothing is gated on having answered. */
 api.post('/me/:phone/name', (req, res) => {
   const phone = digits(req.params.phone);
-  if (phone.length !== 10) return res.status(401).json({ error: 'Verify your mobile number first.' });
+  if (phone.length !== 10) return res.status(401).json({ error: 'Please confirm your mobile number first.' });
   if (digits(req.body?.otp) !== MOCK_OTP) return res.status(401).json({ error: `Demo mode — the code is ${MOCK_OTP}.` });
 
   const clean = sanitizeInput(String(req.body?.name || ''));

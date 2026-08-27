@@ -66,6 +66,13 @@ in. English in, English out. Devanagari in, Devanagari out. Hindi typed in Latin
 Hindi back in Latin letters. This covers the asks, the title and the summary alike. Getting
 this wrong is the worst thing you can do here.
 
+RULE ONE AND A HALF: use the simplest words that still say the true thing. Short sentences.
+No official register. Say "fixed" not "redressed", "goes up to" not "escalates", "the law says"
+not "statutory", "whose job it is" not "jurisdiction". If a real office has a long official name,
+use the name and then say plainly what that officer does — the name is how they ask for the right
+person, and the plain words are how they know why. A sentence a person would not say out loud is
+the wrong sentence, even when every word in it is correct.
+
 RULE TWO: never ask which office, department, authority or ministry handles this. Working that
 out is our job, and they do not know the answer — not knowing is the whole reason they came to
 us.
@@ -283,6 +290,113 @@ Reply as JSON: {"sentence":""}`,
 }
 
 /* ------------------------------------------------------------- PLAIN LANGUAGE ----- */
+
+/* Translate our own fixed lines into the citizen's language.
+   Only ever called with sentences we wrote ourselves, so there is nothing here to be grounded
+   against — it is not answering a question, it is saying the same thing in another language.
+   Cached per language, because these are the same eight lines for everybody. */
+/* Each Indic language has its own Unicode block, so a claim to have translated into Kannada is
+   checkable: ask for kn-IN and the reply must contain Kannada characters. It came back in Gujarati
+   once, which reads as gibberish to the person it was meant for and cannot be spoken by the voice
+   for that language either. Prompted rules do not hold; this does. */
+/* Named, with a sample of the script itself. A locale code is not an instruction a model can
+   check itself against; a script name plus an example is. */
+const SCRIPT_NAME = {
+  hi: 'Devanagari (देवनागरी)', mr: 'Devanagari (देवनागरी)',
+  bn: 'Bengali (বাংলা)',
+  pa: 'Gurmukhi (ਗੁਰਮੁਖੀ)',
+  gu: 'Gujarati (ગુજરાતી)',
+  od: 'Odia (ଓଡ଼ିଆ)', or: 'Odia (ଓଡ଼ିଆ)',
+  ta: 'Tamil (தமிழ்)',
+  te: 'Telugu (తెలుగు)',
+  kn: 'Kannada (ಕನ್ನಡ)',
+  ml: 'Malayalam (മലയാളം)',
+};
+
+const SCRIPT_RANGE = {
+  hi: /[ऀ-ॿ]/, mr: /[ऀ-ॿ]/,
+  bn: /[ঀ-৿]/,
+  pa: /[਀-੿]/,
+  gu: /[઀-૿]/,
+  od: /[଀-୿]/, or: /[଀-୿]/,
+  ta: /[஀-௿]/,
+  te: /[ఀ-౿]/,
+  kn: /[ಀ-೿]/,
+  ml: /[ഀ-ൿ]/,
+};
+
+/** True when the text is actually written in the script that language uses. */
+function inExpectedScript(text, lang) {
+  const re = SCRIPT_RANGE[String(lang || '').slice(0, 2).toLowerCase()];
+  if (!re) return true;                       /* no expectation we can check */
+  return re.test(String(text || ''));
+}
+
+export async function localise(texts, lang) {
+  const list = (Array.isArray(texts) ? texts : [texts]).map((t) => String(t || '').slice(0, 300));
+  if (!list.length) return { lines: [], source: 'empty' };
+  /* English in, English out — no call, no spend. */
+  if (!lang || /^en/i.test(lang)) return { lines: list, source: 'passthrough' };
+
+  const key = cacheKey('localise', lang, list.join('|'));
+  const cached = cacheGet(key);
+  if (cached) return { lines: cached, source: 'model', cached: true };
+
+  const system = `You translate short interface lines for a government grievance service in India.
+
+Reply as JSON: {"lines":{"1":"...","2":"..."}} — the SAME KEYS you were given, each holding the
+translation of that numbered line. Do not reorder them, drop any, or merge two into one.
+
+Rules:
+- Translate into ${lang}, in that language's own script.
+- Keep it as short and as plain as the English. These are things a person reads on a phone.
+- Official names of offices, schemes and laws stay as they are: Block Development Officer, EPFO,
+  NFSA, RBI Ombudsman. Someone has to be able to ask for them by name.
+- Numbers, dates and rupee amounts stay exactly as given.
+- Do not add anything, explain anything or make anything more polite.`;
+
+  /* Keyed, not positional. Kannada came back with the two lines in the opposite order once, and
+     a positional read would have put the location text under the attachment question — a silent
+     mismatch that reads as the model being stupid rather than us being careless. */
+  const numbered = {};
+  list.forEach((line, i) => { numbered[String(i + 1)] = line; });
+
+  const scriptName = SCRIPT_NAME[String(lang || '').slice(0, 2).toLowerCase()];
+  let correction = '';
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const out = await ask(system + correction, JSON.stringify({ lines: numbered }),
+                            { maxTokens: 500, temperature: attempt ? 0 : 0.1 });
+      const got = out && out.lines;
+      const lines2 = list.map((_, i) => String((got && got[String(i + 1)]) || '').trim());
+
+      if (lines2.some((l) => !l)) {
+        correction = '\nYour previous reply dropped a line. Return every key you were given.\n';
+        continue;
+      }
+
+      /* Asked for Kannada, given Gujarati. Unreadable for the person it is meant for, and the
+         voice for that language cannot speak it either. One correction, then English. */
+      if (lines2.some((l) => !inExpectedScript(l, lang))) {
+        correction = scriptName
+          ? '\nYour previous reply was NOT in the right script. Write every line in the '
+            + scriptName + ' script. Nothing in Latin letters, and nothing in any other Indian script.\n'
+          : '\nYour previous reply was not in the requested script. Use the script of ' + lang + '.\n';
+        continue;
+      }
+
+      cacheSet(key, lines2);
+      return { lines: lines2, source: 'model', attempts: attempt + 1 };
+    } catch (err) {
+      /* Silently English. One English question inside an Odia conversation is a blemish; a
+         failed screen is a lost grievance. */
+      return { lines: list, source: 'fallback', why: err.message };
+    }
+  }
+
+  return { lines: list, source: 'fallback', why: 'wrong_script_twice' };
+}
 
 export async function plainLanguage(atr, language = 'en') {
   const fallback = {
