@@ -181,11 +181,14 @@
   function countUp(node, to, ms) {
     const fmt = (n) => n.toLocaleString('en-IN');
     if (still) { node.textContent = fmt(to); return; }
+    /* Start near the value, not at zero. A wrong number on screen is a wrong number,
+       however briefly, and this page is an argument about a number. */
+    const from = Math.round(to * 0.88);
     const t0 = performance.now();
     const ease = (t) => 1 - Math.pow(1 - t, 3);
     (function tick(now) {
       const t = Math.min(1, (now - t0) / ms);
-      node.textContent = fmt(Math.round(to * ease(t)));
+      node.textContent = fmt(Math.round(from + (to - from) * ease(t)));
       if (t < 1) requestAnimationFrame(tick);
     })(t0);
   }
@@ -200,11 +203,13 @@
     const io = new IntersectionObserver((entries) => {
       entries.forEach((e) => {
         if (!e.isIntersecting) return;
-        countUp(e.target, +e.target.dataset.count, 1100);
+        countUp(e.target, +e.target.dataset.count, 700);
         io.unobserve(e.target);
       });
     }, { threshold: 0.4 });
-    nodes.forEach((n) => { n.textContent = '0'; io.observe(n); });
+    /* Rendered at its true value from the first paint. The animation replaces a correct
+       number with a nearly-correct one for 700ms; it never replaces it with zero. */
+    nodes.forEach((n) => { n.textContent = (+n.dataset.count).toLocaleString('en-IN'); io.observe(n); });
   }
 
 

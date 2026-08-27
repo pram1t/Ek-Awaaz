@@ -87,3 +87,16 @@ input, textarea, select, .case-card, .entry-card, .card, .info, .where,
   background: var(--madder);
   outline: 2px solid var(--ink);
 }
+
+/* ── the mark, at mark size ───────────────────────────────────────────────────
+   The arcade works at 106px in a mockup and fails at 58px in a masthead: three outlined
+   arches at that scale resolve into three blobs. Two changes, both about legibility rather
+   than taste — a heavier stroke on the outer bays so they survive being small, and more room
+   between them so the middle one reads as a separate filled arch instead of the centre of a
+   single shape. */
+.ea-mark{ width: 48px; height: 26px; flex: 0 0 48px; overflow: visible }
+.ea-mark path{ vector-effect: non-scaling-stroke }
+
+
+/* the masthead lockup gets the extra couple of pixels back from the wordmark */
+.brand{ gap: 15px !important }
