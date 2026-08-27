@@ -1,0 +1,89 @@
+/* Ek Awaaz — the heritage layer.
+   Loaded last, so it settles type, shape and the mark over whatever each page already had.
+
+   The colour was handled by remapping the pages themselves; this file carries the three
+   things a find-and-replace cannot: the display face, the shape language, and the arcade
+   mark's sizing. Nothing here changes layout or behaviour. */
+
+/* ── semantic names for the palette the pages now use ─────────────────────────
+   The page variables are still called --blue and --navy from the old scheme. Rather than
+   rename three hundred call sites, the dye names are declared alongside them so new work
+   can say what it means. */
+:root{
+  --madder:#8c2416; --madder-dk:#6e1b10;
+  --leaf:#1e4633; --turmeric:#8a5a1c; --indigo:#3a2e52;
+  --alarm:#a3231b;
+  --ivory:#fbf6ec; --cream:#f2e5d0; --rule:#e4d8c4;
+  --ink:#241a14; --ink-soft:#7a6455;
+}
+
+/* ── type ─────────────────────────────────────────────────────────────────────
+   Marcellus for display. It is a Roman-capital face, dignified rather than decorative,
+   and it carries authority without the wedding-invitation feel a script would bring.
+   The old scheme set tight negative tracking for a grotesque; Marcellus needs none, and
+   keeping it would jam the serifs together. */
+h1, h2, h3,
+.hero h1, .brand-title{
+  font-family: Marcellus, Georgia, "Times New Roman", serif !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.14;
+}
+/* Devanagari has its own face and must not inherit the Latin serif. */
+.dev, [lang="hi"], .brand strong{
+  font-family: "Tiro Devanagari Hindi", serif !important;
+  letter-spacing: 0 !important;
+}
+
+/* ── shape ────────────────────────────────────────────────────────────────────
+   Stone and paper do not have 8px corners. Everything squares up to a 2px radius, which
+   reads as a printed register rather than a web app. */
+.button, .btn, .ea-btn, .filter, .status, .chip, .tag,
+input, textarea, select, .case-card, .entry-card, .card, .info, .where,
+.detail-card, .ea-card, .gate-out, .gate-verdicts button, .act button{
+  border-radius: 2px !important;
+}
+.brand-mark, .seal, .avatar, .didi-portrait, .ea-voice-btn, .mic,
+.brand-mark i, .seal i{
+  border-radius: 50% !important;   /* round things stay round */
+}
+
+/* ── the arcade mark ─────────────────────────────────────────────────────────
+   Three cusped arches, the middle one filled: one voice standing among many, which is the
+   joinder mechanic the product is actually built on. Drawn in currentColor so it inherits
+   whatever the surrounding text is — cream in a dark header, madder on ivory. */
+.ea-mark{
+  width: 58px; height: 22px;
+  flex: 0 0 58px;
+  display: block;
+  color: var(--madder);
+}
+.top .ea-mark, footer .ea-mark, .entry-card.public .ea-mark{ color: var(--cream); }
+
+/* the brand lockup gains a little air now the mark is wider than the old disc */
+.brand{ gap: 13px !important; }
+.brand strong{ line-height: 1 !important; }
+
+/* ── the honest strip is never decorated ────────────────────────────────────── */
+.notice-bar, .top{ letter-spacing: .06em; }
+
+/* ── focus, in the new accent ───────────────────────────────────────────────── */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible{
+  outline: 2px solid var(--madder);
+  outline-offset: 2px;
+}
+
+/* ── the skip link ────────────────────────────────────────────────────────────
+   It had no colour of its own, so it inherited the browser default link blue — invisible
+   until a keyboard user focuses it, at which point the one cold colour on the site appears
+   in front of exactly the person most likely to be reading carefully. */
+.skip-link{
+  color: var(--cream);
+  background: var(--ink);
+  border-color: var(--madder);
+}
+.skip-link:focus, .skip-link:focus-visible{
+  color: var(--cream);
+  background: var(--madder);
+  outline: 2px solid var(--ink);
+}

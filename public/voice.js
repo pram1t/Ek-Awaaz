@@ -29,14 +29,14 @@
      leading edge of the animation. */
   .ea-voice-host.ea-open > *:not(.ea-voice-btn):not(.ea-voice-panel){visibility:hidden}
   .ea-voice-btn{flex:0 0 var(--h);width:var(--h);height:var(--h);border:0;border-radius:50%;
-    background:#102a43;color:#fff;display:grid;place-items:center;cursor:pointer;position:relative;
+    background:#241a14;color:#fff;display:grid;place-items:center;cursor:pointer;position:relative;
     transition:background .2s ease}
-  .ea-voice-btn:hover{background:#1d4ed8}
-  .ea-voice-btn:focus-visible{outline:2px solid #1d4ed8;outline-offset:3px}
+  .ea-voice-btn:hover{background:#8c2416}
+  .ea-voice-btn:focus-visible{outline:2px solid #8c2416;outline-offset:3px}
   .ea-voice-btn svg{width:19px;height:19px;display:block}
-  .ea-voice-btn[aria-pressed="true"]{background:#9f1239}
+  .ea-voice-btn[aria-pressed="true"]{background:#a3231b}
   .ea-voice-btn[aria-pressed="true"]::after{content:"";position:absolute;inset:-5px;border-radius:50%;
-    border:2px solid #9f1239;opacity:.5;animation:ea-pulse 1.7s ease-out infinite}
+    border:2px solid #a3231b;opacity:.5;animation:ea-pulse 1.7s ease-out infinite}
   @keyframes ea-pulse{0%{transform:scale(.86);opacity:.6}100%{transform:scale(1.28);opacity:0}}
   @media(prefers-reduced-motion:reduce){.ea-voice-btn[aria-pressed="true"]::after{animation:none;opacity:.35}}
 
@@ -47,7 +47,7 @@
   .ea-voice-panel{position:absolute;z-index:2;left:calc(var(--h) + 12px);right:0;top:50%;
     transform:translateY(-50%);height:var(--h);
     display:flex;align-items:center;gap:12px;padding:0 15px 0 13px;
-    border:1px solid #cbd5df;border-radius:calc(var(--h)/2);background:#fff;
+    border:1px solid #e4d8c4;border-radius:calc(var(--h)/2);background:#fff;
     clip-path:inset(0 100% 0 0 round calc(var(--h)/2));opacity:0;pointer-events:none;
     isolation:isolate;will-change:clip-path,opacity;
     transition:clip-path .34s cubic-bezier(.22,.61,.36,1),opacity .18s ease}
@@ -57,26 +57,26 @@
   @media(prefers-reduced-motion:reduce){.ea-voice-panel{transition:none}}
 
   .ea-voice-meter{flex:0 0 auto;display:flex;align-items:center;gap:2px;height:22px}
-  .ea-voice-meter i{display:block;width:2px;height:100%;border-radius:1px;background:#9fb3c8;
+  .ea-voice-meter i{display:block;width:2px;height:100%;border-radius:1px;background:#bcb0ab;
     transform:scaleY(.12);transform-origin:center;transition:transform .07s linear,background .2s ease}
-  .ea-voice-host.ea-live .ea-voice-meter i{background:#1d4ed8}
+  .ea-voice-host.ea-live .ea-voice-meter i{background:#8c2416}
 
-  .ea-voice-text{flex:1 1 auto;min-width:0;font:500 13px/1.35 Manrope,Arial,sans-serif;color:#24313f;
+  .ea-voice-text{flex:1 1 auto;min-width:0;font:500 13px/1.35 Mukta,Arial,sans-serif;color:#2e2118;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
   /* rtl only once there is a transcript, so a long one clips at the start and the newest
      words stay in view. On hint text it would just move the ellipsis to the wrong side. */
   .ea-voice-text.live{direction:rtl}
   .ea-voice-text span{direction:ltr;unicode-bidi:plaintext}
-  .ea-voice-text .interim{color:#8a99a8}
-  .ea-voice-text.hint{color:#8a99a8;font-weight:400;white-space:normal;direction:ltr}
+  .ea-voice-text .interim{color:#9a8674}
+  .ea-voice-text.hint{color:#9a8674;font-weight:400;white-space:normal;direction:ltr}
 
-  .ea-voice-lang{flex:0 0 auto;border:1px solid #dbe3ea;background:#fbfcfd;border-radius:3px;
-    padding:5px 7px;font:700 10px Manrope,sans-serif;letter-spacing:.05em;color:#5d6b79;cursor:pointer}
-  .ea-voice-lang:hover{border-color:#1d4ed8;color:#1d4ed8}
-  .ea-voice-use{flex:0 0 auto;border:0;border-radius:3px;background:#1d4ed8;color:#fff;
-    padding:8px 11px;font:800 11px Manrope,sans-serif;cursor:pointer;visibility:hidden}
+  .ea-voice-lang{flex:0 0 auto;border:1px solid #eadfcc;background:#fdf9f1;border-radius:3px;
+    padding:5px 7px;font:700 10px Mukta,sans-serif;letter-spacing:.05em;color:#7a6455;cursor:pointer}
+  .ea-voice-lang:hover{border-color:#8c2416;color:#8c2416}
+  .ea-voice-use{flex:0 0 auto;border:0;border-radius:3px;background:#8c2416;color:#fff;
+    padding:8px 11px;font:800 11px Mukta,sans-serif;cursor:pointer;visibility:hidden}
   .ea-voice-use.on{visibility:visible}
-  .ea-voice-use:hover{background:#163dae}
+  .ea-voice-use:hover{background:#6e1b10}
   `;
 
   const MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">'
