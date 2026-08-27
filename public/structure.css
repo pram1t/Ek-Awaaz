@@ -213,3 +213,20 @@
   -webkit-mask: url("/img/ornament/scandinavian-pattern-162.svg") no-repeat center / contain;
   mask: url("/img/ornament/scandinavian-pattern-162.svg") no-repeat center / contain;
 }
+
+
+/* ── the report thread ───────────────────────────────────────────────────────
+   The conversation starts with two lines and the composer is pinned to the bottom, so most of
+   the screen is empty at the moment a citizen is deciding whether to trust this. A mandala low
+   in that space makes the emptiness look composed rather than unfinished, and it sits far
+   enough down that it never competes with the question being asked. */
+.thread-mandala{
+  position: fixed; z-index: 0; pointer-events: none;
+  left: 50%; transform: translateX(-50%);
+  bottom: 90px; width: min(56vw, 520px); aspect-ratio: 1;
+  background-color: var(--madder); opacity: .05;
+  -webkit-mask: url("/img/ornament/mehndi-and-sangeet-595.svg") no-repeat center / contain;
+  mask: url("/img/ornament/mehndi-and-sangeet-595.svg") no-repeat center / contain;
+}
+.thread, .composer{ position: relative; z-index: 1 }
+@media (max-width: 760px){ .thread-mandala{ width: 92vw; bottom: 120px; opacity: .04 } }
