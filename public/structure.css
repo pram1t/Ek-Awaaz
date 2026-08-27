@@ -230,3 +230,20 @@
 }
 .thread, .composer{ position: relative; z-index: 1 }
 @media (max-width: 760px){ .thread-mandala{ width: 92vw; bottom: 120px; opacity: .04 } }
+
+
+/* ── the KPI row ─────────────────────────────────────────────────────────────
+   Each tile says where its number came from — published, policy, a sum of published figures,
+   or this build. Two of the three tiles that used to be here could not answer that question:
+   one was a statistic with no source in the repository, the other a percentage whose
+   denominator we did not have. On this page of all pages, a number has to be able to say what
+   is behind it. */
+.gap-aside > div i{
+  display: block; margin-top: 9px;
+  font: 600 9px Mukta, sans-serif; letter-spacing: .13em; text-transform: uppercase;
+  font-style: normal; color: var(--leaf);
+}
+.gap-aside > div b{ font-size: 27px }
+.gap-aside{ grid-template-columns: repeat(5, minmax(0, 1fr)) }
+@media (max-width: 1080px){ .gap-aside{ grid-template-columns: repeat(3, minmax(0, 1fr)) } }
+@media (max-width: 700px){ .gap-aside{ grid-template-columns: repeat(2, minmax(0, 1fr)) } }
