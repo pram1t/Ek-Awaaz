@@ -36,7 +36,7 @@ const PAGES = {
   '/': 'index.html',
   '/report': 'report.html',
   '/my-cases': 'my-cases.html',
-  '/near-you': 'my-cases.html' /* the public wall lives on the same page for now */
+  '/near-you': 'near-you.html'
 };
 
 /* Anything that still asks for a .html file gets moved to its clean URL, permanently. */
@@ -45,7 +45,8 @@ const LEGACY = {
   '/lodging.html': '/report',
   '/report.html': '/report',
   '/dashboard.html': '/my-cases',
-  '/my-cases.html': '/my-cases'
+  '/my-cases.html': '/my-cases',
+  '/near-you.html': '/near-you'
 };
 
 app.get(Object.keys(LEGACY), (req, res) => res.redirect(301, LEGACY[req.path] + (req._parsedUrl.hash || '')));

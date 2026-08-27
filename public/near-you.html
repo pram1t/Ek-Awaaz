@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reported near you | Ek Awaaz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root{--navy:#102a43;--blue:#1d4ed8;--teal:#0f766e;--amber:#b45309;--paper:#f8f7f3;--line:#d5dfe8;--muted:#5d6b79}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--paper);color:#24313f;font:15px/1.55 Manrope,Arial,sans-serif}
+    .shell{width:min(1120px,calc(100% - 40px));margin:auto}
+    .top{background:var(--navy);color:#dce8f5;padding:10px 0;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+    .header{background:#fff;border-bottom:1px solid var(--line)}
+    .header-inner{min-height:82px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+    .brand{display:flex;align-items:center;gap:11px;color:var(--navy);text-decoration:none}
+    .brand-mark{width:36px;height:36px;border:2px solid var(--blue);border-radius:50%;display:grid;place-items:center;position:relative}
+    .brand-mark i{position:absolute;border:1.5px solid var(--blue);border-radius:50%}
+    .brand-mark i:nth-child(1){width:23px;height:23px}
+    .brand-mark i:nth-child(2){width:14px;height:14px}
+    .brand-mark i:nth-child(3){width:5px;height:5px;background:var(--blue)}
+    .brand strong{font:700 25px Hind,serif;display:block;line-height:.85}
+    .brand small{display:block;font-size:8px;letter-spacing:.22em;font-weight:800;margin-top:5px}
+    .header-right{display:flex;align-items:center;gap:16px}
+    .header-right a.plain{color:var(--muted);font-size:12px;font-weight:700;text-decoration:none}
+    .header-right a.plain:hover{color:var(--blue)}
+    .button{border:0;border-radius:4px;padding:12px 16px;background:var(--blue);color:#fff;
+      font:800 12px Manrope,sans-serif;text-decoration:none;cursor:pointer;display:inline-block}
+    .button.light{background:#fff;color:var(--navy);border:1px solid var(--line)}
+    .button.light:hover{border-color:var(--blue);color:var(--blue)}
+    .main{padding:50px 0 90px}
+    .eyebrow{color:var(--blue);font-size:11px;text-transform:uppercase;letter-spacing:.1em;font-weight:800;margin:0 0 10px}
+    h1,h2,h3{color:var(--navy);margin:0;line-height:1.15;letter-spacing:-.03em}
+    h1{font-size:44px}
+
+    .lede{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:40px;align-items:end;margin-bottom:34px}
+    .lede p{color:var(--muted);margin:14px 0 0;max-width:52ch}
+    .why{background:#fff;border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:4px;padding:18px 20px}
+    .why b{display:block;color:var(--navy);font-size:13.5px;margin-bottom:6px}
+    .why span{display:block;color:var(--muted);font-size:13px;line-height:1.6}
+
+    /* Location. Nothing here claims to know where you are until you say so. */
+    .where{background:#fff;border:1px solid var(--line);border-radius:6px;padding:18px 20px;margin-bottom:26px}
+    .where-row{display:flex;align-items:end;gap:12px;flex-wrap:wrap}
+    .where label{display:block;font:800 9.5px Manrope,sans-serif;letter-spacing:.09em;
+      text-transform:uppercase;color:#8a99a8;margin-bottom:6px}
+    .where select,.where input{border:1px solid var(--line);border-radius:4px;padding:11px 12px;
+      font:600 13px Manrope,sans-serif;color:var(--navy);background:#fff;min-width:190px}
+    .where select:focus,.where input:focus{outline:2px solid var(--blue);outline-offset:1px;border-color:var(--blue)}
+    .where-note{margin:12px 0 0;font-size:12px;color:#8a99a8;line-height:1.5}
+    .where-note b{color:var(--navy)}
+
+    .count-line{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin:0 0 14px}
+    .count-line p{margin:0;font:800 11px Manrope,sans-serif;letter-spacing:.09em;
+      text-transform:uppercase;color:var(--muted)}
+    .count-line span{font-size:12px;color:#8a99a8}
+
+    .wall{display:grid;gap:11px}
+    .card{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.9fr) minmax(0,1.1fr) auto;
+      gap:24px;align-items:start;background:#fff;border:1px solid var(--line);border-radius:4px;
+      padding:19px 21px;transition:border-color .2s}
+    .card:hover{border-color:#9db4ca}
+    .card h3{font-size:17px;margin:9px 0 5px;letter-spacing:-.015em}
+    .card .cid{margin:0;color:var(--muted);font-size:11px;letter-spacing:.04em}
+    .status{display:inline-block;padding:4px 8px;border-radius:3px;font:800 9.5px Manrope,sans-serif;
+      letter-spacing:.09em;text-transform:uppercase}
+    .status.open{background:#e7effc;color:var(--blue)}
+    .status.waiting{background:#fdf1e0;color:var(--amber)}
+    .status.done{background:#e3f2ee;color:var(--teal)}
+    .fact small{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+      color:#8a99a8;font-weight:800;margin-bottom:6px}
+    .fact b{display:block;font-size:12.5px;color:var(--navy);font-weight:700;line-height:1.4}
+    .fact.soft b{color:var(--muted);font-weight:600}
+    .bar{display:block;height:5px;border-radius:3px;background:#e6ecf2;margin-top:8px;overflow:hidden}
+    .bar i{display:block;height:100%;background:var(--blue);border-radius:3px}
+    .act{text-align:right;white-space:nowrap;padding-top:2px}
+    .act button{border:1px solid var(--line);background:#fff;color:var(--navy);border-radius:4px;
+      padding:10px 13px;font:800 11.5px Manrope,sans-serif;cursor:pointer}
+    .act button:hover{border-color:var(--teal);background:#eef7f5;color:#0f766e}
+    .act button[disabled]{opacity:.5;cursor:default}
+    .act small{display:block;margin-top:7px;font-size:10.5px;color:#8a99a8}
+
+    .empty{background:#fff;border:1px dashed #b9c8d6;border-radius:6px;padding:34px 28px;text-align:center}
+    .empty h2{font-size:22px;margin-bottom:8px}
+    .empty p{color:var(--muted);font-size:13.5px;margin:0 auto 18px;max-width:46ch}
+    .note{margin:0 0 18px;padding:11px 14px;background:#fdf3e3;border-left:3px solid #8a6114;
+      font-size:12.5px;color:#5a4410}
+    .foot{margin-top:44px;padding-top:22px;border-top:1px solid var(--line);color:#8a99a8;font-size:12px;line-height:1.6}
+
+    @media(max-width:900px){
+      .lede{grid-template-columns:1fr;gap:22px}
+      h1{font-size:34px}
+      .card{grid-template-columns:1fr 1fr;gap:16px}
+      .act{grid-column:1/-1;text-align:left}
+      .act button{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <div class="top"><div class="shell">Ek Awaaz · Reported near you</div></div>
+
+  <header class="header"><div class="shell header-inner">
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span><strong>एक आवाज़</strong><small>EK AWAAZ</small></span></a>
+    <div class="header-right">
+      <a class="plain" href="/my-cases">My grievances</a>
+      <a class="button" href="/report">Report something</a>
+    </div>
+  </div></header>
+
+  <main class="main"><div class="shell">
+    <div class="lede">
+      <div>
+        <p class="eyebrow">Public cases</p>
+        <h1>Someone may have<br />reported it already.</h1>
+        <p>If a case for your problem is already open, adding your name to it does more than filing your own. One case with fifty names escalates. Fifty separate cases each start at day one.</p>
+      </div>
+      <div class="why">
+        <b>Why joining beats filing again</b>
+        <span>A single case carries one responsible office, one clock, and a visible count of the households affected. Duplicate filings split that count, and an office can close each one separately.</span>
+      </div>
+    </div>
+
+    <div class="where">
+      <div class="where-row">
+        <div>
+          <label for="stateSel">State</label>
+          <select id="stateSel">
+            <option value="">All states</option>
+            <option>Bihar</option><option>Delhi</option><option>Maharashtra</option>
+            <option>Rajasthan</option><option>Uttar Pradesh</option><option>West Bengal</option>
+          </select>
+        </div>
+        <div style="flex:1 1 200px">
+          <label for="areaBox">Village, ward or district <span style="text-transform:none;letter-spacing:0;font-weight:600">(optional)</span></label>
+          <input id="areaBox" type="text" placeholder="Example: Rajnagar Ward 4" style="width:100%" />
+        </div>
+        <button class="button light" type="button" id="useLoc">Use my location</button>
+      </div>
+      <p class="where-note" id="locNote">We do not know where you are unless you tell us. <b>Use my location</b> asks your phone for coordinates and shows them to you — it cannot turn them into a ward name, so the boxes above are still what filters this list.</p>
+    </div>
+
+    <div class="count-line"><p id="countLabel">Loading public cases…</p><span id="scopeLabel"></span></div>
+    <div class="wall" id="wall"></div>
+
+    <p class="foot">Only public cases appear here. A personal grievance — a pension, a bank debit, a service matter — is never listed, and nobody can add their name to it. Names of people supporting a case are never shown to other signatories.</p>
+  </div></main>
+
+<script src="api-client.js?v=20260827-01"></script>
+<script src="session.js?v=20260827-01"></script>
+<script>
+/* Scenario 2B — the public wall.
+
+   This is the only way into joinder for someone who does not have a case number: they
+   arrive, see what is already open near them, and add their name to it. Everything shown
+   comes from GET /api/cases; nothing here is hand-written.
+
+   The location control is deliberately modest. Asking the phone for coordinates is real, but
+   turning a lat/lon into "Rajnagar Ward 4" needs a reverse-geocoder this prototype does not
+   have — so the button reports the coordinates it actually got and says plainly that the
+   text boxes are what filter the list. Claiming a detected ward would be the same lie the
+   old build told. */
+
+const wall = document.querySelector('#wall');
+const countLabel = document.querySelector('#countLabel');
+const scopeLabel = document.querySelector('#scopeLabel');
+const stateSel = document.querySelector('#stateSel');
+const areaBox = document.querySelector('#areaBox');
+const locNote = document.querySelector('#locNote');
+const esc = (t) => window.EA ? EA.esc(t) : String(t == null ? '' : t);
+
+const CHIP = {
+  open: ['open', 'Open'],
+  escalated: ['waiting', 'Escalated'],
+  reopened: ['waiting', 'Reopened'],
+  awaiting_confirmation: ['waiting', 'Awaiting confirmation'],
+  partly_fixed: ['waiting', 'Partly fixed'],
+  confirmed_fixed: ['done', 'Confirmed fixed'],
+  awaiting_routing: ['open', 'Awaiting routing']
+};
+
+let all = [];
+/* Cases this device has signed. Held here so a refresh cannot paint over the confirmation. */
+const mine = new Set();
+
+function card(c) {
+  const [cls, label] = CHIP[c.status] || ['open', 'Open'];
+  const target = c.target || 50;
+  const pct = Math.min(100, Math.round(((c.supporters || 0) / target) * 100));
+  const closed = c.status === 'confirmed_fixed';
+
+  const el = document.createElement('article');
+  el.className = 'card';
+  el.innerHTML =
+    '<div><span class="status ' + cls + '">' + esc(label) + '</span>'
+      + '<h3>' + esc(c.title || 'Public case') + '</h3>'
+      + '<p class="cid">' + esc(c.code) + (c.area ? ' · ' + esc(c.area) : '') + '</p></div>'
+    + '<div class="fact"><small>With</small><b>' + esc(c.office || 'Awaiting routing') + '</b></div>'
+    + '<div class="fact"><small>' + (closed ? 'Closed' : 'Households') + '</small>'
+      + '<b>' + (closed
+          ? esc(c.confirmedBy || 0) + ' confirmed it fixed'
+          : (c.supporters || 0) + ' of ' + target + ' joined')
+      + '</b>'
+      + (closed ? '' : '<span class="bar"><i style="width:' + pct + '%"></i></span>')
+      + '</div>'
+    + '<div class="act"></div>';
+
+  const act = el.querySelector('.act');
+  if (mine.has(c.code)) {
+    act.innerHTML = '<small style="color:var(--teal);font-weight:800">Your name is on this case.<br />'
+      + 'It is never shown to other signatories.</small>';
+  } else if (closed) {
+    act.innerHTML = '<small>Closed by the people who<br />reported it. Nothing pending.</small>';
+  } else {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = 'Add my name';
+    b.addEventListener('click', () => addName(c, b, act));
+    act.appendChild(b);
+    const s = document.createElement('small');
+    s.innerHTML = c.clock ? esc(c.clock) : 'Clock starts when it is routed';
+    act.appendChild(s);
+  }
+  return el;
+}
+
+async function addName(c, button, act) {
+  button.disabled = true;
+  button.textContent = 'Opening…';
+  /* EA.join runs the whole flow: log in if needed, ask the follow-ups specific to this
+     case, then post the signature. It reports back what actually happened. */
+  const res = await EA.join(c.code, { source: 'near-you' });
+
+  /* Both of these mean the signature is on the case; "already" just means it was on it
+     before today. Either way the card should stop offering to add it again. */
+  if (res && (res.ok || res.reason === 'already')) {
+    mine.add(c.code);
+    await load();          /* awaited, so the count on screen is the count the server has */
+    return;
+  }
+
+  button.disabled = false;
+  button.textContent = 'Add my name';
+}
+
+function render(list) {
+  wall.innerHTML = '';
+  if (!list.length) {
+    wall.innerHTML =
+      '<div class="empty"><h2>Nothing public is open here yet.</h2>'
+      + '<p>That is a real answer, not an empty page. If you report this problem, yours becomes the case your neighbours can add their names to.</p>'
+      + '<a class="button" href="/report">Tell us what happened</a></div>';
+    countLabel.textContent = 'No public cases';
+    return;
+  }
+  list.forEach((c) => wall.appendChild(card(c)));
+  countLabel.textContent = list.length + (list.length === 1 ? ' public case' : ' public cases');
+}
+
+function filtered() {
+  const area = areaBox.value.trim().toLowerCase();
+  if (!area) return all;
+  return all.filter((c) => (c.area || '').toLowerCase().includes(area));
+}
+
+async function load() {
+  const state = stateSel.value;
+  const res = await window.EAAPI.nearby(state || null);
+  if (res.error) {
+    wall.innerHTML = '';
+    const p = document.createElement('p');
+    p.className = 'note';
+    p.textContent = res.error;
+    wall.appendChild(p);
+    countLabel.textContent = 'Could not load';
+    return;
+  }
+  all = res.cases || [];
+  scopeLabel.textContent = state ? 'Filtered to ' + state : 'Across every state in this prototype';
+  render(filtered());
+}
+
+stateSel.addEventListener('change', load);
+areaBox.addEventListener('input', () => render(filtered()));
+
+/* Real coordinates or an honest failure. Never an invented ward. */
+document.querySelector('#useLoc').addEventListener('click', (e) => {
+  const b = e.currentTarget;
+  if (!navigator.geolocation) {
+    locNote.innerHTML = 'This browser will not share a location. Type your ward or district above instead — that is what filters the list anyway.';
+    return;
+  }
+  b.disabled = true;
+  b.textContent = 'Asking your phone…';
+  const done = (msg) => { b.disabled = false; b.textContent = 'Use my location'; locNote.innerHTML = msg; };
+  navigator.geolocation.getCurrentPosition(
+    (p) => done('Your phone puts you near <b>' + p.coords.latitude.toFixed(4) + ', ' + p.coords.longitude.toFixed(4)
+      + '</b> (about ' + Math.round(p.coords.accuracy) + ' m). This prototype cannot turn that into a ward name, so type the place above to filter the list — and say so in your own words if you file.'),
+    (err) => done(err && err.code === 1
+      ? 'You did not allow location, which is fine. Type your ward or district above instead.'
+      : 'Your phone could not get a fix. Type your ward or district above instead.'),
+    { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 }
+  );
+});
+
+load();
+</script>
+</body>
+</html>
