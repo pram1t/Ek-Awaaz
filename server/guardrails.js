@@ -277,8 +277,17 @@ export function budgetReport() {
 /* Per-caller limits. Cheap in-memory sliding window: enough to stop a loop or a crawler,
    and it costs nothing. */
 const WINDOW_MS = 60_000;
-const PER_MINUTE = Number(process.env.RATE_PER_MINUTE || 12);
-const PER_DAY = Number(process.env.RATE_PER_DAY || 200);
+/* Twelve a minute was set when an intake was one model call. It is now a conversation: intake,
+   three questions, a summary, the routing sentence, an officer reply rewritten, a grounded
+   question — eight to ten metered calls inside a minute for one person walking the product once.
+   Twelve left almost no headroom, and the failure mode is silent: the officer reply simply does
+   not arrive and the case sits at "open", which is exactly how it presented while testing. Two
+   people behind one address would have tripped it immediately.
+
+   The spend ceiling is the real guard — $4.80, against $0.001 for a full walkthrough — so the
+   per-minute limit only needs to stop a loop, not to ration a visitor. */
+const PER_MINUTE = Number(process.env.RATE_PER_MINUTE || 40);
+const PER_DAY = Number(process.env.RATE_PER_DAY || 600);
 const hits = new Map();
 
 export function rateLimit(key) {
