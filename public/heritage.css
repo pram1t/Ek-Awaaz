@@ -52,12 +52,7 @@ input, textarea, select, .case-card, .entry-card, .card, .info, .where,
    Three cusped arches, the middle one filled: one voice standing among many, which is the
    joinder mechanic the product is actually built on. Drawn in currentColor so it inherits
    whatever the surrounding text is — cream in a dark header, madder on ivory. */
-.ea-mark{
-  width: 58px; height: 22px;
-  flex: 0 0 58px;
-  display: block;
-  color: var(--madder);
-}
+.ea-mark{ width: 21px; height: 28px; flex: 0 0 21px; overflow: visible }
 .top .ea-mark, footer .ea-mark, .entry-card.public .ea-mark{ color: var(--cream); }
 
 /* the brand lockup gains a little air now the mark is wider than the old disc */
@@ -95,8 +90,16 @@ input, textarea, select, .case-card, .entry-card, .card, .info, .where,
    between them so the middle one reads as a separate filled arch instead of the centre of a
    single shape. */
 .ea-mark{ width: 48px; height: 26px; flex: 0 0 48px; overflow: visible }
-.ea-mark path{ vector-effect: non-scaling-stroke }
 
 
 /* the masthead lockup gets the extra couple of pixels back from the wordmark */
 .brand{ gap: 15px !important }
+
+
+/* ── the mark ─────────────────────────────────────────────────────────────────
+   a microphone, not an arcade. The arches carried a better idea and a worse mark: at masthead
+   size they read as three small shapes rather than as architecture, and a mark has to say what
+   the thing is before it says what it means. A mic says voice at any size, which is the
+   product's first promise and the meaning of its name. */
+.ea-mark{ width: 21px; height: 28px; flex: 0 0 21px }
+.brand{ gap: 13px !important }

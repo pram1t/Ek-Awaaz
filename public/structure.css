@@ -177,20 +177,24 @@
 .rule-band{
   height: 46px; width: 100%;
   background-color: var(--madder); opacity: .5;
-  -webkit-mask: url("/img/ornament/motifs-band.svg") repeat-x center / 46px 100%;
-  mask: url("/img/ornament/motifs-band.svg") repeat-x center / 46px 100%;
+  -webkit-mask: url("/img/ornament/motifs-band.svg") repeat-x center / auto 100%;
+  mask: url("/img/ornament/motifs-band.svg") repeat-x center / auto 100%;
 }
 .rule-band.leaf{ background-color: var(--leaf) }
 .rule-band.cream{ background-color: var(--cream); opacity: .85 }
 .rule-band.tight{ height: 30px; opacity: .38 }
 
 .rule-braid{
-  height: 26px; width: 100%;
-  background-color: var(--madder); opacity: .45;
-  -webkit-mask: url("/img/ornament/scandinavian-pattern-157.svg") repeat-x center / auto 260%;
-  mask: url("/img/ornament/scandinavian-pattern-157.svg") repeat-x center / auto 260%;
+  height: 30px; width: 100%;
+  background-color: var(--madder); opacity: .5;
+  /* the aspect is 6.1:1, so the tile width follows the height and the plait keeps its
+     proportions instead of being stretched into a ribbon */
+  -webkit-mask: url("/img/ornament/braid-band.svg") repeat-x center / auto 100%;
+  mask: url("/img/ornament/braid-band.svg") repeat-x center / auto 100%;
 }
 .rule-braid.cream{ background-color: var(--cream); opacity: .7 }
+.rule-braid.leaf{ background-color: var(--leaf); opacity: .42 }
+.rule-braid.tight{ height: 20px; opacity: .38 }
 
 /* a sprig, for a heading that wants marking */
 .orn-sprig{
