@@ -82,6 +82,15 @@ db.exec(`
     UNIQUE (case_id, phone)
   );
 
+  CREATE TABLE IF NOT EXISTS messages (
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    case_id  INTEGER NOT NULL,
+    role     TEXT NOT NULL,
+    phone    TEXT,
+    text     TEXT NOT NULL,
+    added_on TEXT NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS confirmations (
     id       INTEGER PRIMARY KEY AUTOINCREMENT,
     case_id  INTEGER NOT NULL,
@@ -475,4 +484,98 @@ export function profile(phone) {
 
 function titleCase(s) {
   return String(s || '').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+
+/* ---------- the case record ---------- */
+
+/** A citizen answering back. If the case was waiting on them it returns to the office. */
+function daysSince(iso) {
+  if (!iso) return 0;
+  const then = new Date(iso + 'T00:00:00');
+  return Math.max(0, Math.floor((Date.now() - then.getTime()) / 86400000));
+}
+
+export function addReply(code, phone, text) {
+  const found = findByCode(code);
+  if (!found) return { error: 'not_found' };
+  const row = db.prepare('SELECT * FROM cases WHERE code = ?').get(found.code);
+
+  db.prepare('INSERT INTO messages (case_id, role, phone, text, added_on) VALUES (?, ?, ?, ?, ?)')
+    .run(row.id, 'citizen', phone, String(text).slice(0, 1200), today());
+
+  /* Answering an officer's report is not the same as confirming it. The clock goes back to
+     the office rather than the case sitting in limbo waiting on the citizen. */
+  let movedTo = null;
+  if (row.status === 'awaiting_confirmation') {
+    db.prepare("UPDATE cases SET status = 'open' WHERE id = ?").run(row.id);
+    movedTo = 'open';
+  }
+  return { case: findByCode(found.code), movedTo };
+}
+
+export function messages(caseId) {
+  return db.prepare('SELECT role, text, added_on, phone FROM messages WHERE case_id = ? ORDER BY id').all(caseId);
+}
+
+/** Every event on the case, derived from the record rather than kept as a parallel log. */
+export function timeline(code) {
+  const found = findByCode(code);
+  if (!found) return { error: 'not_found' };
+  const row = db.prepare('SELECT * FROM cases WHERE code = ?').get(found.code);
+
+  const signed = db.prepare('SELECT phone, added_on FROM signatures WHERE case_id = ? ORDER BY id').all(row.id);
+  const confirmed = db.prepare('SELECT verdict, added_on FROM confirmations WHERE case_id = ? ORDER BY id').all(row.id);
+  const msgs = messages(row.id);
+
+  const events = [];
+  const at = (date, title, body, tone) => events.push({ date: date || null, title, body, tone: tone || 'done' });
+
+  at(row.filed_on, 'You described the problem',
+     'In your own words. No category was chosen and no department was named.', 'done');
+
+  if (row.office) {
+    at(row.filed_on, 'Routed to ' + row.office,
+       (row.reason || 'Identified as the office that can act on this.') +
+       (row.legal_basis ? ' Basis: ' + row.legal_basis + '.' : ''), 'done');
+  } else {
+    at(null, 'Awaiting routing', 'The responsible office has not been identified yet.', 'current');
+  }
+
+  if (signed.length > 1) {
+    at(signed[signed.length - 1].added_on, signed.length + ' households on this case',
+       row.target ? 'At ' + row.target + ' it escalates to the ' + (row.escalates_to || 'District Collector') + ' automatically.'
+                  : 'Each name is one verified mobile number.', 'done');
+  }
+
+  if (row.officer_responded_on) {
+    at(row.officer_responded_on, 'The office replied',
+       'Their report is on the case. A report does not close it.', 'done');
+  }
+
+  for (const m of msgs) {
+    at(m.added_on, m.role === 'citizen' ? 'You answered' : 'The office wrote', m.text, 'done');
+  }
+
+  for (const c of confirmed) {
+    const said = { fixed: 'You said it was fixed', not_fixed: 'You said it was not fixed', partly: 'You said it was partly fixed' };
+    at(c.added_on, said[c.verdict] || 'You answered',
+       c.verdict === 'not_fixed' ? 'The case reopened with its history intact and the clock running.'
+       : c.verdict === 'fixed' ? 'Recorded against your verified mobile number.'
+       : 'Partly is not closed. The case stays open.', 'done');
+  }
+
+  if (row.status === 'confirmed_fixed') {
+    at(row.confirmed_on, 'Closed by you',
+       'Confirmed by ' + row.confirmed_by + (row.confirmed_by === 1 ? ' person' : ' people') + '. No officer report closed this.', 'done');
+  } else if (row.status === 'awaiting_confirmation') {
+    at(null, 'Waiting for you', 'Only you can say whether this is actually fixed.', 'current');
+  } else {
+    const age = daysSince(row.filed_on);
+    at(null, age > 21 ? 'Past the 21-day window' : 'With the office',
+       age > 21 ? 'Escalation to the ' + (row.escalates_to || 'next authority') + ' is available.'
+                : 'Day ' + Math.min(age + 1, 21) + ' of 21.', 'current');
+  }
+
+  return { case: findByCode(found.code), events, messages: msgs };
 }

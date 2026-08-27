@@ -130,7 +130,7 @@ const BANNED_OUTPUT = [
   /\b(aadhaar|pan) (number|card)\b/i    // nor ask for identifiers
 ];
 
-function clean(value, maxLen) {
+export function clean(value, maxLen) {
   let s = String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
   for (const re of BANNED_OUTPUT) if (re.test(s)) return '';
   if (maxLen && s.length > maxLen) s = s.slice(0, maxLen).trim();

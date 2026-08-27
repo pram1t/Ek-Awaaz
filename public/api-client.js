@@ -69,6 +69,13 @@
     simulateReply: (code, language) =>
       call(`/cases/${encodeURIComponent(code)}/simulate-reply`, { method: 'POST', body: { language } }),
 
+    /* The case record — every event, plus the two things a citizen can do about it. */
+    timeline: (code) => call('/cases/' + encodeURIComponent(code) + '/timeline'),
+    replyToCase: (code, phone, otp, text) =>
+      call('/cases/' + encodeURIComponent(code) + '/reply', { method: 'POST', body: { phone, otp, text } }),
+    askCase: (code, question) =>
+      call('/cases/' + encodeURIComponent(code) + '/ask', { method: 'POST', body: { question } }),
+
     myCases: (phone) => call('/me/' + encodeURIComponent(phone)),
 
     /* The one fact no grievance can supply. Optional — nothing is gated on it. */

@@ -11,7 +11,7 @@
 import express, { Router } from 'express';
 import * as db from './db.js';
 import { routing, remedies } from './db.js';
-import { classify, pickOption, plainLanguage, routingSentence, aiAvailable } from './ai.js';
+import { classify, pickOption, plainLanguage, routingSentence, aiAvailable, answerAboutCase } from './ai.js';
 import { sanitizeInput, detectEmergency, rateLimit, budgetReport, cacheReport, MAX_INPUT_CHARS } from './guardrails.js';
 import { speak, listen, speechAvailable, speechReport, ttsLanguages, etag, VOICE } from './speech.js';
 
@@ -341,6 +341,48 @@ api.post('/cases/:code/support', (req, res) => {
         (c.target ? ` At ${c.target} it escalates to the ${c.escalatesTo || 'District Collector'} automatically.` : ''),
     privacy: 'Your name is never shown to other signatories.'
   });
+});
+
+/** THE CASE RECORD — every event, derived from the case rather than a parallel log. */
+api.get('/cases/:code/timeline', (req, res) => {
+  const out = db.timeline(req.params.code);
+  if (out.error) return res.status(404).json({ error: 'No case with that number.' });
+  res.json(out);
+});
+
+/** A citizen answering back. The old portal has no room for this at all. */
+api.post('/cases/:code/reply', (req, res) => {
+  const b = req.body || {};
+  const phone = digits(b.phone);
+  if (phone.length !== 10) return res.status(401).json({ error: 'Verify your mobile number first.' });
+  if (digits(b.otp) !== MOCK_OTP) return res.status(401).json({ error: `Demo mode — the code is ${MOCK_OTP}.` });
+
+  const clean = sanitizeInput(b.text);
+  if (clean.blocked) return res.status(400).json({ error: clean.reason });
+  if (clean.tooShort) return res.status(400).json({ error: 'Say a little more than that.' });
+
+  const out = db.addReply(req.params.code, phone, clean.text);
+  if (out.error) return res.status(404).json({ error: 'No case with that number.' });
+  res.json({
+    case: out.case,
+    movedTo: out.movedTo,
+    message: out.movedTo === 'open'
+      ? 'Your answer is on the case, and the case is back with the office.'
+      : 'Your answer is on the case.'
+  });
+});
+
+/** A question about this case, answered from this case. Grounded, and honest when it cannot. */
+api.post('/cases/:code/ask', metered, async (req, res) => {
+  const found = db.findByCode(req.params.code);
+  if (!found) return res.status(404).json({ error: 'No case with that number.' });
+
+  const clean = sanitizeInput(req.body?.question);
+  if (clean.blocked) return res.status(400).json({ error: clean.reason });
+  if (clean.tooShort) return res.status(400).json({ error: 'What would you like to know?' });
+
+  const out = await answerAboutCase(found, clean.text);
+  res.json(out);
 });
 
 /** CLOSURE GATE — an officer report never closes a case. */

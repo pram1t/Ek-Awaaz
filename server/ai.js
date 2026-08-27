@@ -12,11 +12,11 @@
    be honest about it. */
 
 import OpenAI from 'openai';
-import { routing } from './db.js';
+import { routing, remedies } from './db.js';
 import { correctDomain } from './corrections.js';
 import {
   validateClassification, validatePlain, validateSentence,
-  canSpend, record, budgetLeft, cacheKey, cacheGet, cacheSet
+  canSpend, record, budgetLeft, cacheKey, cacheGet, cacheSet, clean
 } from './guardrails.js';
 
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
@@ -300,5 +300,162 @@ Reply as JSON: {"plain":["","","",""]}`,
   } catch (err) {
     console.warn('[ai] plain language fell back:', err.message);
     return fallback;
+  }
+}
+
+
+/* ---------------------------------------------------------------- ASK ABOUT A CASE ----- */
+
+/** The facts on file, rendered for the model and reused to check what comes back. */
+function caseFacts(c) {
+  const lines = [
+    ['Case number', c.code],
+    ['What was reported', c.title],
+    ['In their words', c.summary],
+    ['Where', c.area],
+    ['State', c.state],
+    ['Responsible office', c.office],
+    ['Why that office', c.reason],
+    ['Legal basis', c.legalBasis],
+    ['Filed on', c.filedOn],
+    ['Status', c.status],
+    ['Day count', c.clock],
+    ['Past the response window', c.overdue ? 'yes' : 'no'],
+    ['Households on the case', c.supporters],
+    ['Escalates at', c.target],
+    ['Escalates to', c.escalatesTo],
+    ['Officer replied on', c.officerRespondedOn],
+    ['What the officer wrote', c.officerAtr],
+    ['Confirmed fixed on', c.confirmedOn],
+    ['Confirmed by', c.confirmedBy],
+    ['Times recurred', c.recurrence],
+    ['Visibility', c.visibility]
+  ].concat(remedyLines(c)).filter(([, v]) => v !== null && v !== undefined && v !== '' && v !== 0);
+
+  return lines.map(([k, v]) => k + ': ' + v).join('\n');
+}
+
+/* The remedy is part of the record. Without it the most useful question a citizen can ask —
+   what happens if the office misses the deadline — reads as unanswerable. */
+function remedyLines(c) {
+  const r = c.remedyKey && remedies && remedies.remedies && remedies.remedies[c.remedyKey];
+  if (!r) return [];
+
+  /* A remedy scoped to one state is not available in another just because it is on file. */
+  const scope = r.scope || null;
+  const state = String(c.state || '').toLowerCase();
+  const settledHere = scope ? new RegExp('\\b' + state.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i').test(scope) : true;
+
+  /* And one behind a gate is conditional until the condition is met. */
+  const gate = r.gate && r.gate.type === 'flag' ? 'only where ' + r.gate.field + ' applies to this case'
+             : r.gate && r.gate.type === 'days_since' ? 'only after ' + r.gate.days + ' days have passed'
+             : null;
+
+  return [
+    ['Remedy on file for this kind of case', r.title],
+    ['Where that remedy is heard', r.forum],
+    ['What that forum can order', r.teeth],
+    ['When that remedy arises', r.clock],
+    ['Provision it comes from', r.provision],
+    ['That remedy applies', gate || 'once the office has missed its deadline'],
+    ['Geographic scope of that remedy', scope],
+    ['This case is in', c.state],
+    ['Is that remedy settled law in this state?', !scope ? 'not limited by state'
+       : settledHere ? 'yes'
+       : 'NO — the reasoning is available here but the amounts are not fixed in this state'],
+    ['Implemented in this prototype', r.built === false ? 'no, it is documented only' : 'yes'],
+    ['Caveat on that remedy', r.caveat || null]
+  ];
+}
+
+/* Anything that reads as a hard fact and is not in the record is a fabrication. */
+const YEAR = /\b(19|20)\d{2}\b/g;
+const DATE = /\b\d{1,2}\s+(January|February|March|April|May|June|July|August|September|October|November|December)\b/gi;
+const MONEY = /(?:₹|Rs\.?\s?)\s?[\d,]+/g;
+const DAYS = /\b\d{1,3}\s*(?:days?|din)\b/gi;
+
+/* Whether the answer actually answered, or reported that the record is silent. The interface
+   styles those two differently, so it has to be told which it got. */
+const SILENT = /\b(?:record|case|file)\b[^.]{0,40}\b(?:does not|doesn't|do not|cannot|can't|is silent|has no|holds no|says nothing)\b|\bnot (?:recorded|on (?:the )?(?:record|file)|mentioned|held|stated)\b|\bno (?:record|mention|date|information)\b/i;
+function covers(answer) { return !SILENT.test(String(answer)); }
+
+function groundedEnough(answer, facts) {
+  const haystack = facts.toLowerCase();
+  for (const pattern of [YEAR, DATE, MONEY, DAYS]) {
+    const hits = String(answer).match(pattern) || [];
+    for (const hit of hits) {
+      const needle = hit.toLowerCase().replace(/\s+/g, ' ').trim();
+      /* A bare number inside a longer phrase still has to appear somewhere in the record. */
+      const digitsOnly = needle.replace(/[^\d]/g, '');
+      if (haystack.includes(needle)) continue;
+      if (digitsOnly && haystack.includes(digitsOnly)) continue;
+      return { ok: false, invented: hit };
+    }
+  }
+  return { ok: true };
+}
+
+/**
+ * Answer a citizen's question about their own case, using only what is recorded on it.
+ * Returns { answer, source, grounded } — source is 'model', 'fallback' or 'refused'.
+ */
+export async function answerAboutCase(c, question) {
+  const facts = caseFacts(c);
+
+  const fallback = () => ({
+    covered: false,
+    answer: 'I can only answer from what is on this case, and this is not on it. What the case does '
+          + 'record is: it is with ' + (c.office || 'an office not yet identified') + ', filed on '
+          + (c.filedOn || 'a date not recorded') + ', and ' + (c.clock || 'no clock is running yet') + '. '
+          + 'You can answer the office in your own words below, or say whether the problem is actually fixed.',
+    source: 'fallback',
+    grounded: true
+  });
+
+  if (!client || !canSpend()) return fallback();
+
+  const key = cacheKey('ask', MODEL, c.code, c.status, question);
+  const cached = cacheGet(key);
+  if (cached) return { answer: cached, source: 'model', grounded: true, cached: true };
+
+  try {
+    const out = await ask(
+      `${SMITI}
+
+Answer the citizen's question about their own grievance, using ONLY the case record below.
+
+Rules, in order of importance:
+- If the record does not answer it, say so plainly in one sentence and say what the record
+  does hold. Never fill a gap with something reasonable.
+- Never state a date, an amount, a day count or an office that is not in the record.
+- A remedy is never mentioned on its own. If the record says it applies only under a
+  condition, or that it is not settled law in this state, say that in the same sentence as
+  the remedy. Never quote an amount that the record says is not fixed in this state.
+- Do not promise an outcome, a timeline or that anything will be fixed.
+- Two or three short sentences. Their language, their words.
+
+CASE RECORD
+${facts}
+
+Reply as JSON: {"answer":""}`,
+      String(question).slice(0, 500),
+      { maxTokens: 260, temperature: 0.2 }
+    );
+
+    const answer = clean(out && out.answer, 600);
+    if (!answer) return fallback();
+
+    /* The prompt asked for grounding; this is what enforces it. */
+    const check = groundedEnough(answer, facts + '\n' + question);
+    if (!check.ok) {
+      console.warn('[ai] dropped an ungrounded case answer, invented:', check.invented);
+      return Object.assign(fallback(), { source: 'refused', invented: check.invented });
+    }
+
+    cacheSet(key, answer);
+    return { answer, source: 'model', grounded: true, covered: covers(answer) };
+  } catch (err) {
+    console.warn('[ai] ask-about-case fell back:', err.message);
+    return fallback();
   }
 }
