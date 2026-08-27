@@ -163,7 +163,7 @@ textarea:disabled{background:#f4f7fa;color:#8a99a8}
     <div class="note" id="note"><span class="wave"><i></i><i></i><i></i><i></i><i></i></span><span id="noteText">Listening. Speak in your own language.</span></div>
     <form class="row" id="composerForm">
       <button class="clip" id="clip" type="button" aria-label="Attach a photo or document"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11.5l-8.5 8.5a5 5 0 0 1-7-7l8.5-8.5a3.2 3.2 0 0 1 4.6 4.6l-8.6 8.5a1.5 1.5 0 0 1-2.1-2.1l7.9-7.9" /></svg></button>
-      <textarea id="reply" rows="1" placeholder="Type your answer, or press the mic to speak"></textarea>
+      <textarea id="reply" rows="1" placeholder="Type your answer, or press the mic to speak" data-i18n-ph="report.answerHere"></textarea>
       <button class="mic" id="mic" type="button" aria-label="Answer by speaking"><em></em><em></em><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="2.5" width="6" height="11" rx="3" /><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" /></svg></button>
       <button class="send-btn" type="submit" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6" /></svg></button>
     </form>
@@ -689,7 +689,7 @@ function renderRoute() {
       + '<div class="acts"><button class="ghost' + (isPublic ? ' on' : '') + '" type="button" data-public="yes">Yes, let others join</button><button class="ghost' + (isPublic ? '' : ' on') + '" type="button" data-public="no">No, keep it mine</button></div></div>';
   }
 
-  html += '<div class="send" id="sendBlock"><button class="button" type="button" data-send>Confirm and send →</button><small>' + (domain.days ? 'You get a case number and a ' + domain.days + '-day response clock immediately.' : 'You get a case number and one acknowledgement.') + '</small></div></div>';
+  html += '<div class="send" id="sendBlock"><button class="button" type="button" data-send data-i18n="route.send">Confirm and send →</button><small>' + (domain.days ? 'You get a case number and a ' + domain.days + '-day response clock immediately.' : 'You get a case number and one acknowledgement.') + '</small></div></div>';
 
   if (!routeTurn) { routeTurn = document.createElement('div'); routeTurn.className = 'turn'; }
   routeTurn.innerHTML = '<span class="av" aria-hidden="true"><i></i><i></i><i></i></span><div class="bubble wide">' + html + '</div>';
@@ -785,9 +785,9 @@ function gateBlock(html) {
 
 function gatePhone() {
   const block = gateBlock('<b>One step before it goes out</b><p>Your case is filed against your mobile number, so you can track the reply and nobody else can close it for you. No password, no Aadhaar.</p>'
-    + '<input id="gatePhone" type="tel" inputmode="numeric" maxlength="14" placeholder="10-digit mobile number" />'
+    + '<input id="gatePhone" type="tel" inputmode="numeric" maxlength="14" placeholder="10-digit mobile number" data-i18n-ph="otp.phone" />'
     + '<p class="err" id="gateErr">Enter a 10-digit mobile number.</p>'
-    + '<div class="foot"><small>Prototype: no real message is sent.</small><button class="button" type="button" id="gateGo">Send code →</button></div>');
+    + '<div class="foot"><small>Prototype: no real message is sent.</small><button class="button" type="button" id="gateGo" data-i18n="otp.send">Send code →</button></div>');
   const input = block.querySelector('#gatePhone'), err = block.querySelector('#gateErr');
   if (window.EA) input.value = EA.read().phone || '';
   const go = async () => {
@@ -806,7 +806,7 @@ function gateOtp(phone, hint) {
   const block = gateBlock('<b>Enter the 6-digit code</b><p>Sent to +91 ' + phone.slice(0, 5) + ' ' + phone.slice(5) + '. <button class="edit" type="button" id="gateBack" style="border:0;background:none;color:var(--blue);font:800 11px Manrope,sans-serif;cursor:pointer;text-transform:uppercase;letter-spacing:.05em">Change number</button></p>'
     + '<div class="otp">' + Array.from({ length: 6 }, () => '<input type="text" inputmode="numeric" maxlength="1" aria-label="Code digit" />').join('') + '</div>'
     + '<p class="err" id="gateErr">Enter all six digits.</p>'
-    + '<div class="foot"><small><b>' + esc(hint || 'Demo mode — enter 123456') + '</b> · <span id="gateResend">Resend code in 30s</span></small><button class="button" type="button" id="gateGo">Verify and send →</button></div>');
+    + '<div class="foot"><small><b>' + esc(hint || 'Demo mode — enter 123456') + '</b> · <span id="gateResend">Resend code in 30s</span></small><button class="button" type="button" id="gateGo" data-i18n="otp.verify">Verify and send →</button></div>');
   const boxes = [...block.querySelectorAll('.otp input')], err = block.querySelector('#gateErr');
   const verify = async () => {
     if (!boxes.every((b) => b.value)) { err.classList.add('show'); return; }

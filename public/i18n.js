@@ -23,12 +23,11 @@
     { code: 'hi', label: 'Hindi', native: 'हिन्दी', bcp47: 'hi-IN', dir: 'ltr' }
   ];
 
-  /* Speech reaches further than the interface does. Stated separately, and honestly. */
-  const SPEECH_ONLY = ['Bengali', 'Gujarati', 'Kannada', 'Malayalam', 'Marathi', 'Odia',
-                       'Punjabi', 'Tamil', 'Telugu'];
-
   const STRINGS = {
     en: {
+      'nav.new': "New report",
+      'didi.thread1': "Tell me what happened, or ask me what you are owed.",
+      'didi.thread2': "I will find who owns the problem, what clock that office is on, and what you can do if they miss it. You see all of it before anything is sent.",
       'nav.how': 'How it works',
       'nav.near': 'Near you',
       'nav.cases': 'My cases',
@@ -230,9 +229,7 @@
   .ea-lang-menu button:hover{background:#f1f5f8}
   .ea-lang-menu button[aria-current="true"]{background:#e8eefb;color:#1d4ed8}
   .ea-lang-menu button small{color:#5d6b79;font-weight:500;font-size:12px}
-  .ea-lang-note{padding:9px 11px 5px;border-top:1px solid #e6ecf2;margin-top:5px;
-    color:#5d6b79;font:400 11.5px/1.45 Manrope,Arial,sans-serif}
-  .ea-lang-note b{display:block;color:#102a43;font-weight:700;margin-bottom:2px}`;
+    `;
 
   const CHEV = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 4l4 4 4-4"/></svg>';
 
@@ -262,8 +259,7 @@
       menu.innerHTML = LANGS.map((l) =>
         '<button type="button" role="menuitem" data-lang="' + l.code + '" aria-current="'
         + (l.code === current) + '"><span>' + l.native + '</span><small>' + l.label + '</small></button>'
-      ).join('')
-      + '<p class="ea-lang-note"><b>' + t('lang.speech') + '</b>' + SPEECH_ONLY.join(' · ') + '</p>';
+      ).join('');
       menu.querySelectorAll('[data-lang]').forEach((b) =>
         b.addEventListener('click', () => { set(b.dataset.lang); close(); btn.focus(); }));
     }
@@ -297,7 +293,6 @@
     get lang() { return current; },
     get bcp47() { return bcp47(); },
     get languages() { return LANGS.slice(); },
-    get speechOnly() { return SPEECH_ONLY.slice(); },
-    t, set, apply
+      t, set, apply
   };
 })();
