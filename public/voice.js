@@ -23,6 +23,11 @@
      growth would resolve against a container that has not sized yet — the panel stayed 2px.
      As direct children of a row with a definite width, flex-grow resolves correctly. */
   .ea-voice-host{--h:44px;position:relative}
+  /* Everything in the row except the button and the panel steps aside while the panel is
+     open. Without this the clip-path seam sweeps across whatever the row already holds — a
+     blue primary button, a focused textarea — and that shows as a coloured strip at the
+     leading edge of the animation. */
+  .ea-voice-host.ea-open > *:not(.ea-voice-btn):not(.ea-voice-panel){visibility:hidden}
   .ea-voice-btn{flex:0 0 var(--h);width:var(--h);height:var(--h);border:0;border-radius:50%;
     background:#102a43;color:#fff;display:grid;place-items:center;cursor:pointer;position:relative;
     transition:background .2s ease}
@@ -44,6 +49,7 @@
     display:flex;align-items:center;gap:12px;padding:0 15px 0 13px;
     border:1px solid #cbd5df;border-radius:calc(var(--h)/2);background:#fff;
     clip-path:inset(0 100% 0 0 round calc(var(--h)/2));opacity:0;pointer-events:none;
+    isolation:isolate;will-change:clip-path,opacity;
     transition:clip-path .34s cubic-bezier(.22,.61,.36,1),opacity .18s ease}
   /* The open state is applied inline by reveal()/conceal() below. An .ea-open descendant rule
      matched and declared opacity:1 here, yet the computed value stayed 0 — so the reveal is
@@ -56,10 +62,13 @@
   .ea-voice-host.ea-live .ea-voice-meter i{background:#1d4ed8}
 
   .ea-voice-text{flex:1 1 auto;min-width:0;font:500 13px/1.35 Manrope,Arial,sans-serif;color:#24313f;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:rtl;text-align:left}
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+  /* rtl only once there is a transcript, so a long one clips at the start and the newest
+     words stay in view. On hint text it would just move the ellipsis to the wrong side. */
+  .ea-voice-text.live{direction:rtl}
   .ea-voice-text span{direction:ltr;unicode-bidi:plaintext}
   .ea-voice-text .interim{color:#8a99a8}
-  .ea-voice-text.hint{color:#8a99a8;font-weight:400;white-space:normal}
+  .ea-voice-text.hint{color:#8a99a8;font-weight:400;white-space:normal;direction:ltr}
 
   .ea-voice-lang{flex:0 0 auto;border:1px solid #dbe3ea;background:#fbfcfd;border-radius:3px;
     padding:5px 7px;font:700 10px Manrope,sans-serif;letter-spacing:.05em;color:#5d6b79;cursor:pointer}
@@ -158,13 +167,14 @@
     function paint() {
       const has = (finalText + interimText).trim();
       text.classList.toggle('hint', !has);
+      text.classList.toggle('live', !!has);
       if (!has) { text.textContent = rec ? 'Listening…' : 'Recording…'; use.classList.remove('on'); return; }
       text.innerHTML = '<span>' + esc(finalText) + (interimText ? '<i class="interim"> ' + esc(interimText) + '</i>' : '') + '</span>';
       use.classList.toggle('on', !!finalText.trim());
     }
     const esc = (t) => String(t).replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
 
-    function say(msg) { finalText = ''; interimText = ''; text.classList.add('hint'); text.textContent = msg; use.classList.remove('on'); }
+    function say(msg) { finalText = ''; interimText = ''; text.classList.add('hint'); text.classList.remove('live'); text.textContent = msg; use.classList.remove('on'); }
 
     function loop() {
       if (!analyser) return;
@@ -190,7 +200,7 @@
       btn.setAttribute('aria-label', 'Stop and use what I said');
       btn.innerHTML = STOP;
       finalText = ''; interimText = '';
-      say(SR ? 'Listening…' : 'Recording…');
+      say(SR ? 'Listening…' : 'Recording…');   /* say() clears .live, so this reads left to right */
 
       try {
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
