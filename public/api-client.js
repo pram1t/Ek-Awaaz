@@ -70,6 +70,10 @@
       call(`/cases/${encodeURIComponent(code)}/simulate-reply`, { method: 'POST', body: { language } }),
 
     myCases: (phone) => call('/me/' + encodeURIComponent(phone)),
+
+    /* The one fact no grievance can supply. Optional — nothing is gated on it. */
+    setName: (phone, otp, name) =>
+      call('/me/' + encodeURIComponent(phone) + '/name', { method: 'POST', body: { otp, name } }),
     dashboard: () => call('/dashboard'),
     remedyTable: () => call('/reference/remedies'),
     routingTable: () => call('/reference/routing')

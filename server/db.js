@@ -66,6 +66,13 @@ db.exec(`
     seeded              INTEGER NOT NULL DEFAULT 0
   );
 
+  CREATE TABLE IF NOT EXISTS people (
+    phone      TEXT PRIMARY KEY,
+    name       TEXT,
+    created_on TEXT NOT NULL,
+    updated_on TEXT
+  );
+
   CREATE TABLE IF NOT EXISTS signatures (
     id       INTEGER PRIMARY KEY AUTOINCREMENT,
     case_id  INTEGER NOT NULL,
@@ -377,3 +384,95 @@ if (reseed) {
 }
 
 export default db;
+
+
+/* ---------- the person behind the mobile number ----------
+
+   A row exists from the first login, whether or not a name was given, so "we have asked
+   already" is distinguishable from "they have not answered yet". */
+
+export function getPerson(phone) {
+  const row = db.prepare('SELECT phone, name, created_on FROM people WHERE phone = ?').get(phone);
+  return row ? { phone: row.phone, name: row.name || null, since: row.created_on } : null;
+}
+
+export function seePerson(phone) {
+  db.prepare('INSERT OR IGNORE INTO people (phone, created_on) VALUES (?, ?)').run(phone, today());
+  return getPerson(phone);
+}
+
+export function setName(phone, name) {
+  const clean = String(name || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+  if (!clean) return { error: 'empty' };
+  db.prepare(`INSERT INTO people (phone, name, created_on, updated_on) VALUES (?, ?, ?, ?)
+              ON CONFLICT(phone) DO UPDATE SET name = excluded.name, updated_on = excluded.updated_on`)
+    .run(phone, clean, today(), today());
+  return getPerson(phone);
+}
+
+/** Everything we know, and where each part of it came from. Derived, never stored twice. */
+export function profile(phone) {
+  const person = getPerson(phone);
+  const filed = db.prepare('SELECT * FROM cases WHERE phone = ? ORDER BY id').all(phone).map(shape);
+  const signed = db.prepare(
+    `SELECT c.code, c.title, c.area, s.added_on, s.note FROM cases c
+       JOIN signatures s ON s.case_id = c.id
+      WHERE s.phone = ? AND (c.phone IS NULL OR c.phone != ?)
+      ORDER BY s.id`
+  ).all(phone, phone);
+
+  /* Keep the first sighting of each fact and remember which case carried it, so a repeated
+     answer does not read as two separate pieces of knowledge. */
+  const seen = new Map();
+  const remember = (kind, label, value, source) => {
+    const v = String(value == null ? '' : value).trim();
+    if (!v || v.toLowerCase() === 'none attached') return;
+    const key = kind + '|' + v.toLowerCase();
+    if (seen.has(key)) { seen.get(key).also.push(source); return; }
+    seen.set(key, { kind, label, value: v, from: source, also: [] });
+  };
+
+  for (const c of filed) {
+    if (c.area) remember('place', 'Where you reported from', c.area, c.code);
+    if (c.state) remember('place', 'State', titleCase(c.state), c.code);
+    if (c.office) remember('office', 'An office your case reached', c.office, c.code);
+
+    /* answers_json keys are positional (ask0, ask1); the question text lives in asks_json */
+    const asks = c.asks || [];
+    for (const { q, a } of (c.answers || [])) {
+      if (!q || q === 'evidence') continue;
+      const m = /^ask(\d+)$/.exec(q);
+      /* Some keys are already the question ("Which bank"); the rest are slugs. */
+      const label = m ? (asks[+m[1]]?.q || 'Something you told us')
+                      : (/[ ?]/.test(q) ? q : titleCase(q));
+      if (q === 'grievance' || q === 'location') continue;   /* already covered above / too long */
+      remember('said', label, a, c.code);
+    }
+  }
+
+  /* A fact repeated across sixteen grievances should read as one fact seen sixteen times,
+     not as sixteen case numbers. */
+  const facts = [...seen.values()].map((f) => ({
+    kind: f.kind, label: f.label, value: f.value, from: f.from,
+    alsoCount: f.also.length, alsoSample: f.also.slice(0, 2)
+  }));
+  return {
+    person: person || { phone, name: null, since: null },
+    hasName: !!(person && person.name),
+    counts: {
+      filed: filed.length,
+      supported: signed.length,
+      confirmedFixed: filed.filter((c) => c.status === 'confirmed_fixed').length,
+      reopened: filed.filter((c) => c.status === 'reopened').length,
+      awaitingYou: filed.filter((c) => c.status === 'awaiting_confirmation').length
+    },
+    places: facts.filter((f) => f.kind === 'place'),
+    offices: facts.filter((f) => f.kind === 'office'),
+    said: facts.filter((f) => f.kind === 'said'),
+    supported: signed.map((s) => ({ code: s.code, title: s.title, area: s.area || null, on: s.added_on, note: s.note || null }))
+  };
+}
+
+function titleCase(s) {
+  return String(s || '').replace(/\b\w/g, (c) => c.toUpperCase());
+}

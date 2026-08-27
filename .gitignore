@@ -17,3 +17,6 @@ screenshots/
 .image-slots.state.json
 server.log
 server.err.log
+
+.vercel
+.env*

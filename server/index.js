@@ -90,6 +90,21 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: 'Something broke on our side. Nothing was sent.' });
 });
 
+/* Deployment notes, because vercel.json rejects comments and these are worth keeping.
+
+   Everything, public/ included, is served through this Express app rather than split between
+   Vercel's CDN and a function. The app owns the clean URLs and the 301s off the legacy .html
+   paths, and splitting that across two routers is how those redirects quietly stop working.
+   `includeFiles` in vercel.json is what puts public/ and data/ inside the bundle; without it
+   the function boots and then 404s every asset.
+
+   One region (bom1, Mumbai): the judges are in India, and holding to a single region also
+   keeps the number of live instances down — which matters here because each instance carries
+   its own in-memory database. See the storage note in db.js.
+
+   maxDuration stays at the platform default. It belongs to the `functions` property, which
+   Vercel refuses alongside `builds`, and `builds` is what carries includeFiles. */
+
 /* Vercel imports the app; a persistent host listens. */
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {

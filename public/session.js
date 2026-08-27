@@ -2,7 +2,7 @@
    Session lives in sessionStorage: it survives a refresh and clears when the tab closes. */
 (function () {
   const KEY = 'ekawaaz.session';
-  const blank = { loggedIn: false, phone: '', filed: [], joined: [], draft: null };
+  const blank = { loggedIn: false, phone: '', name: '', filed: [], joined: [], draft: null };
 
   function read() {
     try { return Object.assign({}, blank, JSON.parse(sessionStorage.getItem(KEY) || '{}')); }
@@ -237,10 +237,58 @@
         }
         clearInterval(tick);
         patch({ loggedIn: true, phone: phone, otp: code });
-        done();
+        nameStep(code);
       }
       card.querySelector('#eaGo').addEventListener('click', verify);
       card.querySelector('#eaEdit').addEventListener('click', phoneStep);
+    }
+
+    /* Asked once, on the first login, and never again.
+
+       Everything else about a person is derivable from the grievances they filed — where
+       they are, which offices their cases reached, what they already said. A name is the one
+       thing that is not, so it is the one thing worth asking for.
+
+       Deliberately skippable. The argument of this whole project is that a citizen should not
+       have to clear a form before being heard, and gating login on a name would be the same
+       mistake in a smaller place. The server keeps a row for anyone who skipped, so a skip is
+       remembered as an answer and the step does not come back. */
+    async function nameStep(code) {
+      if (read().name) { done(); return; }
+      if (!window.EAAPI) { done(); return; }
+
+      const res = await window.EAAPI.myCases(phone);
+      const p = res && res.profile;
+      /* If the check cannot be made, go through rather than risk asking a returning citizen
+         their own name a second time. */
+      if (!p) { done(); return; }
+      if (p.hasName) { patch({ name: p.person.name }); done(); return; }
+      /* A number that has filed or signed before was already asked at its first login. */
+      if (p.counts && (p.counts.filed > 0 || p.counts.supported > 0)) { done(); return; }
+
+      paint('<p class="ea-eyebrow">Last thing</p><h2>What should I call you?</h2>'
+        + '<p class="ea-sub">Only so I can address you properly. It is never shown on a public case, and you can skip it.</p>'
+        + '<label class="ea-label" for="eaName">Your name</label>'
+        + '<input id="eaName" type="text" maxlength="60" placeholder="A first name is enough" autocomplete="given-name" />'
+        + '<p class="ea-err" id="eaErr">That did not look like a name.</p>'
+        + '<p class="ea-hint">Everything else — where you are, which office holds your case — I work out from what you tell me about the problem. I will not ask you for it again.</p>'
+        + '<div class="ea-foot"><button class="ea-back" type="button" id="eaSkip">Skip this</button>'
+        + '<button class="ea-btn" type="button" id="eaGo">Save&nbsp; →</button></div>');
+
+      const input = card.querySelector('#eaName'), err = card.querySelector('#eaErr');
+      const finish = (name) => { if (name) patch({ name: name }); done(); };
+
+      card.querySelector('#eaSkip').addEventListener('click', () => finish(null));
+      const save = async () => {
+        const name = input.value.trim();
+        if (!name) { finish(null); return; }
+        const out = await window.EAAPI.setName(phone, code, name);
+        if (out.error && !out.offline) { err.textContent = out.error; err.classList.add('show'); return; }
+        finish((out.person && out.person.name) || name);
+      };
+      card.querySelector('#eaGo').addEventListener('click', save);
+      input.addEventListener('input', () => err.classList.remove('show'));
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') save(); });
     }
 
     if (read().loggedIn) { done(); return; }
@@ -401,7 +449,7 @@
   window.EA = {
     read: read, patch: patch, registry: registry, lookup: lookup, lookupRemote: lookupRemote, esc: esc,
     login: login,
-    logout: function () { patch({ loggedIn: false, otp: '' }); },
+    logout: function () { patch({ loggedIn: false, otp: '', name: '' }); },
     close: close,
     /* Guard an action behind login; runs it straight away if the session is live. */
     require: function (reason, run) { login(run, reason); },

@@ -442,7 +442,25 @@ api.get('/speech/languages', (_req, res) => res.json({
   note: 'Saaras understands more languages than Bulbul can speak. These are the ones Smiti can say aloud.'
 }));
 
-api.get('/me/:phone', (req, res) => res.json(db.myCases(digits(req.params.phone))));
+api.get('/me/:phone', (req, res) => {
+  const phone = digits(req.params.phone);
+  /* A row from the first look, so the name can be asked exactly once. */
+  db.seePerson(phone);
+  res.json(Object.assign(db.myCases(phone), { profile: db.profile(phone) }));
+});
+
+/** The one fact no grievance can supply. Optional: nothing is gated on having answered. */
+api.post('/me/:phone/name', (req, res) => {
+  const phone = digits(req.params.phone);
+  if (phone.length !== 10) return res.status(401).json({ error: 'Verify your mobile number first.' });
+  if (digits(req.body?.otp) !== MOCK_OTP) return res.status(401).json({ error: `Demo mode — the code is ${MOCK_OTP}.` });
+
+  const clean = sanitizeInput(String(req.body?.name || ''));
+  if (clean.blocked) return res.status(400).json({ error: clean.reason });
+  const out = db.setName(phone, clean.text || req.body?.name);
+  if (out.error) return res.status(400).json({ error: 'Tell me what to call you, or skip it.' });
+  res.json({ person: out });
+});
 
 api.get('/dashboard', (_req, res) => res.json(db.dashboard()));
 
