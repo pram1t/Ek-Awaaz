@@ -141,6 +141,53 @@ console.log('\nevery language the picker offers can actually be spoken');
   ok(/createElement\('select'\)/.test(voiceSrc), 'the language control is a select, not a cycling chip');
 }
 
+console.log('\nthe turn ends when the speaking does');
+
+{
+  const v = await fetch(BASE + '/voice.js').then((r) => r.text());
+
+  ok(/const SILENCE_MS = \d+/.test(v), 'silence ends the turn', (v.match(/SILENCE_MS = (\d+)/) || [])[1] + 'ms');
+  ok(/if \(!heardSpeech\) return;/.test(v), 'quiet only counts once something was said',
+     'otherwise a quiet room submits an empty turn');
+  ok(/setInterval\(watch, \d+\)/.test(v), 'silence is watched on a timer, not the animation frame',
+     'rAF stops in a hidden tab, which would strand the turn until the cap');
+
+  /* The meter is visual and belongs on rAF; the decision is not visual and must not.
+     Bounded to loop() itself — slicing to the next named function swept in start(), stop() and
+     watch(), and reported logic that was correctly placed as if it were not. */
+  const loopStart = v.indexOf('function loop()');
+  /* loop() ends at its own rAF re-entry. Bounding on the next "function " missed, because the next
+     one is `async function start()` — so the slice swept in start() and stop() and the assertion
+     failed on logic that was correctly placed. */
+  const loopEnd = v.indexOf('requestAnimationFrame(loop);', loopStart);
+  const loopBody = v.slice(loopStart, loopEnd > loopStart ? loopEnd : loopStart + 900);
+  ok(!/commitLive|heardSpeech|quietSince/.test(loopBody),
+     'the frame loop only paints bars', 'no decision logic left inside it');
+
+  ok(/MAX_TURN_MS = \d+/.test(v), 'a turn cannot run forever',
+     (v.match(/MAX_TURN_MS = (\d+)/) || [])[1] + 'ms cap');
+  ok(/use.textContent = 'Send now'/.test(v), 'the button is an override, not a requirement',
+     'it used to read "Use this" and be the only way to send');
+
+  const page = await fetch(BASE + '/report').then((r) => r.text());
+  ok(!/class="legal"/.test(page), 'the composer footnote is gone');
+  ok(/}, 300\);/.test(page), 'sending is not delayed now the mic decides the turn', '300ms');
+}
+
+console.log('\nspeech survives one provider failing');
+
+{
+  const health = await fetch(BASE + '/api/health').then((r) => r.json());
+  const sp = health.speech || {};
+  ok(!!sp.fallback, 'a second provider is reported at all');
+  ok(sp.fallback && typeof sp.fallback.configured === 'boolean',
+     'and says whether it is configured', 'configured=' + (sp.fallback && sp.fallback.configured));
+  ok(sp.fallback && sp.fallback.ceilingUsd > 0,
+     'metered against its own ceiling',
+     'so a voice session cannot eat the intake budget · $' + (sp.fallback && sp.fallback.ceilingUsd));
+  ok(sp.provider !== undefined, 'the primary provider is named', String(sp.provider));
+}
+
 console.log('\nthe page does not talk unless spoken to');
 
 {

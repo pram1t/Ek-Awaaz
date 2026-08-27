@@ -15,6 +15,14 @@
 (function () {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
   const BARS = 28;
+
+  /* Live commit. Once speech has been heard, this much quiet ends the turn and sends it.
+     1500ms: shorter cuts people off when they pause to think, longer feels dead. */
+  const SILENCE_MS = 1500;
+  /* Speech is anything above this share of full scale. Below it is room noise. */
+  const SPEECH_LEVEL = 0.055;
+  /* A phone left face-up must not record forever. */
+  const MAX_TURN_MS = 45000;
   const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const CSS = `
@@ -124,6 +132,9 @@
        nothing (no support for this language, or no support at all) we still have the words. */
     let picked = false;
     let recorder = null, chunks = [];
+    /* Live-commit state: whether we have heard anything yet, when the quiet began, and the
+       two timers that end a turn. */
+    let heardSpeech = false, quietSince = 0, autoTimer = 0, capTimer = 0, watchTimer = 0;
 
     /* ---- build ---- */
     const btn = document.createElement('button');
@@ -159,7 +170,7 @@
     const use = document.createElement('button');
     use.type = 'button';
     use.className = 'ea-voice-use';
-    use.textContent = 'Use this';
+    use.textContent = 'Send now';
 
     panel.append(meter, text, lang, use);
     mount.replaceWith(btn);
@@ -209,6 +220,7 @@
         /* a floor so the bar never fully disappears, and a curve so speech reads clearly */
         bars[i].style.transform = 'scaleY(' + Math.max(0.12, Math.min(1, Math.pow(v, 0.65) * 1.6)).toFixed(3) + ')';
       }
+
       raf = requestAnimationFrame(loop);
     }
 
@@ -218,9 +230,14 @@
       reveal();
       if (opts.onOpen) opts.onOpen();
       btn.setAttribute('aria-pressed', 'true');
-      btn.setAttribute('aria-label', 'Stop and use what I said');
+      btn.setAttribute('aria-label', 'Stop and send what I said');
       btn.innerHTML = STOP;
       finalText = ''; interimText = '';
+      heardSpeech = false; quietSince = 0;
+      clearTimeout(capTimer);
+      capTimer = setTimeout(() => { if (open) commitLive(); }, MAX_TURN_MS);
+      clearInterval(watchTimer);
+      watchTimer = setInterval(watch, 120);
       say(SR ? 'Listening…' : 'Recording…');   /* say() clears .live, so this reads left to right */
 
       try {
@@ -284,7 +301,54 @@
       try { rec.start(); } catch (_) { say('Could not start listening. Type instead.'); }
     }
 
+    /* A status line that does not wipe the transcript. say() clears the text; this only
+       replaces the hint when there is nothing transcribed yet, so a live transcript is never
+       overwritten by a status message. */
+    /* Whether the person has stopped speaking is not a visual question, so it does not belong
+       on requestAnimationFrame — that stops in a hidden tab, which would leave the microphone
+       open and the turn uncommitted until the cap. A timer keeps firing when hidden (throttled
+       to about a second, which is late but still correct). */
+    function watch() {
+      if (!analyser || !open) return;
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteFrequencyData(data);
+      /* Peak, not mean: a mean across every bin is dragged down by the empty high end and
+         reads as silence during ordinary speech. */
+      let peak = 0;
+      for (let k = 0; k < data.length; k++) if (data[k] > peak) peak = data[k];
+      const level = peak / 255;
+
+      if (level > SPEECH_LEVEL) {
+        heardSpeech = true;
+        quietSince = 0;
+        say2('Listening…');
+        return;
+      }
+      /* Quiet only counts once something has been said. Otherwise a quiet room would submit an
+         empty turn before anybody spoke. */
+      if (!heardSpeech) return;
+      const now = Date.now();
+      if (!quietSince) { quietSince = now; return; }
+      if (now - quietSince > SILENCE_MS) { commitLive(); return; }
+      if (now - quietSince > 500) say2('Sending in a moment — keep talking to continue.');
+    }
+
+    function say2(msg) {
+      if (finalText || interimText) return;
+      if (text.textContent !== msg) text.textContent = msg;
+    }
+
+    /* The person stopped talking. End the turn and hand it over. */
+    function commitLive() {
+      if (!open) return;
+      stop(true);
+    }
+
     function stop(commit) {
+      clearTimeout(autoTimer); autoTimer = 0;
+      clearTimeout(capTimer); capTimer = 0;
+      clearInterval(watchTimer); watchTimer = 0;
+      heardSpeech = false; quietSince = 0;
       open = false;
       host.classList.remove('ea-open', 'ea-live');
       conceal();

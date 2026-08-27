@@ -187,7 +187,6 @@ textarea:disabled{background:#f9f3e9;color:#9a8674}
   </div>
   <input type="file" id="photoInput" accept="image/*" capture="environment" multiple hidden />
   <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple hidden />
-  <p class="legal">Your name is never shown on a shared case. Only the problem, the office, and how many people joined.</p>
 </div></footer>
 
 <script>
@@ -1144,7 +1143,7 @@ const voice = window.EAVoice && EAVoice.attach({
     sendAfterSpeaking = setTimeout(() => {
       if (!reply.value.trim() || reply.disabled) return;
       form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event('submit', { cancelable: true }));
-    }, 700);
+    }, 300);
   }
 });
 
