@@ -21,7 +21,9 @@ const DB_PATH = process.env.DB_PATH || (SERVERLESS ? ':memory:' : path.join(ROOT
 export const storageMode = DB_PATH === ':memory:' ? 'memory' : 'file';
 export const storageNote = storageMode === 'memory'
   ? 'Serverless instance: seeded case history is always present, but cases you create live only as long as this instance. Set DB_PATH to a writable path, or host on a persistent process, for durable storage.'
-  : `Persistent file at ${DB_PATH}.`;
+  : SERVERLESS
+    ? `File at ${DB_PATH} on this instance. A case you file survives while this instance stays warm, which is minutes to hours, and is not shared with other instances. Seeded history is always present. A persistent process or an external database is what makes it durable.`
+    : `Persistent file at ${DB_PATH}.`;
 
 export const routing = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'routing.json'), 'utf8'));
 export const remedies = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'remedies.json'), 'utf8'));
@@ -304,10 +306,10 @@ export function findByCode(input) {
   return shape(hit);
 }
 
-export function publicCases({ state = null, limit = 20 } = {}) {
+export function publicCases({ state = null, limit = 60 } = {}) {
   const sql = state
-    ? 'SELECT * FROM cases WHERE visibility != ? AND state = ? ORDER BY supporters DESC LIMIT ?'
-    : 'SELECT * FROM cases WHERE visibility != ? ORDER BY supporters DESC LIMIT ?';
+    ? 'SELECT * FROM cases WHERE visibility != ? AND state = ? ORDER BY supporters DESC, filed_on DESC, id DESC LIMIT ?'
+    : 'SELECT * FROM cases WHERE visibility != ? ORDER BY supporters DESC, filed_on DESC, id DESC LIMIT ?';
   const rows = state
     ? db.prepare(sql).all('private', state, limit)
     : db.prepare(sql).all('private', limit);

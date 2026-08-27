@@ -188,12 +188,17 @@ textarea:disabled{background:#f9f3e9;color:#9a8674}
 /* The opening sentence arrives in sessionStorage. A ?issue= parameter is still honoured for
    any old link, but it is read once and then stripped from the address bar, because a
    grievance in a URL ends up in history, logs and referrer headers. */
+/* Captured once, before the issue IIFE calls replaceState and strips the query string.
+   Reading location.search after that point returns nothing — which is exactly the bug this
+   line exists to prevent. */
+const QUERY = new URLSearchParams(location.search);
+
 const issue = (function () {
   const KEY = 'ekawaaz.handoff';
   let text = '';
   try { text = sessionStorage.getItem(KEY) || ''; } catch (e) {}
   if (!text) {
-    const param = new URLSearchParams(location.search).get('issue');
+    const param = QUERY.get('issue');
     if (param) {
       text = param;
       try { sessionStorage.setItem(KEY, text); } catch (e) {}
@@ -203,6 +208,36 @@ const issue = (function () {
   try { sessionStorage.removeItem(KEY); } catch (e) {}
   return text;
 })();
+
+/* Which card was clicked, if the person came from one. Read before the issue IIFE strips the
+   query string, and kept so the opening question can be about the thing they already told us. */
+const topic = (function () {
+  const KEY = 'ekawaaz.topic';
+  let t = '';
+  try { t = sessionStorage.getItem(KEY) || ''; } catch (e) {}
+  if (!t) {
+    const p = QUERY.get('topic');
+    if (p) { t = p; try { sessionStorage.setItem(KEY, t); } catch (e) {} }
+  }
+  try { sessionStorage.removeItem(KEY); } catch (e) {}
+  return t;
+})();
+
+/* The question to open with when the topic is already known. Not "what happened" — the question
+   you would actually ask someone who has just said "road". */
+const TOPIC_OPENER = {
+  road:   { q: 'What is wrong with the road?', hint: 'Potholes, a stretch never repaired, water standing on it. Tell me what you see, and roughly where it is.', chips: ['Potholes never repaired', 'Whole stretch broken', 'Water stands on it'] },
+  power:  { q: 'What is happening with your electricity?', hint: 'A long outage, a transformer gone, or a bill that is wrong. Say which, and since when.', chips: ['Long daily outage', 'Transformer burnt out', 'Bill is wrong'] },
+  water:  { q: 'What is wrong with the water supply?', hint: 'No supply, very little, or dirty water. Tell me how long it has been like this.', chips: ['No supply at all', 'Only for a few minutes', 'Water is dirty'] },
+  bank:   { q: 'What happened with the bank?', hint: 'Money debited that you did not spend, a fraud, or a payment that never arrived. Do not type your account number — I will never ask for it.', chips: ['Money debited wrongly', 'Fraud on my account', 'Payment not received'] },
+  pf:     { q: 'What is stuck with your PF?', hint: 'A withdrawal claim, a transfer, or a KYC problem. Tell me when you applied.', chips: ['Claim rejected', 'Claim stuck for months', 'Transfer not done'] },
+  ration: { q: 'What happened at the ration shop?', hint: 'Less than your due, refused outright, or the shop stays shut. Tell me which month.', chips: ['Given less than my due', 'Refused outright', 'Shop stays closed'] },
+  rail:   { q: 'What happened — the train, the ticket, or the station?', hint: 'A refund not received, a booking problem, or a condition at the station.', chips: ['Refund not received', 'Booking problem', 'Condition at the station'] },
+  tax:    { q: 'Which refund are you waiting for?', hint: 'Tell me the assessment year and roughly when you filed. Do not type your PAN.', chips: ['Refund not received', 'Refund less than expected'] },
+  id:     { q: 'Which document is it, and what went wrong?', hint: 'PAN, Aadhaar, or another government ID. Tell me what you applied for and when. Do not type the number itself.', chips: ['Correction not done', 'Application stuck', 'Card never arrived'] },
+  bribe:  { q: 'Tell me what was asked for.', hint: 'A designation is enough if you do not have a name. Put in only what you are willing to have on record.', chips: null },
+  other:  { q: 'Tell me what happened.', hint: 'Say it the way you would tell a neighbour. I find the office from your words — you never pick a department.', chips: null },
+};
 
 /* ---------------------------------------------------------------
    Domains. Each one names the office that actually owns the
@@ -546,7 +581,12 @@ function ask(text, hint, chips, after) {
 function buildSteps() {
   steps = [];
   if (!answers.grievance) {
-    steps.push({ key: 'grievance', label: 'Grievance', q: 'क्या हुआ? What happened?', hint: 'Say it the way you would tell a neighbour. I find the office from your words — you never pick a department.', chips: ['Road not repaired', 'Ration denied', 'Bank debited wrongly', 'PF claim stuck'] });
+    /* If they arrived by clicking a category, open on that category instead of asking them to
+       classify a problem they have already classified. */
+    const op = topic && TOPIC_OPENER[topic];
+    steps.push(op
+      ? { key: 'grievance', label: 'Grievance', q: op.q, hint: op.hint, chips: op.chips }
+      : { key: 'grievance', label: 'Grievance', q: 'क्या हुआ? What happened?', hint: 'Say it the way you would tell a neighbour. I find the office from your words — you never pick a department.', chips: ['Road not repaired', 'Ration denied', 'Bank debited wrongly', 'PF claim stuck'] });
   }
   domain.asks.slice(0, 2).forEach((a, i) => steps.push({ key: 'ask' + i, label: a.label, q: a.q, hint: a.hint, chips: a.chips }));
   if (domain.evidence) steps.push({ key: 'evidence', label: 'Evidence', kind: 'evidence', q: 'Anything to attach?', hint: domain.evidence + ' Use the clip, or drag files onto this screen.', chips: ['Nothing to attach'] });
@@ -931,7 +971,12 @@ async function fileCase() {
   }
   /* If the server is unreachable we still complete the journey, and say the case is local only. */
   if (!record) record = Object.assign(EA.file(local), { offline: true });
-  if (window.EA) EA.patch({ filed: (EA.read().filed || []).concat([]) , draft: null });
+  /* Record it. This concatenated an empty array, so nothing a person filed was ever kept
+     in the session — the offline list stayed empty and the public wall could not tell that a
+     case on it was your own. */
+  if (window.EA) EA.patch({ filed: (EA.read().filed || []).filter((f) => (f.code || f.id) !== (record.server ? record.server.code : record.id))
+    .concat([{ code: record.server ? record.server.code : record.id, id: record.id, title: record.server ? record.server.title : null,
+               office: record.server ? record.server.office : null, at: record.at }]), draft: null });
   filedRecord = record;
   phase = 'filed';
   progressText.textContent = 'Filed · ' + record.id;
@@ -1044,6 +1089,18 @@ if (draft && draft.step > 0 && (!issue || draft.issue === issue)) {
     }, 450);
   });
 } else {
+  /* Seed the domain from the clicked card so the follow-ups and the public/private decision are
+     already the right ones for this topic. The server still classifies from what they type, and
+     overwrites this — the seed only decides what we open with. */
+  if (topic) {
+    const seeded = domains.find((d) => d.key === topic);
+    if (seeded) { domain = seeded; isPublic = !!seeded.isPublic; }
+    const nameOf = { road: 'Roads and potholes', power: 'Electricity', water: 'Water supply',
+      bank: 'Banking and payments', pf: 'Provident fund', ration: 'Ration and PDS',
+      rail: 'Railways', tax: 'Income tax refund', id: 'Government ID', bribe: 'A demand for money',
+      other: 'Something else' }[topic];
+    if (nameOf) bubble('them', '<p class="aside">' + esc(nameOf) + ' — I have that. If it is not the right one, just tell me and I will change it.</p>');
+  }
   buildSteps();
   advance();
 }

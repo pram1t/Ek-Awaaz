@@ -358,7 +358,7 @@ api.post('/cases', (req, res) => {
 
 /** Public wall — what is already reported near you. This is how joinder is actually reached. */
 api.get('/cases', (req, res) => {
-  res.json({ cases: db.publicCases({ state: (req.query.state || '').toLowerCase() || null, limit: 24 }) });
+  res.json({ cases: db.publicCases({ state: (req.query.state || '').toLowerCase() || null, limit: 60 }) });
 });
 
 api.get('/cases/:code', (req, res) => {

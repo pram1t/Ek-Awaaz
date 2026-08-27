@@ -94,7 +94,8 @@
       .act{grid-column:1/-1;text-align:left}
       .act button{width:100%}
     }
-  </style>
+        .wall-head{grid-column:1/-1;margin:6px 0 0;color:#9a8674;font:800 10.5px Mukta,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+    </style>
   <link rel="stylesheet" href="/heritage.css?v=20260827-h1" />
   <link rel="stylesheet" href="/structure.css?v=20260827-s1" />
 </head>
@@ -178,8 +179,18 @@ const CHIP = {
 };
 
 let all = [];
-/* Cases this device has signed. Held here so a refresh cannot paint over the confirmation. */
+/* Cases this device has signed OR filed. Held here so a refresh cannot paint over the
+   confirmation, and seeded from the session so a case you filed is recognised as yours
+   the moment the wall loads — not only if you happened to join it in this visit. */
 const mine = new Set();
+
+function seedMine() {
+  if (!window.EA) return;
+  const s = EA.read();
+  const norm = (v) => String(v || '').replace(/[–—]/g, '-');
+  for (const c of (s.filed || [])) { const k = norm(c.code || c.id); if (k) mine.add(k); }
+  for (const j of (s.joined || [])) { const k = norm(j.code || j.id); if (k) mine.add(k); }
+}
 
 function card(c) {
   const [cls, label] = CHIP[c.status] || ['open', 'Open'];
@@ -251,7 +262,23 @@ function render(list) {
     countLabel.textContent = 'No public cases';
     return;
   }
-  list.forEach((c) => wall.appendChild(card(c)));
+  /* Your own cases first. For a stranger the wall stays ordered by household count, because
+     that ordering is the argument; for you, the case you just filed is the one you came to see. */
+  const own = list.filter((c) => mine.has(c.code));
+  const rest = list.filter((c) => !mine.has(c.code));
+
+  if (own.length) {
+    const head = document.createElement('p');
+    head.className = 'wall-head';
+    head.textContent = own.length === 1 ? 'Your case' : 'Your cases';
+    wall.appendChild(head);
+    own.forEach((c) => wall.appendChild(card(c)));
+    const line = document.createElement('p');
+    line.className = 'wall-head';
+    line.textContent = 'Open near you';
+    wall.appendChild(line);
+  }
+  rest.forEach((c) => wall.appendChild(card(c)));
   countLabel.textContent = list.length + (list.length === 1 ? ' public case' : ' public cases');
 }
 
@@ -300,6 +327,8 @@ document.querySelector('#useLoc').addEventListener('click', (e) => {
     { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 }
   );
 });
+
+seedMine();
 
 load();
 </script>

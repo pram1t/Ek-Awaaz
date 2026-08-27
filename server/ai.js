@@ -210,6 +210,21 @@ export async function classify(text) {
       safe.correctedBecause = fix.because;
     }
 
+    /* RULE ONE of the intake prompt is "reply in the language they wrote in", and the model
+       breaks it — an English grievance came back with follow-ups in romanised Hindi. A prompt is
+       a request; this is the guarantee. Any ask that switched language is replaced with the
+       hand-written English one for that domain, which is on-topic by construction.
+       switchedLanguage already backs nextQuestion; the intake path never had it. */
+    if (Array.isArray(safe.asks)) {
+      const canned = routing.domains[safe.domain]?.asks || [];
+      safe.asks = safe.asks.map((a, i) => {
+        if (!a || !a.q || !switchedLanguage(text, a.q)) return a;
+        const sub = canned[i] || canned[0];
+        safe.languageForced = true;
+        return sub ? { ...sub } : a;
+      });
+    }
+
     safe.source = 'model';
     cacheSet(key, { ...safe, source: undefined });
     return safe;
