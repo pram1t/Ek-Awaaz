@@ -176,45 +176,58 @@ function seedCases({ force = false } = {}) {
 /* The history behind a seeded case: who signed it, what was said on it, who confirmed it.
    Written from the case's own fields so the numbers on screen are the length of a real list
    rather than a decorative integer. */
+/* Prepared once, held for the life of the process. Created inside the per-case call, these
+   produced roughly a hundred and thirty Statement objects per cold start, and every one of them
+   is a destructor that removes a cleanup hook from the Node environment. On a serverless instance
+   that environment can be gone before the destructor runs; the assertion inside
+   RemoveEnvironmentCleanupHook then fails and aborts the process, which is what the Vercel logs
+   were showing. Five statements, referenced, is not a cure for that mismatch but it is a great
+   deal less of it. */
+const SEED_STMT = {};
+function seedStmt(name, sql) {
+  if (!SEED_STMT[name]) SEED_STMT[name] = db.prepare(sql);
+  return SEED_STMT[name];
+}
+
 function seedChildren(c) {
-  const row = db.prepare('SELECT id FROM cases WHERE code = ?').get(c.code);
+  const row = seedStmt('findCase', 'SELECT id FROM cases WHERE code = ?').get(c.code);
   if (!row) return;
 
   /* Signatures. A public case claiming 34 households gets 34 signature rows, each against a
-     distinct synthetic mobile, so the joinder rule (one signature per verified mobile) is
-     exercised by the seed and the count cannot drift from the list. */
+     distinct synthetic mobile, so the joinder rule is exercised by the seed itself and the count
+     cannot drift from the list. */
   if (c.visibility !== 'private' && (c.supporters || 0) > 0) {
-    const sig = db.prepare('INSERT OR IGNORE INTO signatures (case_id, phone, note, added_on) VALUES (?, ?, ?, ?)');
+    const sig = seedStmt('sig',
+      'INSERT OR IGNORE INTO signatures (case_id, phone, note, added_on) VALUES (?, ?, ?, ?)');
     const base = 7000000000 + (row.id * 1000);
     for (let i = 0; i < c.supporters; i++) {
       sig.run(row.id, String(base + i), i === 0 ? (c.summary ?? null) : null, c.filed_on);
     }
-    /* the owner, if the seed names one, is the first signature rather than a 35th */
     if (c.phone) sig.run(row.id, c.phone, null, c.filed_on);
   }
 
-  /* The exchange on the case. */
   if (Array.isArray(c.messages)) {
-    const msg = db.prepare('INSERT INTO messages (case_id, role, phone, text, added_on) VALUES (?, ?, ?, ?, ?)');
+    const msg = seedStmt('msg',
+      'INSERT INTO messages (case_id, role, phone, text, added_on) VALUES (?, ?, ?, ?, ?)');
     for (const m of c.messages) {
       msg.run(row.id, m.role || 'citizen', m.role === 'officer' ? null : (c.phone ?? null),
               m.text, m.on || c.filed_on);
     }
   }
 
-  /* Confirmations. Only these can close a case, so a seeded confirmed_fixed case must have
-     them or the record contradicts itself. */
+  /* Only a confirmation can close a case, so a seeded confirmed_fixed case must carry them or
+     the record contradicts the one rule the product rests on. */
   if (Array.isArray(c.confirmations)) {
-    const conf = db.prepare('INSERT OR IGNORE INTO confirmations (case_id, phone, verdict, added_on) VALUES (?, ?, ?, ?)');
+    const conf = seedStmt('conf',
+      'INSERT OR IGNORE INTO confirmations (case_id, phone, verdict, added_on) VALUES (?, ?, ?, ?)');
     for (const k of c.confirmations) {
       conf.run(row.id, String(k.phone), k.verdict || 'fixed', k.on || c.confirmed_on || c.filed_on);
     }
   }
 
-  /* A named citizen exists as a person, so My information has something to show. */
   if (c.phone && c.citizen_name) {
-    db.prepare(`INSERT INTO people (phone, name, created_on) VALUES (?, ?, ?)
-                ON CONFLICT(phone) DO UPDATE SET name = COALESCE(people.name, excluded.name)`)
+    seedStmt('person', `INSERT INTO people (phone, name, created_on) VALUES (?, ?, ?)
+                        ON CONFLICT(phone) DO UPDATE SET name = COALESCE(people.name, excluded.name)`)
       .run(c.phone, c.citizen_name, c.filed_on);
   }
 }
