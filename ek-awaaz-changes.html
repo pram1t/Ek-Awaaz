@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-IN" xml:lang="en-IN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Build log · Build What Moves India" />
+  <meta name="dcterms.date" content="2026-08-27" />
+  <title>Ek Awaaz — what we built</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+  :root{
+    --ink:#14213D; --ink-2:#3D4A66; --ink-3:#6B7690;
+    --ground:#ECEFF3; --surface:#FFFFFF; --surface-2:#F5F7F9;
+    --rule:#C7CFDB; --rule-soft:#DCE2EA;
+    --accent:#1F5F8B; --accent-soft:#E2EDF4;
+    --stop:#A4343A; --stop-soft:#F6E7E7;
+    --go:#2C6A50; --go-soft:#E4EFE9;
+    --hold:#8A6114; --hold-soft:#F6EEDD;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#E3E8F0; --ink-2:#B3BDCE; --ink-3:#8592A8;
+      --ground:#0F1621; --surface:#161F2C; --surface-2:#1C2734;
+      --rule:#2E3B4C; --rule-soft:#243040;
+      --accent:#79B4D6; --accent-soft:#182B38;
+      --stop:#E2888C; --stop-soft:#2E1D1F;
+      --go:#7FBFA1; --go-soft:#17281F;
+      --hold:#D9BE75; --hold-soft:#2A2315;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#E3E8F0; --ink-2:#B3BDCE; --ink-3:#8592A8;
+    --ground:#0F1621; --surface:#161F2C; --surface-2:#1C2734;
+    --rule:#2E3B4C; --rule-soft:#243040;
+    --accent:#79B4D6; --accent-soft:#182B38;
+    --stop:#E2888C; --stop-soft:#2E1D1F;
+    --go:#7FBFA1; --go-soft:#17281F;
+    --hold:#D9BE75; --hold-soft:#2A2315;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--ground); color:var(--ink);
+    font-family:"Public Sans","Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:17px; line-height:1.62; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px 96px}
+  a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:2px}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+  header.mast{padding:64px 0 36px;border-bottom:2px solid var(--ink)}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin:0 0 20px}
+  h1{font-family:Newsreader,Georgia,serif;font-weight:500;font-size:clamp(2.6rem,6.4vw,4.4rem);line-height:1.02;letter-spacing:-.02em;margin:0;text-wrap:balance}
+  h1 .sub{display:block;font-size:.33em;font-style:italic;color:var(--ink-2);margin-top:.75em;letter-spacing:0;line-height:1.4}
+  .mast-meta{display:flex;flex-wrap:wrap;gap:8px 28px;margin-top:28px;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-3)}
+  .mast-meta b{color:var(--ink-2);font-weight:500}
+
+  section.sec{padding:52px 0;border-bottom:1px solid var(--rule-soft)}
+  .sec-head{display:grid;grid-template-columns:64px 1fr;gap:16px;align-items:start;margin-bottom:26px}
+  .sec-num{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;color:var(--accent);padding-top:.6em;font-variant-numeric:tabular-nums}
+  h2{font-family:Newsreader,Georgia,serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.3rem);line-height:1.14;margin:0;letter-spacing:-.01em;text-wrap:balance}
+  h3{font-family:"Public Sans",sans-serif;font-weight:700;font-size:1.02rem;margin:32px 0 10px}
+  h4{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin:26px 0 10px}
+  .body{display:grid;grid-template-columns:64px minmax(0,68ch) minmax(0,1fr);gap:16px 30px}
+  .body > *{grid-column:2}
+  .body > .full{grid-column:2 / -1}
+  .note{grid-column:3;font-size:13.5px;line-height:1.5;color:var(--ink-3);border-left:2px solid var(--rule);padding-left:14px;align-self:start}
+  .note b{color:var(--ink-2);font-weight:600;display:block;margin-bottom:3px;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+  @media (max-width:1000px){
+    .body{grid-template-columns:1fr}
+    .body > *,.body > .full{grid-column:1}
+    .note{grid-column:1;background:var(--surface-2);border-left:2px solid var(--accent);padding:12px 14px}
+    .sec-head{grid-template-columns:1fr;gap:4px}
+  }
+  p{margin:0 0 16px}
+  .lede{font-size:1.2rem;line-height:1.5;color:var(--ink-2);font-family:Newsreader,Georgia,serif}
+  ul,ol{margin:0 0 18px;padding-left:22px}
+  li{margin-bottom:7px}
+  li::marker{color:var(--ink-3)}
+  code{font-family:"IBM Plex Mono",monospace;font-size:.87em;background:var(--surface-2);border:1px solid var(--rule-soft);padding:1px 5px;border-radius:3px}
+
+  .chip{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:3px;white-space:nowrap;border:1px solid}
+  .chip.go{color:var(--go);background:var(--go-soft);border-color:var(--go)}
+  .chip.hold{color:var(--hold);background:var(--hold-soft);border-color:var(--hold)}
+  .chip.stop{color:var(--stop);background:var(--stop-soft);border-color:var(--stop)}
+  .chip.neut{color:var(--ink-2);background:var(--surface-2);border-color:var(--rule)}
+
+  .tw{overflow-x:auto;margin:0 0 20px;border:1px solid var(--rule);background:var(--surface)}
+  table{border-collapse:collapse;width:100%;font-size:14px;min-width:680px}
+  th{text-align:left;font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);font-weight:600;padding:11px 13px;border-bottom:1.5px solid var(--ink);background:var(--surface-2);vertical-align:bottom}
+  td{padding:12px 13px;border-bottom:1px solid var(--rule-soft);vertical-align:top;line-height:1.45}
+  tr:last-child td{border-bottom:none}
+  td.law{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-2);line-height:1.4}
+  td.nm{font-weight:600}
+  td.num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+  .call{border-left:3px solid var(--accent);background:var(--surface);padding:20px 22px;margin:0 0 22px}
+  .call.warn{border-left-color:var(--stop)}
+  .call.win{border-left-color:var(--go)}
+  .call p:last-child{margin-bottom:0}
+  .call h4{margin-top:0}
+
+  .states{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);margin-bottom:22px}
+  .st{display:grid;grid-template-columns:170px 1fr;gap:18px;background:var(--surface);padding:13px 16px}
+  .st .lbl{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;color:var(--ink)}
+  .st .say{font-size:14px;color:var(--ink-2)}
+  .st .say em{color:var(--ink);font-style:normal;font-weight:600}
+  @media(max-width:640px){.st{grid-template-columns:1fr;gap:5px}}
+
+  .days{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule)}
+  .day{background:var(--surface);padding:15px 17px;display:grid;grid-template-columns:118px 1fr;gap:18px}
+  .day .d{font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-weight:600;color:var(--accent);letter-spacing:.04em}
+  .day ul{margin:0;padding-left:18px;font-size:14.5px}
+  .day li{margin-bottom:4px}
+  @media(max-width:640px){.day{grid-template-columns:1fr;gap:6px}}
+
+  nav.toc{background:var(--surface);border:1px solid var(--rule);padding:22px 24px;margin:36px 0 0}
+  nav.toc h4{margin:0 0 12px}
+  nav.toc ol{columns:2;column-gap:38px;margin:0;padding-left:20px;font-size:14.5px}
+  nav.toc li{margin-bottom:5px;break-inside:avoid}
+  nav.toc a{text-decoration:none;color:var(--ink)}
+  nav.toc a:hover{color:var(--accent);text-decoration:underline}
+  @media(max-width:640px){nav.toc ol{columns:1}}
+
+  .draft{background:var(--surface);border:1px solid var(--rule);border-top:3px solid var(--ink);padding:24px 26px;margin-bottom:22px}
+  .draft .wc{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px}
+  .script{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule)}
+  .sc{background:var(--surface);padding:14px 17px;display:grid;grid-template-columns:92px 1fr;gap:18px}
+  .sc .t{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
+  .sc p{margin:0;font-size:14.5px}
+  @media(max-width:640px){.sc{grid-template-columns:1fr;gap:5px}}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule);margin-bottom:22px}
+  .two > div{background:var(--surface);padding:20px 22px}
+  .two h4{margin-top:0}
+  .two p:last-child{margin-bottom:0}
+  @media(max-width:720px){.two{grid-template-columns:1fr}}
+
+  footer.end{padding:48px 0 0;font-size:13.5px;color:var(--ink-3)}
+  footer.end h4{margin-top:0}
+  footer.end ol{padding-left:20px;columns:2;column-gap:34px}
+  footer.end li{margin-bottom:6px;break-inside:avoid}
+  footer.end a{color:var(--accent)}
+  @media(max-width:700px){footer.end ol{columns:1}}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Ek Awaaz — what we built</h1>
+<p class="subtitle">Every change in the build, and what it means for the
+person using it</p>
+<p class="author">Build log · Build What Moves India</p>
+<p class="date">27 August 2026</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#how-to-read-this" id="toc-how-to-read-this">How to read
+this</a></li>
+<li><a href="#the-one-line-version" id="toc-the-one-line-version">1. The
+one-line version</a></li>
+<li><a href="#the-change-that-matters-most-who-closes-a-case"
+id="toc-the-change-that-matters-most-who-closes-a-case">2. The change
+that matters most: who closes a case</a></li>
+<li><a href="#changes-to-what-the-citizen-actually-does"
+id="toc-changes-to-what-the-citizen-actually-does">3. Changes to what
+the citizen actually does</a></li>
+<li><a href="#voice" id="toc-voice">4. Voice</a></li>
+<li><a href="#the-design-a-corporate-portal-became-an-indian-one"
+id="toc-the-design-a-corporate-portal-became-an-indian-one">5. The
+design: a corporate portal became an Indian one</a></li>
+<li><a href="#what-is-guarded-and-where"
+id="toc-what-is-guarded-and-where">6. What is guarded, and
+where</a></li>
+<li><a href="#reliability-and-cost" id="toc-reliability-and-cost">7.
+Reliability, and cost</a></li>
+<li><a href="#what-a-reviewer-can-click"
+id="toc-what-a-reviewer-can-click">8. What a reviewer can click</a></li>
+<li><a href="#what-we-have-not-done" id="toc-what-we-have-not-done">9.
+What we have <strong>not</strong> done</a></li>
+<li><a href="#lines-you-can-say-out-loud"
+id="toc-lines-you-can-say-out-loud">10. Lines you can say out
+loud</a></li>
+</ul>
+</nav>
+<p><strong>Live:</strong> ek-awaaz.vercel.app · <strong>Code:</strong>
+github.com/pram1t/Ek-Awaaz <strong>Companion to:</strong> the
+architecture dossier of 23 August 2026, which was written pre-build
+<strong>Status:</strong> Built, deployed, model live in production</p>
+<hr />
+<h1 id="how-to-read-this">How to read this</h1>
+<p>The dossier of 23 August argued what <em>should</em> be built. This
+says what <em>is</em> built, what changed while building it, and — for
+every change — the one line that matters: <strong>what the citizen now
+experiences that they did not before.</strong></p>
+<p>Everything below is in the repository and running on the live link.
+Where something is designed but not built, or built but simulated, it
+says so in section 9 rather than being left for a reviewer to
+discover.</p>
+<hr />
+<h1 id="the-one-line-version">1. The one-line version</h1>
+<blockquote>
+<p>A citizen says what is wrong in their own words. We work out which
+office is answerable, tell them the stronger legal remedy they already
+hold, join their case to their neighbours’ instead of starting another,
+and then refuse to close it until <em>they</em> say it is fixed.</p>
+</blockquote>
+<p>Five journeys are served end to end: a village road, a stuck PF
+claim, an ignored bank debit, a ration denial, and a joined public
+case.</p>
+<hr />
+<h1 id="the-change-that-matters-most-who-closes-a-case">2. The change
+that matters most: who closes a case</h1>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;"></th>
+<th style="text-align: left;">Before</th>
+<th style="text-align: left;">Now</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Who closes it</td>
+<td style="text-align: left;">The officer’s report closed it</td>
+<td style="text-align: left;"><strong>Only the citizen</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">What the officer’s report does</td>
+<td style="text-align: left;">Ends the case</td>
+<td style="text-align: left;">Moves it to <em>awaiting your
+confirmation</em> and no further</td>
+</tr>
+<tr>
+<td style="text-align: left;">If it was not fixed</td>
+<td style="text-align: left;">Nothing, or a fresh appeal</td>
+<td style="text-align: left;">Answer <em>not fixed</em> — the
+<strong>same case number</strong> reopens with its history, the clock
+resumes, the recurrence count rises</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Enforced in the database, not the interface.</strong>
+<code>confirmed_fixed</code> is reachable only through the confirm
+endpoint, which requires a verified mobile. Our test suite asserts the
+<em>negative</em> — after an officer files “disposed of”, the case must
+<strong>still not be closed</strong> — because that is the assertion
+that would be embarrassing to have silently break.</p>
+<p><strong>What the citizen experiences:</strong> the sentence
+<em>“their report says disposed of, this case still says open”</em> on
+their own screen. Nothing in Ek Awaaz is ever called “disposed”.</p>
+<hr />
+<h1 id="changes-to-what-the-citizen-actually-does">3. Changes to what
+the citizen actually does</h1>
+<h2 id="intake-a-form-became-a-conversation">3.1 Intake: a form became a
+conversation</h2>
+<p>Rebuilt this week after it tested badly. It was a wizard with fixed
+questions; it is now Smiti Didi, one question at a time, each one chosen
+by the model from what has already been said.</p>
+<ul>
+<li>Two to four questions, then it stops. <strong>The stop is in
+code</strong>, not asked of the model — three answers, or twice “I don’t
+know”, or what-and-when on record.</li>
+<li>Say <em>“I don’t know”</em> and that topic closes. It will not be
+asked again, and neither will anything adjacent to it.</li>
+<li><strong>She never asks for an account, card, Aadhaar or PAN
+number.</strong> A blocked question is regenerated, not dropped — a
+refusal must not end the intake.</li>
+<li>The review screen is a <strong>summary of the conversation</strong>,
+in named fields — not a transcript pasted into boxes.</li>
+</ul>
+<p><strong>What the citizen experiences:</strong> they are never shown a
+ministry list or a category tree. They answer two or three questions a
+person would ask, and see a filled case file they never typed into a
+form.</p>
+<h2
+id="clicking-a-category-now-opens-the-conversation-on-that-topic">3.2
+Clicking a category now opens the conversation on that topic</h2>
+<p><em>New today.</em> Every “Report a road issue” link was an anchor
+that scrolled down to a text box and asked “What happened?” — throwing
+away the one thing the click had established.</p>
+<p>All twelve cards now open the chat already knowing the topic:</p>
+<blockquote>
+<p><strong>Electricity — I have that.</strong> If it is not the right
+one, just tell me and I will change it. <strong>What is happening with
+your electricity?</strong> A long outage, a transformer gone, or a bill
+that is wrong. Say which, and since when.</p>
+</blockquote>
+<p><strong>What the citizen experiences:</strong> they never classify
+their problem twice. The topic is echoed back so they can see it was
+understood, and correct it if the card was wrong.</p>
+<h2 id="joining-a-case-five-screens-became-one">3.3 Joining a case: five
+screens became one</h2>
+<p><em>Fixed today.</em> Adding your name to an existing case asked
+three <strong>required</strong> questions, then an evidence screen, then
+a review. That is the same friction as filing fresh, which destroys the
+reason to join — and a required field on a voluntary act meant a person
+could be <strong>blocked from joining</strong> because they could not
+think of anything to add about a road they walk every day.</p>
+<p>Now: the case, one <strong>optional</strong> line, an optional photo,
+one button. The case-specific question became the example inside the
+optional box, so a person who has that detail is still prompted for it
+and a person who does not is not stopped.</p>
+<p><strong>What the citizen experiences:</strong> two taps to join a
+case instead of six screens.</p>
+<h2 id="a-public-wall-and-your-own-case-first">3.4 A public wall, and
+your own case first</h2>
+<p><code>/near-you</code> lists every open public case, filterable by
+state and ward — the only route into joinder for someone with no case
+number. Joining is offered <strong>before</strong> filing.</p>
+<p><em>Fixed today:</em> a case you had just filed did not appear, for
+three separate reasons — the list was ordered by household count so a
+case with one supporter sorted last and could fall off the limit; your
+own filed case was not recognised as yours, so it was offered back to
+you to join; and nothing floated it. Your cases now appear first, under
+<strong>“Your case”</strong>, marked as yours.</p>
+<p><strong>What the citizen experiences:</strong> <em>“34 households
+have already reported this. Your name on that case is worth more than a
+second case about the same problem. At 50 names it goes to the District
+Collector on its own.”</em> One signature per verified mobile, enforced
+by a database constraint. Your name is never shown to the other people
+on the case.</p>
+<h2 id="the-stronger-remedy-before-filing">3.5 The stronger remedy,
+before filing</h2>
+<p><strong>12 statutory remedies on file, 11 implemented</strong>, each
+with its forum, its teeth, its clock and its provision — shown
+<em>before</em> the case is filed.</p>
+<ul>
+<li>A disputed bank debit: the RBI Ombudsman can award up to ₹20 lakh,
+after the bank has had 30 days, under RB-IOS 2021.</li>
+<li>A late tax refund: Section 244A entitles you to interest.</li>
+<li>A ration shortfall: NFSA section 15 names a District Grievance
+Redressal Officer.</li>
+</ul>
+<p>Each remedy is <strong>gated and scope-checked</strong>. The Bombay
+High Court’s pothole compensation scale is Maharashtra law, so a Bihar
+case is told <em>“not settled law in Bihar, and the amounts are not
+fixed in this state”</em> while a Maharashtra case is told <em>“applies
+only if the road caused an injury.”</em> Same question, two states, two
+correct answers.</p>
+<h2 id="following-the-case-afterwards">3.6 Following the case
+afterwards</h2>
+<ul>
+<li><strong>A timeline</strong> derived from the case record — filed,
+routed and why, households joined, the officer’s reply, your answer,
+each confirmation. It cannot disagree with the case because it is a view
+of it.</li>
+<li><strong>The officer’s reply, twice:</strong> the officialese
+verbatim, then Smiti’s plain reading of it.</li>
+<li><strong>You can write back.</strong> It lands on the record, and if
+the case was waiting on you it goes back to the office — answering an
+officer is not agreeing with them.</li>
+<li><strong>Ask a question about your own case.</strong> Answered from
+that case’s record and nothing else, and it says so when the record does
+not hold the answer: <em>“The record does not hold the name of the
+Junior Engineer or a date for their visit.”</em></li>
+<li><strong>An honest clock.</strong> 21 days, and when it expires the
+case says by how much — <em>“117 days past the 21-day limit”</em> —
+instead of capping at “Day 21 of 21” and implying the clock still
+runs.</li>
+</ul>
+<h2 id="nothing-is-asked-twice">3.7 Nothing is asked twice</h2>
+<p>A <strong>My information</strong> panel assembled from the grievances
+already filed, where every line names the case it came from. <em>“You
+were never asked for any of this.”</em></p>
+<h2 id="plain-english-across-the-whole-site">3.8 Plain English across
+the whole site</h2>
+<p><em>Done today.</em> The copy was written like a policy note.
+<strong>39 strings rewritten.</strong></p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Was</th>
+<th style="text-align: left;">Now</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">“The route was identified as the Block
+Development Officer”</td>
+<td style="text-align: left;">“It went to the Block Development Officer…
+because a village road is his job”</td>
+</tr>
+<tr>
+<td style="text-align: left;">“a statutory deadline, an independent
+adjudicator”</td>
+<td style="text-align: left;">“a deadline the office must meet, someone
+outside the department who can decide”</td>
+</tr>
+<tr>
+<td style="text-align: left;">“which local, state, sectoral, or central
+office”</td>
+<td style="text-align: left;">“which office can actually fix it”</td>
+</tr>
+<tr>
+<td style="text-align: left;">“At 50 local signatures, automatically
+escalated”</td>
+<td style="text-align: left;">“At 50 names, it goes to the District
+Collector on its own”</td>
+</tr>
+<tr>
+<td style="text-align: left;">“if the 21-day window lapsed”</td>
+<td style="text-align: left;">“If he missed 21 days”</td>
+</tr>
+<tr>
+<td style="text-align: left;">“Scheme of the Ministry of Rural
+Development — no statute”</td>
+<td style="text-align: left;">“A central government scheme, not a
+law”</td>
+</tr>
+</tbody>
+</table>
+<p>Sentences over 26 words: <strong>14 → 1.</strong> Long words in the
+homepage copy: <strong>48 → 39.</strong> Total word count rose slightly
+— the honest trade with plain English is more words, but smaller
+ones.</p>
+<p>Kept deliberately: <strong>disposed</strong>,
+<strong>grievance</strong>, and the named offices and schemes. Those are
+the government’s own words and the argument depends on quoting them
+accurately.</p>
+<hr />
+<h1 id="voice">4. Voice</h1>
+<p>Today: press the mic, speak instead of typing, watch a live level
+meter driven by <strong>real microphone amplitude</strong> — not a CSS
+animation — and a live transcript, then use it or edit it first.</p>
+<p>Sarvam speech is built and metered on its own rupee ceiling:
+<strong>Bulbul v3 for speech, Saaras v3 for listening, 11 Indic
+locales</strong>, both keys server-side so the browser never sees a
+credential. Verified on the live site in Hindi, Tamil, Bengali, Marathi
+and English — real MP3 back, English served from cache.</p>
+<p><strong>The honest limit, being fixed next:</strong> voice is
+currently one-directional. The transcript fills the box; Smiti answers
+on screen, not aloud. Full voice-first — speak, and she speaks back — is
+the next change.</p>
+<hr />
+<h1 id="the-design-a-corporate-portal-became-an-indian-one">5. The
+design: a corporate portal became an Indian one</h1>
+<p>Rebuilt as a heritage layer rather than a recolour, after a first
+attempt that only changed the tint.</p>
+<ul>
+<li><strong>Ground and ink:</strong> ivory paper, madder red, indigo, a
+dye-chest palette instead of government blue.</li>
+<li><strong>Ornament:</strong> a mandala and a braid used as CSS masks,
+so one file inherits <code>currentColor</code> and works on both light
+and dark grounds. The braid tiles seamlessly at any height — the gaps
+were the SVG letterboxing, not the artwork.</li>
+<li><strong>The mark:</strong> a microphone, redrawn twice because at
+18px the first two versions read as something else entirely.</li>
+<li><strong>Concern cards:</strong> twelve illustrated panels, each
+naming where it actually goes <em>and</em> the stronger remedy behind
+it.</li>
+<li><strong>Motion:</strong> first-paint reveals, counting numbers,
+filling bars — with a watchdog so a stalled script cannot leave the page
+blank.</li>
+</ul>
+<p><strong>Five KPIs, each printing its own provenance</strong> on the
+tile — <em>published</em>, <em>policy</em>, or <em>in this build</em>.
+Two earlier tiles were <strong>removed</strong> during this work because
+their numbers had no source in the repository.</p>
+<hr />
+<h1 id="what-is-guarded-and-where">6. What is guarded, and where</h1>
+<p>The distinction the whole build rests on: <strong>a prompt is a
+request, code is a guarantee.</strong> Every rule below is enforced in
+code, because each one was broken by a model that had been politely
+asked not to.</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Rule</th>
+<th style="text-align: left;">Enforced by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Never ask for a full account, card,
+Aadhaar or PAN number</td>
+<td style="text-align: left;"><code>askIsBanned</code> — every generated
+question passes it, canned or not</td>
+</tr>
+<tr>
+<td style="text-align: left;">Never answer in a language the citizen did
+not use</td>
+<td style="text-align: left;"><code>switchedLanguage</code> — romanised
+Hindi detected by function words, because it is Latin script and an
+alphabet test cannot see it</td>
+</tr>
+<tr>
+<td style="text-align: left;">Never invent a date, an amount or an
+office</td>
+<td style="text-align: left;"><code>groundedEnough</code> — the answer
+is checked against the case record and dropped entirely if it carries a
+figure the record lacks</td>
+</tr>
+<tr>
+<td style="text-align: left;">Stop asking when there is enough</td>
+<td style="text-align: left;"><code>enoughKnown</code> — counting is not
+a job for a model answering each turn in isolation</td>
+</tr>
+<tr>
+<td style="text-align: left;">Never ask the same thing twice</td>
+<td style="text-align: left;"><code>tooSimilar</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Never exceed the budget</td>
+<td style="text-align: left;">A hard ceiling; the function refuses
+before the model is called</td>
+</tr>
+<tr>
+<td style="text-align: left;">Break out on an emergency</td>
+<td style="text-align: left;">112, 108, 14416, 101, 1098, 181 — detected
+before a grievance flow can continue</td>
+</tr>
+</tbody>
+</table>
+<p><strong>16 guardrail functions</strong>, none of them a prompt
+instruction.</p>
+<p><em>Found today while testing something else:</em> an English
+grievance about a transformer came back with a follow-up in romanised
+Hindi. The intake prompt opens with <em>“RULE ONE, above everything:
+reply in the SAME language and the SAME SCRIPT”</em> — and the model
+broke it. <code>switchedLanguage</code> backed one path in code but the
+intake path had only the prompt. It is code now, applied before the
+result is cached. <strong>New suite: 13 assertions.</strong></p>
+<hr />
+<h1 id="reliability-and-cost">7. Reliability, and cost</h1>
+<ul>
+<li><strong>Production was crashing.</strong>
+<code>better-sqlite3</code> aborted the whole Node process on Vercel —
+<code>RemoveEnvironmentCleanupHook — Assertion failed</code>, SIGABRT —
+because a statement’s destructor ran after the environment was gone.
+~130 short-lived prepared statements per cold start became 5. Measured
+after: <strong>zero failures across 24 requests.</strong></li>
+<li><strong>The model is now live in production.</strong> The keys were
+missing, so every conversational improvement was invisible on the live
+site — it ran on hand-written fallbacks. <code>ai: "live"</code> now,
+and the conversation suite passes against production.</li>
+<li><strong>Filed cases stopped vanishing.</strong> Storage was
+in-memory per instance, which is why the <em>My information</em> panel
+came back empty. Now a file on the instance — and the health endpoint
+states exactly what that buys rather than implying durability.</li>
+<li><strong>Cost, measured not estimated:</strong> a full walkthrough —
+intake, three conversational turns, the summary, the routing sentence,
+an officer’s report rewritten in plain language, and a grounded question
+— <strong>$0.000712 across 5 calls</strong>, against a $4.80 ceiling
+never approached. Two things get it there: four model calls merged into
+one, and Smiti’s forty-odd fixed lines are cached.</li>
+</ul>
+<p><strong>8 test suites.</strong> 24 endpoints, 15 domains, 26 seeded
+cases with 13 integrity checks.</p>
+<hr />
+<h1 id="what-a-reviewer-can-click">8. What a reviewer can click</h1>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Journey</th>
+<th style="text-align: left;">Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">A village road, routed to a Panchayat and
+joined by neighbours</td>
+<td style="text-align: left;">Home → <em>Report a road issue</em></td>
+</tr>
+<tr>
+<td style="text-align: left;">A bank debit, and the ₹20 lakh remedy
+nobody mentioned</td>
+<td style="text-align: left;">Home → <em>Report a banking
+issue</em></td>
+</tr>
+<tr>
+<td style="text-align: left;">A stuck PF claim</td>
+<td style="text-align: left;">Home → <em>Report a PF issue</em></td>
+</tr>
+<tr>
+<td style="text-align: left;">A ration denial and the NFSA officer</td>
+<td style="text-align: left;">Home → <em>Report a ration issue</em></td>
+</tr>
+<tr>
+<td style="text-align: left;">Joining a case with 34 households already
+on it</td>
+<td style="text-align: left;"><code>/near-you</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">The closure gate — an officer says fixed,
+the citizen says no</td>
+<td style="text-align: left;"><code>/my-cases</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">What is real and what is simulated</td>
+<td style="text-align: left;"><code>/api/health</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="what-we-have-not-done">9. What we have <strong>not</strong>
+done</h1>
+<p>Stated because a change log that only lists wins is not a change
+log.</p>
+<ul>
+<li><strong>No real government integration.</strong> Filing is
+simulated. Every case says so.</li>
+<li><strong>Voice is one-directional today.</strong> She listens; she
+does not yet speak back. Next change.</li>
+<li><strong>The interface language is English.</strong> A selector was
+built and removed: nine tagged strings on a page of two hundred meant
+switching produced a page still overwhelmingly English, which is worse
+than not offering it. Smiti reads and answers in the citizen’s language
+— that comes from the model, not a strings table — but the chrome around
+her does not.</li>
+<li><strong>Storage is per-instance.</strong> Seeded history is always
+present; a case you file survives while the instance stays warm. Durable
+needs a persistent process or an external database.</li>
+<li><strong>One remedy of twelve is documented but not
+implemented</strong>, and is labelled that way.</li>
+<li><strong>Geolocation reports coordinates, not a ward.</strong>
+Turning a lat/long into “Rajnagar Ward 4” needs a reverse-geocoder this
+prototype does not have, so it shows what it actually received.</li>
+<li><strong>No officer side.</strong> An Action Taken Report here comes
+from a clearly-labelled demo control, not an authenticated officer.</li>
+</ul>
+<hr />
+<h1 id="lines-you-can-say-out-loud">10. Lines you can say out loud</h1>
+<p>Pulled out because they are the claims that survive scrutiny.</p>
+<ol type="1">
+<li><em>“Intake was solved in May, by the government itself. This is the
+part after.”</em></li>
+<li><em>“CPGRAMS disposed 95.8% of grievances in March. Disposed means a
+file was closed, not that a road was repaired. Nothing in that number
+records whether the person who complained agrees — and nothing asks
+them.”</em></li>
+<li><em>“Here, only the citizen can close a case. An officer’s report
+moves it to ‘awaiting your confirmation’ and no further. That is a
+database constraint, not a design choice.”</em></li>
+<li><em>“A pothole complaint routed perfectly to the right ministry
+still dies, because the Union cannot fix a Panchayat road. Local
+government is Entry 5 of the State List.”</em></li>
+<li><em>“Your bank has had 30 days. That means the RBI Ombudsman can
+hear this, and can award up to ₹20 lakh. Nobody tells you
+that.”</em></li>
+<li><em>“Fifty neighbours, one road. Fifty cases each start at day one.
+One case with fifty names moves.”</em></li>
+<li><em>“The same question in Bihar and in Maharashtra gets two
+different, correct answers — because the case law is
+Maharashtra’s.”</em></li>
+<li><em>“Every rule about what the AI may not do is in code, not in the
+prompt. We know, because the model broke each one when it was only
+asked.”</em></li>
+<li><em>“A full walkthrough costs about a tenth of a paisa.”</em></li>
+<li><em>“Filing is simulated, and it says so on every case.”</em></li>
+</ol>
+<hr />
+<p><em>Independent prototype, August 2026. Not affiliated with the
+Government of India or DARPG.</em></p>
+</body>
+</html>

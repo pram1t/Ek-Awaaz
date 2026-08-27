@@ -150,6 +150,8 @@ textarea:disabled{background:#f9f3e9;color:#9a8674}
 @keyframes wv{0%,100%{height:5px}50%{height:15px}}
 .legal{margin:10px 0 0;font-size:11px;color:#a6907c}
 @media(max-width:560px){.bubble,.wide{max-width:100%}.clip{display:none}.progress{display:none}.said>div{grid-template-columns:1fr}}
+.voice-chip{display:block;margin:0 auto 10px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:99px;padding:6px 14px;font:700 11.5px Mukta,sans-serif;cursor:pointer}
+.voice-chip:hover{border-color:var(--madder);color:var(--madder)}
 </style>
   <link rel="stylesheet" href="/heritage.css?v=20260827-h1" />
   <link rel="stylesheet" href="/structure.css?v=20260827-s1" />
@@ -172,6 +174,7 @@ textarea:disabled{background:#f9f3e9;color:#9a8674}
   <div class="dropzone" id="dropzone">
     <div class="tray" id="tray"></div>
     
+    <button class="voice-chip" id="voiceReplies" type="button" hidden></button>
     <form class="row" id="composerForm">
       <div id="voiceMount"></div>
       <textarea id="reply" rows="1" placeholder="Type your answer, or press the mic to speak"></textarea>
@@ -546,6 +549,23 @@ function bubble(role, inner) {
     : '<span class="av"><img src="/img/smiti-didi.jpg" alt="" width="34" height="34" decoding="async" /></span><div class="bubble"><p class="who">Smiti Didi</p>' + inner + '</div>';
   thread.appendChild(turn);
   scrollDown();
+
+  /* Anything Smiti says in a plain bubble is spoken — the edit confirmations, "that is enough",
+     the lines between questions. Without this a person using voice hears the questions and
+     silence everywhere else, which reads as the app having stopped.
+     Skipped for the route and review panels: those are long structured documents meant to be
+     read, and reading one aloud would take minutes. Their key sentence is spoken separately. */
+  if (role !== 'you' && voiceMode) {
+    /* A turn carrying a hint came from ask(), which already spoke the clean question. Reading it
+       again here speaks the question plus the hint over the top of itself, and the hint is the
+       long parenthetical we deliberately do not read aloud. */
+    if (/class=.aside./.test(inner)) return turn;
+    const isPanel = /<(div|dl|table|header|section|ul|ol|button)/i.test(inner);
+    const words = turn.querySelector('.bubble');
+    const plain = words ? String(words.textContent || '').replace(/^Smiti Didi/, '').replace(/\s+/g, ' ').trim() : '';
+    if (!isPanel && plain && plain.length < 260) sayAloud(plain);
+  }
+
   return turn;
 }
 
@@ -555,6 +575,7 @@ function typing() {
   turn.innerHTML = '<span class="av"><img src="/img/smiti-didi.jpg" alt="" width="34" height="34" decoding="async" /></span><div class="bubble" style="border:1px solid var(--line);background:#fff;border-radius:4px 14px 14px 14px"><span class="dots"><i></i><i></i><i></i></span></div>';
   thread.appendChild(turn);
   scrollDown();
+
   return turn;
 }
 
@@ -565,6 +586,9 @@ function ask(text, hint, chips, after) {
     ghost.remove();
     let inner = '<p>' + esc(text) + '</p>';
     if (hint) inner += '<p class="aside">' + esc(hint) + '</p>';
+    /* The question, not the hint. The hint is a long parenthetical that is fine to read and
+       tedious to listen to. */
+    sayAloud(text);
     if (chips && chips.length) inner += '<div class="chips">' + chips.map((c) => '<button class="chip" type="button">' + esc(c) + '</button>').join('') + '</div>';
     const turn = bubble('them', inner);
     turn.querySelectorAll('.chip').forEach((chip) => chip.addEventListener('click', () => {
@@ -699,6 +723,14 @@ function route() {
     ghost.remove();
     bubble('them', '<p>That is enough. Here is where it goes and what you hold — nothing has been sent yet.</p>');
     renderRoute();
+    /* The payoff spoken, not just painted: which office, and why that one. Someone who has been
+       talking rather than reading should not have to start reading at the one moment that
+       carries the answer they came for. */
+    if (voiceMode) {
+      const office = domain.office ? 'This goes to ' + domain.office + '.' : '';
+      const why = domain.reason ? ' ' + domain.reason : '';
+      sayAloud((office + why).trim() || 'Here is where your case goes. Nothing has been sent yet.');
+    }
     reply.placeholder = 'Tell me what to change';
   });
 }
@@ -1016,6 +1048,70 @@ async function fileCase() {
   scrollDown();
 }
 
+/* ---------- voice-first ----------
+   Once the citizen has spoken, Smiti speaks. Off until then, because nothing should start making
+   noise on a page nobody asked to talk. */
+let voiceMode = false;
+let spoken = null;            /* the audio playing right now, so a new turn can cut off an old one */
+
+function stopSpeaking() {
+  if (!spoken) return;
+  try { spoken.pause(); } catch (e) {}
+  spoken = null;
+}
+
+/* The language she answers in is the one the model heard in their words — not the interface
+   language, which is English. Falls back to whatever the mic panel is set to. */
+function spokenLang() {
+  /* An explicit choice from the picker outranks what the model detected — someone who has
+     just chosen Tamil means it, even if their first sentence was typed in English. */
+  if (voice && voice.langPicked) return voice.langCode;
+  return (domain && domain.language) || (voice && voice.langCode) || 'en-IN';
+}
+
+let lastSaid = '', lastSaidAt = 0;
+
+async function sayAloud(text) {
+  if (!voiceMode || !text || !window.EAAPI || !EAAPI.speak) return;
+  /* ask() has the clean question and bubble() has the rendered turn — both reach the same line.
+     Cheaper to refuse the repeat here than to make either one know about the other. */
+  const now = Date.now();
+  if (text === lastSaid && now - lastSaidAt < 4000) return;
+  lastSaid = text; lastSaidAt = now;
+  stopSpeaking();
+  const out = await EAAPI.speak(text, spokenLang());
+  /* Silence is the fallback. The words are already on screen, so an error here needs no dialog. */
+  if (!out || out.error || !out.url) return;
+  if (!voiceMode) return;                    /* turned off while the audio was being fetched */
+  const audio = new Audio(out.url);
+  spoken = audio;
+  audio.addEventListener('ended', () => { if (spoken === audio) spoken = null; });
+  try { await audio.play(); } catch (e) { /* a blocked autoplay is not an error worth showing */ }
+}
+
+/* A visible control, because a page that talks needs an obvious way to stop it. */
+function paintVoiceChip() {
+  const chip = document.querySelector('#voiceReplies');
+  if (!chip) return;
+  chip.hidden = !voiceMode;
+  chip.textContent = voiceMode ? 'Smiti is speaking · tap to silence' : '';
+}
+
+function setVoiceMode(on) {
+  voiceMode = !!on;
+  if (!voiceMode) stopSpeaking();
+  paintVoiceChip();
+}
+
+/* Tapping the chip silences her without turning the microphone off. */
+(function () {
+  const chip = document.querySelector('#voiceReplies');
+  if (chip) chip.addEventListener('click', () => setVoiceMode(false));
+  const box = document.querySelector('#reply');
+  /* Typing is a choice. Stop talking over someone who has picked up the keyboard. */
+  if (box) box.addEventListener('keydown', () => stopSpeaking());
+})();
+
 /* ---------- composer ---------- */
 const form = document.querySelector('#composerForm');
 form.addEventListener('submit', (event) => { event.preventDefault(); send(); });
@@ -1024,6 +1120,7 @@ reply.addEventListener('keydown', (event) => { if (event.key === 'Enter' && !eve
 
 /* Speak instead. EAVoice owns the mic, the level meter and the transcript; the answer is
    only written into the box when the citizen presses "Use this". */
+let sendAfterSpeaking = 0;
 const voice = window.EAVoice && EAVoice.attach({
   button: true,
   mount: document.querySelector('#voiceMount'),
@@ -1033,6 +1130,18 @@ const voice = window.EAVoice && EAVoice.attach({
     reply.dispatchEvent(new Event('input'));
     reply.focus();
     reply.setSelectionRange(reply.value.length, reply.value.length);
+
+    /* Speaking is the answer to "how do I reply", so from here she replies out loud too. */
+    setVoiceMode(true);
+
+    /* Committing the transcript — pressing the mic again, or "Use this" — is already a decision.
+       Making them reach for send is a second gesture for the same one, and on a phone it is the
+       gesture that breaks the flow. Held briefly so the words are visible before they go. */
+    clearTimeout(sendAfterSpeaking);
+    sendAfterSpeaking = setTimeout(() => {
+      if (!reply.value.trim() || reply.disabled) return;
+      form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event('submit', { cancelable: true }));
+    }, 700);
   }
 });
 

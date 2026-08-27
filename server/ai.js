@@ -225,6 +225,16 @@ export async function classify(text) {
       });
     }
 
+    /* The model reported hi-IN for a grievance written in plain English. Nothing downstream
+       should trust a self-reported language when the script is right there in the text: a wrong
+       language sends the wrong voice to the speech engine, and it is what Smiti answers in.
+       Devanagari stays whatever the model said (hi, mr, ne all share the script and it can tell
+       them apart); Latin script with no Hindi function words is English, whatever it claimed. */
+    if (scriptOf(text) === 'latin' && safe.language && safe.language !== 'en-IN') {
+      safe.languageClaimed = safe.language;
+      safe.language = 'en-IN';
+    }
+
     safe.source = 'model';
     cacheSet(key, { ...safe, source: undefined });
     return safe;

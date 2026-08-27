@@ -46,6 +46,48 @@
     /* One turn of the intake: the next question, given what has been said. */
     nextQuestion: (payload) => call('/next', { method: 'POST', body: payload }),
 
+    /* Speech cannot go through call() — that parses JSON, and /tts answers with audio bytes.
+       Returns a blob URL the caller plays, or an error it can ignore: if Smiti cannot be heard
+       the words are still on screen, so silence is an acceptable failure and a dialog is not. */
+    speak: async (text, lang) => {
+      try {
+        const res = await fetch(BASE + '/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: String(text || '').slice(0, 900), lang: lang || 'en-IN' })
+        });
+        if (!res.ok) {
+          const why = await res.json().catch(() => ({}));
+          return { error: why.error || 'no audio', status: res.status };
+        }
+        const blob = await res.blob();
+        return {
+          url: URL.createObjectURL(blob),
+          lang: res.headers.get('X-Speech-Lang') || lang || null,
+          cached: res.headers.get('X-Speech-Cached') === 'true'
+        };
+      } catch (err) {
+        return { error: 'could not reach the speech service', offline: true };
+      }
+    },
+
+    /* Raw audio in, text out — the fallback for a browser with no speech recognition of its own,
+       and the better engine for Indic languages either way. */
+    listen: async (blob, lang) => {
+      try {
+        const res = await fetch(BASE + '/stt' + (lang ? '?lang=' + encodeURIComponent(lang) : ''), {
+          method: 'POST',
+          headers: { 'Content-Type': blob.type || 'audio/webm' },
+          body: blob
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) return Object.assign({ error: data.error || 'could not transcribe' }, data);
+        return data;
+      } catch (err) {
+        return { error: 'could not reach the speech service', offline: true };
+      }
+    },
+
     /* The case as the citizen will read it back: named fields, not the transcript. */
     summarise: (payload) => call('/summarise', { method: 'POST', body: payload }),
 
