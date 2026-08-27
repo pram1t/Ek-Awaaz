@@ -247,3 +247,56 @@
 .gap-aside{ grid-template-columns: repeat(5, minmax(0, 1fr)) }
 @media (max-width: 1080px){ .gap-aside{ grid-template-columns: repeat(3, minmax(0, 1fr)) } }
 @media (max-width: 700px){ .gap-aside{ grid-template-columns: repeat(2, minmax(0, 1fr)) } }
+
+
+/* ── the mark ─────────────────────────────────────────────────────────────────
+   Masked rather than placed as an <img>, because the file is a clean alpha silhouette and a
+   mask inherits currentColor — madder on ivory, cream on the dark strip, from one file. An
+   <img> would need a second copy in a second colour. */
+.ea-mark{
+  display: block;
+  width: 30px; height: 31px; flex: 0 0 30px;
+  background-color: currentColor;
+  -webkit-mask: url("/img/logo-mono.png") no-repeat center / contain;
+  mask: url("/img/logo-mono.png") no-repeat center / contain;
+}
+.brand{ gap: 12px !important }
+
+/* ── the nav ──────────────────────────────────────────────────────────────────
+   "Near you" is the only route into joinder for someone without a case number, and it was set
+   as plain text beside a filled button, which read as a footnote. It gets a border. */
+.nav-link{
+  color: var(--ink); text-decoration: none;
+  font: 600 13px Mukta, sans-serif; letter-spacing: .01em;
+}
+.nav-link:hover{ color: var(--madder) }
+.nav-link.on{ color: var(--madder) }
+
+.nav-btn{
+  display: inline-block; text-decoration: none;
+  border: 1px solid var(--madder); color: var(--madder);
+  padding: 10px 15px; border-radius: 2px;
+  font: 600 13px Mukta, sans-serif;
+}
+.nav-btn:hover{ background: var(--madder); color: var(--cream) }
+.nav-btn.on{ background: var(--madder); color: var(--cream) }
+
+.nav-strong{ font-weight: 700 !important; color: var(--cream) !important }
+
+.header-right{ display: flex; align-items: center; gap: 16px; flex-wrap: wrap }
+.who-line{ font-size: 12px; color: var(--ink-soft) }
+@media (max-width: 860px){ .who-line{ display: none } }
+
+/* ── 4 · one ornament, large, mostly out of frame ────────────────────────────
+   620px of dense concentric detail at 8.5% behind a headline is noise, and there were two of
+   them in opposite corners. One now, at 1250px, pushed far enough off the corner that only an
+   arc of the outer rings is in view — the same motif reading as a curve instead of a busy disc. */
+.orn-mandala{
+  width: min(112vw, 1250px);
+  inset: auto -40% -54% auto;
+  opacity: .055;
+}
+.orn-wreath{ display: none }
+@media (max-width: 900px){
+  .orn-mandala{ width: 150vw; inset: auto -58% -34% auto; opacity: .045 }
+}
