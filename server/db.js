@@ -629,7 +629,7 @@ export function timeline(code) {
 
   if (signed.length > 1) {
     at(signed[signed.length - 1].added_on, signed.length + ' households on this case',
-       row.target ? 'At ' + row.target + ' it escalates to the ' + (row.escalates_to || 'District Collector') + ' automatically.'
+       row.target ? 'At ' + row.target + ' names it goes to the ' + (row.escalates_to || 'District Collector') + ' on its own.'
                   : 'Each name is one verified mobile number.', 'done');
   }
 

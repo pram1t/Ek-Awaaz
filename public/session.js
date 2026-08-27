@@ -138,6 +138,8 @@
   .ea-dl dd{margin:0;color:#241a14;font-weight:700;font-size:13.5px;text-align:right}
   .ea-meter{height:6px;border-radius:3px;background:#ede3d3;overflow:hidden;margin-top:16px}
   .ea-meter i{display:block;height:100%;background:#8c2416}
+  .ea-opt{float:right;color:#9a8674;font:700 10.5px Mukta,sans-serif;letter-spacing:.04em;text-transform:none}
+  .ea-attach{justify-content:flex-start;margin-top:14px}
   @media(max-width:520px){.ea-card{padding:24px 20px}.ea-card h2{font-size:22px}}`;
 
   const style = document.createElement('style');
@@ -267,7 +269,7 @@
       if (p.counts && (p.counts.filed > 0 || p.counts.supported > 0)) { done(); return; }
 
       paint('<p class="ea-eyebrow">Last thing</p><h2>What should I call you?</h2>'
-        + '<p class="ea-sub">Only so I can address you properly. It is never shown on a public case, and you can skip it.</p>'
+        + '<p class="ea-sub">Only so I know what to call you. It is never shown on a shared case, and you can skip it.</p>'
         + '<label class="ea-label" for="eaName">Your name</label>'
         + '<input id="eaName" type="text" maxlength="60" placeholder="A first name is enough" autocomplete="given-name" />'
         + '<p class="ea-err" id="eaErr">That did not look like a name.</p>'
@@ -301,79 +303,52 @@
     if (found.joinable === false) return { ok: false, reason: 'private' };
     const answers = [];
     const files = [];
-    const questions = [{ q: 'What more can you add about this?', hint: 'Anything the case does not already say — what you see, how long, who it affects.', ph: 'Example: the same stretch floods every time it rains' }].concat(found.asks);
-    const total = questions.length + 2;
+    /* Kept only so a joined entry still records what the person typed. */
+
+
+    /* One screen. The case-specific question becomes the example inside the optional box: a
+       person who has that detail is still asked for it, and a person who does not is not stopped. */
+    const prompt = (found.asks && found.asks[0]) || null;
 
     function caseStrip() {
-      return '<div class="ea-case"><b>' + esc(found.title) + '</b><span>' + esc(found.id) + ' · ' + esc(found.area) + ' · ' + esc(found.supporters) + ' already supporting</span></div>';
+      return '<div class="ea-case"><b>' + esc(found.title) + '</b><span>' + esc(found.id) + ' · ' + esc(found.area) + ' · ' + esc(found.supporters) + ' people have joined</span></div>';
     }
 
-    function askStep(i) {
-      const q = questions[i];
-      paint(strip(total, i) + '<p class="ea-eyebrow">Joining a public case · ' + (i + 1) + ' of ' + total + '</p><h2>' + esc(q.q) + '</h2><p class="ea-sub">' + esc(q.hint) + '</p>'
-        + (i === 0 ? caseStrip() : '')
-        + '<label class="ea-label" for="eaAns">Your answer</label><textarea id="eaAns" placeholder="' + esc(q.ph) + '"></textarea>'
-        + '<p class="ea-err" id="eaErr">This answer is needed before you can join.</p>'
-        + '<div class="ea-foot">' + (i ? '<button class="ea-back" type="button" id="eaBack">← Back</button>' : '<small>Every answer strengthens the shared case.</small>')
-        + '<button class="ea-btn" type="button" id="eaGo">Continue&nbsp; →</button></div>');
-      const area = card.querySelector('#eaAns'), err = card.querySelector('#eaErr');
-      area.value = answers[i] || '';
-      area.addEventListener('input', () => err.classList.remove('show'));
-      card.querySelector('#eaGo').addEventListener('click', () => {
-        const value = area.value.trim();
-        if (!value) { err.classList.add('show'); area.focus(); return; }
-        answers[i] = value;
-        if (i + 1 < questions.length) askStep(i + 1); else evidenceStep();
-      });
-      const back = card.querySelector('#eaBack');
-      if (back) back.addEventListener('click', () => { answers[i] = area.value.trim(); askStep(i - 1); });
-    }
-
-    function evidenceStep() {
-      paint(strip(total, questions.length) + '<p class="ea-eyebrow">Joining a public case · ' + (questions.length + 1) + ' of ' + total + '</p>'
-        + '<h2>Any more images, videos, or supporting documents?</h2><p class="ea-sub">Photos of the same problem at your location, a bill, a receipt, or an earlier complaint letter.</p>'
-        + '<div class="ea-drop" id="eaDrop"><p>Drag files here, or choose below.</p><div class="ea-row"><button class="ea-ghost" type="button" id="eaPhoto">Take or add a photo</button><button class="ea-ghost" type="button" id="eaVideo">Add a video</button><button class="ea-ghost" type="button" id="eaDoc">Choose a document</button></div></div>'
+    function oneStep() {
+      paint('<p class="ea-eyebrow">Join this case</p>'
+        + '<h2>Add your name to this case</h2>'
+        + '<p class="ea-sub">This problem is already reported, so you do not have to explain it again. Your name adds to the count that makes the office act.</p>'
+        + caseStrip()
+        + '<label class="ea-label" for="eaAns">Anything to add? <span class="ea-opt">Optional</span></label>'
+        + '<textarea id="eaAns" placeholder="' + esc(prompt ? prompt.ph : 'Example: the same stretch floods every time it rains') + '"></textarea>'
+        + '<p class="ea-hint">' + esc(prompt ? prompt.q + ' ' + prompt.hint : 'Anything the case does not already say.') + '</p>'
+        + '<div class="ea-row ea-attach"><button class="ea-ghost" type="button" id="eaPhoto">Add a photo</button><button class="ea-ghost" type="button" id="eaDoc">Add a file</button></div>'
         + '<ul class="ea-files" id="eaFiles"></ul>'
-        + '<label class="ea-none"><input type="checkbox" id="eaNone" /> I have nothing to attach right now</label>'
-        + '<p class="ea-err" id="eaErr">Attach at least one file, or tick the box above.</p>'
-        + '<input type="file" id="eaPhotoIn" accept="image/*" capture="environment" multiple hidden /><input type="file" id="eaVideoIn" accept="video/*" multiple hidden /><input type="file" id="eaDocIn" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple hidden />'
-        + '<div class="ea-foot"><button class="ea-back" type="button" id="eaBack">← Back</button><button class="ea-btn" type="button" id="eaGo">Continue&nbsp; →</button></div>');
-      const list = card.querySelector('#eaFiles'), err = card.querySelector('#eaErr'), none = card.querySelector('#eaNone'), drop = card.querySelector('#eaDrop');
+        + '<input type="file" id="eaPhotoIn" accept="image/*" capture="environment" multiple hidden /><input type="file" id="eaDocIn" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple hidden />'
+        + '<div class="ea-foot"><small>Your name is never shown to the other people on this case.</small>'
+        + '<button class="ea-btn" type="button" id="eaGo">' + 'Add my name&nbsp; →' + '</button></div>');
+
+      const list = card.querySelector('#eaFiles');
       const size = (b) => b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
       function render() {
         list.innerHTML = files.map((f, i) => '<li><b>' + esc(f.name) + '</b><span>' + size(f.size) + '</span><button type="button" data-i="' + i + '" aria-label="Remove">×</button></li>').join('');
-        if (files.length) { none.checked = false; err.classList.remove('show'); }
       }
-      list.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; files.splice(+b.dataset.i, 1); render(); });
-      const add = (l) => { [...l].forEach((f) => files.push(f)); render(); };
-      [['#eaPhoto', '#eaPhotoIn'], ['#eaVideo', '#eaVideoIn'], ['#eaDoc', '#eaDocIn']].forEach(([btn, inp]) => {
+      list.addEventListener('click', (e) => {
+        const b = e.target.closest('button'); if (!b) return;
+        files.splice(+b.dataset.i, 1); render();
+      });
+      [['#eaPhoto', '#eaPhotoIn'], ['#eaDoc', '#eaDocIn']].forEach(([btn, inp]) => {
         card.querySelector(btn).addEventListener('click', () => card.querySelector(inp).click());
-        card.querySelector(inp).addEventListener('change', (e) => add(e.target.files));
+        card.querySelector(inp).addEventListener('change', (e) => { [...e.target.files].forEach((f) => files.push(f)); render(); });
       });
-      ['dragenter', 'dragover'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add('over'); }));
-      ['dragleave', 'drop'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
-      drop.addEventListener('drop', (e) => { if (e.dataTransfer && e.dataTransfer.files.length) add(e.dataTransfer.files); });
-      none.addEventListener('change', () => { if (none.checked) err.classList.remove('show'); });
-      render();
+
       card.querySelector('#eaGo').addEventListener('click', () => {
-        if (!files.length && !none.checked) { err.classList.add('show'); return; }
-        reviewStep();
+        answers[0] = card.querySelector('#eaAns').value.trim();
+        if (read().loggedIn) commit();
+        else login(commit, 'One step left. Verify your number so your name is counted once.');
       });
-      card.querySelector('#eaBack').addEventListener('click', () => askStep(questions.length - 1));
     }
 
-    function reviewStep() {
-      const rows = questions.map((q, i) => '<div><dt>' + esc(q.q.replace(/\?$/, '')) + '</dt><dd>' + esc(answers[i]) + '</dd></div>').join('')
-        + '<div><dt>Attached</dt><dd>' + (files.length ? files.length + (files.length === 1 ? ' file' : ' files') : 'Nothing attached') + '</dd></div>';
-      paint(strip(total, total - 1) + '<p class="ea-eyebrow">Joining a public case · ' + total + ' of ' + total + '</p><h2>Add your support to this case</h2>'
-        + '<p class="ea-sub">Your answers go to ' + esc(found.office) + ' as part of the same case. Nothing is sent until you confirm.</p>'
-        + caseStrip() + '<dl class="ea-dl">' + rows + '</dl>'
-        + '<div class="ea-foot"><button class="ea-back" type="button" id="eaBack">← Back</button><button class="ea-btn" type="button" id="eaGo">' + (read().loggedIn ? 'Add my support&nbsp; →' : 'Log in and add my support&nbsp; →') + '</button></div>');
-      card.querySelector('#eaBack').addEventListener('click', evidenceStep);
-      card.querySelector('#eaGo').addEventListener('click', () => {
-        login(commit, 'One step left. Verify your number so your support is counted once.');
-      });
-    }
 
     /* The signature is recorded on the server: one per verified mobile per case, and the
        count that comes back is the real one. */
@@ -411,28 +386,28 @@
     function doneStep(entry, already, message) {
       const pct = Math.min(100, Math.round((entry.supporters / entry.target) * 100));
       paint('<div class="ea-tick" aria-hidden="true">✓</div><p class="ea-eyebrow">' + (already ? 'Already counted' : 'Name added') + '</p>'
-        + '<h2>' + (already ? 'Your name is already on this case.' : 'You are supporter ' + entry.supporters + ' of ' + entry.target + '.') + '</h2>'
+        + '<h2>' + (already ? 'Your name is already on this case.' : 'Your name is on this case — ' + entry.supporters + ' of ' + entry.target + '.') + '</h2>'
         + '<p class="ea-sub">' + (message ? esc(message) + ' ' : '') + 'Added to ' + esc(entry.id) + ', with ' + esc(entry.office) + '. It is in <b>My grievances</b> under the cases you support.</p>'
         + '<div class="ea-meter"><i style="width:' + pct + '%"></i></div>'
-        + '<div class="ea-foot"><small>Your name is never shown to other signatories.</small><a class="ea-btn" href="/my-cases">Open my grievances&nbsp; →</a></div>');
+        + '<div class="ea-foot"><small>Your name is never shown to the other people on this case.</small><a class="ea-btn" href="/my-cases">Open my grievances&nbsp; →</a></div>');
       if (opts && opts.onDone) opts.onDone(entry, already);
     }
 
-    askStep(0);
+    oneStep();
     return { ok: true, found: found };
   }
 
   function notJoinable(input) {
     paint('<p class="ea-eyebrow">Personal case</p><h2>Nobody else can add their name to this one.</h2>'
-      + '<p class="ea-sub">' + esc(String(input).slice(0, 24)) + ' is a personal case — a provident fund claim, a bank debit, a refund. Only you can see it, so a signature from a neighbour would mean nothing on it. Shared cases are the ones about a road, a handpump, a ration shop or a feeder.</p>'
+      + '<p class="ea-sub">' + esc(String(input).slice(0, 24)) + ' is a personal case — a PF claim, a bank debit, a refund. Only you can see it, so a neighbour adding their name to it would mean nothing. Shared cases are the ones about a road, a handpump, a ration shop or an electricity line.</p>'
       + '<div class="ea-foot"><a class="ea-back" href="/report">File my own case instead</a><button class="ea-btn" type="button" id="eaGo">Close</button></div>');
     card.querySelector('#eaGo').addEventListener('click', close);
   }
 
   function invalid(input) {
     paint('<p class="ea-eyebrow">Case not found</p><h2>That grievance number did not match.</h2>'
-      + '<p class="ea-sub">We could not find a public case for <b>' + esc(String(input).slice(0, 24)) + '</b>. Check the number on your acknowledgement, or file a new case instead.</p>'
-      + '<label class="ea-label" for="eaRetry">Public grievance number</label><input id="eaRetry" type="text" placeholder="Example: EA–2026–04412" />'
+      + '<p class="ea-sub">We could not find a shared case for <b>' + esc(String(input).slice(0, 24)) + '</b>. Check the number on your acknowledgement, or file a new case instead.</p>'
+      + '<label class="ea-label" for="eaRetry">Case number</label><input id="eaRetry" type="text" placeholder="Example: EA–2026–04412" />'
       + '<p class="ea-err" id="eaErr">Still no match. Check the digits and try again.</p>'
       + '<div class="ea-foot"><a class="ea-back" href="/report">File a new case instead</a><button class="ea-btn" type="button" id="eaGo">Find case&nbsp; →</button></div>');
     const field = card.querySelector('#eaRetry'), err = card.querySelector('#eaErr');

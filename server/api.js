@@ -391,10 +391,10 @@ api.post('/cases/:code/support', (req, res) => {
     already: out.already,
     escalated: !!out.escalated,
     message: out.already
-      ? 'Your name is already on this case. One signature per mobile number.'
+      ? 'Your name is already on this case. One name per mobile number.'
       : `You are the ${c.supporters}${ordinal(c.supporters)} household on this case.` +
-        (c.target ? ` At ${c.target} it escalates to the ${c.escalatesTo || 'District Collector'} automatically.` : ''),
-    privacy: 'Your name is never shown to other signatories.'
+        (c.target ? ` At ${c.target} names it goes to the ${c.escalatesTo || 'District Collector'} on its own.` : ''),
+    privacy: 'Your name is never shown to the other people on this case.'
   });
 });
 

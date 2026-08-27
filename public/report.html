@@ -181,7 +181,7 @@ textarea:disabled{background:#f9f3e9;color:#9a8674}
   </div>
   <input type="file" id="photoInput" accept="image/*" capture="environment" multiple hidden />
   <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple hidden />
-  <p class="legal">Your name is never shown on a public case. Only the issue, the office, and the number of people supporting it are visible.</p>
+  <p class="legal">Your name is never shown on a shared case. Only the problem, the office, and how many people joined.</p>
 </div></footer>
 
 <script>
@@ -715,14 +715,14 @@ function renderRoute() {
 
   if (showMatch) {
     html += '<div class="block"><p class="eyebrow">Match found</p><div class="panel match"><b>' + esc(found.supporters) + ' households have already reported this.</b>'
-      + '<p>' + esc(found.title) + ' · ' + esc(found.code) + ' · with ' + esc(found.office) + '. Adding your name to that case counts more than a second one about the same problem — at ' + esc(found.target) + ' it is escalated to the ' + esc(found.escalatesTo || 'District Collector') + ' automatically.</p>'
-      + '<div class="acts"><button class="button" type="button" data-join>Add my name to that case →</button><button class="ghost" type="button" data-nojoin>Mine is separate, file it</button></div></div></div>';
+      + '<p>' + esc(found.title) + ' · ' + esc(found.code) + ' · with ' + esc(found.office) + '. Your name on that case is worth more than a second case about the same problem. At ' + esc(found.target) + ' names it goes to the ' + esc(found.escalatesTo || 'District Collector') + ' on its own.</p>'
+      + '<div class="acts"><button class="button" type="button" data-join>Add my name to that case →</button><button class="ghost" type="button" data-nojoin>Mine is different, file it</button></div></div></div>';
   }
 
   /* Only offer the choice where it is a real choice. A personal case is told, not asked. */
   if (domain.visibility === 'private') {
     html += '<div class="block"><p class="eyebrow">Personal case</p>'
-      + '<p>This one is yours alone — nobody else can see it or add their name to it. Shared cases are the ones about a road, a handpump, a ration shop or a feeder.</p></div>';
+      + '<p>This one is yours alone. Nobody else can see it or add their name to it. Shared cases are the ones about a road, a handpump, a ration shop or an electricity line.</p></div>';
   } else if (domain.askVisibility || domain.isPublic) {
     html += '<div class="block ask-public"><p class="eyebrow">' + (domain.askVisibility ? 'This one could go either way' : 'Public or private') + '</p>'
       + '<p>Should neighbours be able to add their names to this?</p><small>A shared case is harder for an office to close quietly. Your name is never shown to them either way.</small>'

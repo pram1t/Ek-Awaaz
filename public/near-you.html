@@ -111,11 +111,11 @@
       <div>
         <p class="eyebrow">Public cases</p>
         <h1>Someone may have<br />reported it already.</h1>
-        <p>If a case for your problem is already open, adding your name to it does more than filing your own. One case with fifty names escalates. Fifty separate cases each start at day one.</p>
+        <p>If a case for your problem is already open, add your name to it instead of filing your own. One case with fifty names moves. Fifty separate cases each start again at day one.</p>
       </div>
       <div class="why">
         <b>Why joining beats filing again</b>
-        <span>A single case carries one responsible office, one clock, and a visible count of the households affected. Duplicate filings split that count, and an office can close each one separately.</span>
+        <span>One case means one office answerable, one deadline, and a count of households anyone can see. Separate cases split that count, and the office can close each one on its own.</span>
       </div>
     </div>
 
@@ -135,13 +135,13 @@
         </div>
         <button class="button light" type="button" id="useLoc">Use my location</button>
       </div>
-      <p class="where-note" id="locNote">We do not know where you are unless you tell us. <b>Use my location</b> asks your phone for coordinates and shows them to you — it cannot turn them into a ward name, so the boxes above are still what filters this list.</p>
+      <p class="where-note" id="locNote">We do not know where you are unless you tell us. <b>Use my location</b> reads your phone’s coordinates and shows them to you. It cannot turn them into a ward name, so the boxes above are what filter this list.</p>
     </div>
 
     <div class="count-line"><p id="countLabel">Loading public cases…</p><span id="scopeLabel"></span></div>
     <div class="wall" id="wall" data-reveal data-reveal-children></div>
 
-    <p class="foot">Only public cases appear here. A personal grievance — a pension, a bank debit, a service matter — is never listed, and nobody can add their name to it. Names of people supporting a case are never shown to other signatories.</p>
+    <p class="foot">Only shared cases appear here. A personal one — a pension, a bank debit, your own job — is never listed, and nobody can add their name to it. The names of people on a case are never shown to the other people on the case.</p>
   </div></main>
 
 <script src="api-client.js?v=20260827-01"></script>
@@ -206,7 +206,7 @@ function card(c) {
   const act = el.querySelector('.act');
   if (mine.has(c.code)) {
     act.innerHTML = '<small style="color:var(--teal);font-weight:800">Your name is on this case.<br />'
-      + 'It is never shown to other signatories.</small>';
+      + 'It is never shown to the other people on the case.</small>';
   } else if (closed) {
     act.innerHTML = '<small>Closed by the people who<br />reported it. Nothing pending.</small>';
   } else {
