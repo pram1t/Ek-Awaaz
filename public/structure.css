@@ -11,40 +11,22 @@
  * left looking at hidden content.
  */
 
-/* ── 1 · the kolam field ──────────────────────────────────────────────────────
-   Sits behind the hero and bleeds off the edge. Deliberately faint — it is the ground the
-   page stands on, not a graphic competing with the headline. */
-.kolam-field{
-  position: absolute; z-index: 0; pointer-events: none;
-  color: var(--madder); opacity: .13;
-  inset: auto -14% -30% auto;
-  width: min(62vw, 760px); aspect-ratio: 1;
-}
-.kolam-field .kolam{ width: 100%; height: 100%; display: block; overflow: visible }
-.kolam-field.leaf{ color: var(--leaf) }
-.kolam-field.soft{ opacity: .085 }
-.kolam-field.tl{ inset: -22% auto auto -12%; width: min(38vw, 430px) }
+/* A host for an ornament: its own positioning context, clipped so the ornament can bleed off
+   the edge, and its content lifted clear. Removing the old kolam host took this with it, and
+   the ornaments silently escaped to the page instead of sitting in their section. */
+.has-orn{ position: relative; overflow: hidden; isolation: isolate }
+.has-orn > *:not(.orn){ position: relative; z-index: 1 }
 
-@media (max-width: 900px){
-  .kolam-field{ width: 120vw; inset: auto -42% -16% auto; opacity: .1 }
-  .kolam-field.tl{ display: none }
-}
+/* ── 1 · ornament fields ─────────────────────────────────────────────────────
+   The generated kolam that used to sit here is gone. At the opacity a background needs it
+   read as a field of bubbles rather than as a drawn kolam, which is the risk with geometry
+   generated rather than composed. */
 
-/* a host needs its own stacking context, and its content lifted clear of the pattern */
-.has-kolam{ position: relative; overflow: hidden; isolation: isolate }
-.has-kolam > *:not(.kolam-field){ position: relative; z-index: 1 }
-
-/* ── 2 · rangoli as section ground ────────────────────────────────────────────
-   A repeating kolam unit at very low contrast. A data-uri, so it costs one declaration and
-   no request; the motif is drawn on the tile edges as well as its centre, which is what
-   makes it tile seamlessly instead of showing a grid of stamps. */
-.ground-rangoli{
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%238c2416' stroke-opacity='.08' stroke-width='1.2'%3E%3Ccircle cx='36' cy='36' r='15'/%3E%3Ccircle cx='0' cy='0' r='15'/%3E%3Ccircle cx='72' cy='0' r='15'/%3E%3Ccircle cx='0' cy='72' r='15'/%3E%3Ccircle cx='72' cy='72' r='15'/%3E%3Ccircle cx='36' cy='0' r='15'/%3E%3Ccircle cx='0' cy='36' r='15'/%3E%3Ccircle cx='72' cy='36' r='15'/%3E%3Ccircle cx='36' cy='72' r='15'/%3E%3C/g%3E%3Cg fill='%238c2416' fill-opacity='.13'%3E%3Ccircle cx='18' cy='18' r='1.5'/%3E%3Ccircle cx='54' cy='18' r='1.5'/%3E%3Ccircle cx='18' cy='54' r='1.5'/%3E%3Ccircle cx='54' cy='54' r='1.5'/%3E%3C/g%3E%3C/svg%3E");
-  background-repeat: repeat;
-}
-.ground-rangoli.on-dark{
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23f2e5d0' stroke-opacity='.1' stroke-width='1.2'%3E%3Ccircle cx='36' cy='36' r='15'/%3E%3Ccircle cx='0' cy='0' r='15'/%3E%3Ccircle cx='72' cy='0' r='15'/%3E%3Ccircle cx='0' cy='72' r='15'/%3E%3Ccircle cx='72' cy='72' r='15'/%3E%3Ccircle cx='36' cy='0' r='15'/%3E%3Ccircle cx='0' cy='36' r='15'/%3E%3Ccircle cx='72' cy='36' r='15'/%3E%3Ccircle cx='36' cy='72' r='15'/%3E%3C/g%3E%3C/svg%3E");
-}
+/* ── 2 · section grounds ─────────────────────────────────────────────────────
+   The overlapping-circle rangoli that used to live here has been removed. A repeating unit
+   only reads as texture while the unit itself is not recognisable; a circle is very
+   recognisable, so at any opacity that would show it read as a grid of stamps behind the
+   words. The authored ornaments carry the pattern instead, used once and large. */
 
 /* ── 3 · entrance motion ─────────────────────────────────────────────────────── */
 .will-reveal{
@@ -129,11 +111,15 @@
 }
 .panel-card:hover .body .go{ color: var(--madder) }
 
-/* ── 6 · the join panel, on a dark ground with pattern rather than flat ─────── */
-.joint-case, .join-dark{ position: relative; isolation: isolate }
+/* ── 6 · the join panel ─────────────────────────────────────────────────────
+   Deeper ground and a blur behind it rather than a pattern. The count sitting on this panel
+   is the loudest number on the page and it needs something solid under it, not a texture
+   competing with it at the same contrast. */
+.joint-case, .join-dark{ position: relative; isolation: isolate; background: #1a120d }
 .joint-case::before, .join-dark::before{
   content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23f2e5d0' stroke-opacity='.09' stroke-width='1.2'%3E%3Ccircle cx='36' cy='36' r='15'/%3E%3Ccircle cx='0' cy='0' r='15'/%3E%3Ccircle cx='72' cy='0' r='15'/%3E%3Ccircle cx='0' cy='72' r='15'/%3E%3Ccircle cx='72' cy='72' r='15'/%3E%3Ccircle cx='36' cy='0' r='15'/%3E%3Ccircle cx='0' cy='36' r='15'/%3E%3Ccircle cx='72' cy='36' r='15'/%3E%3Ccircle cx='36' cy='72' r='15'/%3E%3C/g%3E%3C/svg%3E");
+  background: radial-gradient(120% 90% at 18% 30%, #2e2118 0%, #1a120d 58%, #140e0a 100%);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
 }
 .joint-case > *, .join-dark > *{ position: relative; z-index: 1 }
 
@@ -191,8 +177,8 @@
 .rule-band{
   height: 46px; width: 100%;
   background-color: var(--madder); opacity: .5;
-  -webkit-mask: url("/img/ornament/motifs-663.svg") repeat-x center / auto 100%;
-  mask: url("/img/ornament/motifs-663.svg") repeat-x center / auto 100%;
+  -webkit-mask: url("/img/ornament/motifs-band.svg") repeat-x center / 46px 100%;
+  mask: url("/img/ornament/motifs-band.svg") repeat-x center / 46px 100%;
 }
 .rule-band.leaf{ background-color: var(--leaf) }
 .rule-band.cream{ background-color: var(--cream); opacity: .85 }

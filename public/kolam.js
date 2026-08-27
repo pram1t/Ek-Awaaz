@@ -1,4 +1,4 @@
-/* Ek Awaaz — kolam, and the motion that goes with it.
+/* Ek Awaaz — page motion: entrance reveals, counters, proportional bars.
  *
  * Three things live here, all of them the answer to a fair complaint: that recolouring the
  * site left it structurally identical and visually inert.
@@ -29,119 +29,11 @@
 
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ─────────────────────────────── 1 · KOLAM ─────────────────────────────── */
-
-  const SVG = 'http://www.w3.org/2000/svg';
-  const el = (name, attrs) => {
-    const n = document.createElementNS(SVG, name);
-    for (const k in attrs) n.setAttribute(k, attrs[k]);
-    return n;
-  };
-
-  /* A pulli kolam: concentric rings of overlapping circles around a dot grid. Ring i holds
-     `petals * i` circles, which is what makes the rosette open outward the way a real one
-     does instead of repeating a fixed count. */
-  function rangoli(opts) {
-    const o = Object.assign({ rings: 4, petals: 8, r0: 46, gap: 44, dots: true }, opts);
-    const span = o.r0 + o.rings * o.gap + o.gap;
-    const size = span * 2;
-    const svg = el('svg', {
-      viewBox: `0 0 ${size} ${size}`, class: 'kolam', 'aria-hidden': 'true',
-      fill: 'none', stroke: 'currentColor'
-    });
-    const cx = span, cy = span;
-    const groups = [];
-
-    /* the centre rosette */
-    const core = el('g', { 'stroke-width': '1.6', class: 'kolam-ring' });
-    for (let p = 0; p < o.petals; p++) {
-      const a = (p / o.petals) * Math.PI * 2;
-      core.appendChild(el('circle', {
-        cx: (cx + Math.cos(a) * o.r0 * 0.52).toFixed(2),
-        cy: (cy + Math.sin(a) * o.r0 * 0.52).toFixed(2),
-        r: (o.r0 * 0.52).toFixed(2)
-      }));
-    }
-    svg.appendChild(core); groups.push(core);
-
-    /* the rings */
-    for (let i = 1; i <= o.rings; i++) {
-      const g = el('g', { 'stroke-width': i === o.rings ? '1.1' : '1.5', class: 'kolam-ring' });
-      const r = o.r0 + i * o.gap;
-      const count = o.petals * i;
-      for (let p = 0; p < count; p++) {
-        const a = (p / count) * Math.PI * 2;
-        g.appendChild(el('circle', {
-          cx: (cx + Math.cos(a) * r).toFixed(2),
-          cy: (cy + Math.sin(a) * r).toFixed(2),
-          r: (o.gap * 0.58).toFixed(2)
-        }));
-      }
-      /* the pulli themselves, the dots the line is laid around */
-      if (o.dots) {
-        for (let p = 0; p < count; p++) {
-          const a = ((p + 0.5) / count) * Math.PI * 2;
-          g.appendChild(el('circle', {
-            cx: (cx + Math.cos(a) * r).toFixed(2),
-            cy: (cy + Math.sin(a) * r).toFixed(2),
-            r: '2.1', fill: 'currentColor', stroke: 'none'
-          }));
-        }
-      }
-      svg.appendChild(g); groups.push(g);
-    }
-
-    /* a square kolam frame, the grid the rosette sits on */
-    const frame = el('g', { 'stroke-width': '1.2', class: 'kolam-ring' });
-    const k = o.r0 + o.rings * o.gap;
-    frame.appendChild(el('rect', {
-      x: (cx - k).toFixed(2), y: (cy - k).toFixed(2),
-      width: (k * 2).toFixed(2), height: (k * 2).toFixed(2),
-      transform: `rotate(45 ${cx} ${cy})`
-    }));
-    svg.appendChild(frame); groups.push(frame);
-
-    return { svg, groups };
-  }
-
-  /* Draw each ring in turn. The path length is measured rather than guessed, so a circle of
-     any radius takes the same visual time to appear. */
-  function draw(groups) {
-    groups.forEach((g, i) => {
-      const shapes = [...g.children];
-      const delay = i * 260;
-      shapes.forEach((s) => {
-        let len = 0;
-        try { len = s.getTotalLength ? s.getTotalLength() : 0; } catch (_) { len = 0; }
-        if (!len || s.getAttribute('fill') === 'currentColor') {
-          /* the dots have no length to draw; fade them instead */
-          s.style.opacity = '0';
-          s.style.transition = 'opacity .5s ease ' + (delay + 240) + 'ms';
-          requestAnimationFrame(() => { s.style.opacity = '1'; });
-          return;
-        }
-        s.style.strokeDasharray = len;
-        s.style.strokeDashoffset = len;
-        s.style.transition = 'stroke-dashoffset 1.15s cubic-bezier(.22,.61,.36,1) ' + delay + 'ms';
-        requestAnimationFrame(() => { s.style.strokeDashoffset = '0'; });
-      });
-    });
-  }
-
-  function mountKolams() {
-    document.querySelectorAll('[data-kolam]').forEach((host) => {
-      if (host.querySelector('.kolam')) return;
-      const cfg = {
-        rings: +(host.dataset.kolamRings || 4),
-        petals: +(host.dataset.kolamPetals || 8),
-        gap: +(host.dataset.kolamGap || 44),
-        dots: host.dataset.kolamDots !== 'false'
-      };
-      const { svg, groups } = rangoli(cfg);
-      host.appendChild(svg);
-      if (!still) draw(groups);
-    });
-  }
+  /* The kolam generator that used to live here has been removed. It produced concentric
+     rings of circles around a pulli dot grid, and at the opacity a page background needs
+     it read as a field of bubbles rather than as a drawn kolam. The authored ornaments do
+     that job properly. What follows — the entrance reveals, the counters and the
+     proportional bar — is unrelated and stays. */
 
   /* ─────────────────────────────── 2 · REVEAL ────────────────────────────── */
 
@@ -262,12 +154,6 @@
          context that is not compositing. A decorative pattern that never appears is a mild
          failure rather than a broken page, but on a site whose argument is partly its design
          it is still a failure. Finish it. */
-      document.querySelectorAll(".kolam [style*=\"stroke-dashoffset\"]").forEach((s) => {
-        if (s.style.strokeDashoffset !== "0") s.style.strokeDashoffset = "0";
-      });
-      document.querySelectorAll(".kolam circle[fill=\"currentColor\"]").forEach((d) => {
-        if (d.style.opacity === "0") d.style.opacity = "1";
-      });
 
       document.querySelectorAll("[data-gap-bar]").forEach((bar) => {
         [...bar.children].forEach((seg) => {
@@ -279,9 +165,9 @@
 
   /* ─────────────────────────────── boot ──────────────────────────────────── */
 
-  function boot() { mountKolams(); mountReveals(); mountCounters(); mountBars(); watchdog(2600); }
+  function boot() { mountReveals(); mountCounters(); mountBars(); watchdog(2600); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 
-  window.EAKolam = { rangoli, remount: boot };
+  window.EAMotion = { remount: boot };
 })();
