@@ -300,3 +300,28 @@
 @media (max-width: 900px){
   .orn-mandala{ width: 150vw; inset: auto -58% -34% auto; opacity: .045 }
 }
+
+/* ── the Smiti panel gets the same texture, inverted ─────────────────────────
+   Same technique as the joinder panel: a masked tile over the section's own ground, so the motif
+   is a texture in the surface rather than a graphic laid on top of it. The difference is direction.
+   There the ground is dark and the mask is cream; here the ground is ivory, so the mask has to be a
+   darker, less saturated relative of that same ivory — #6f5b45 at 9% reads as the paper itself in
+   shadow, which is what keeps it monochrome instead of introducing a second colour.
+
+   Tiled smaller than the joinder panel — auto 34px against 46px — because this section is denser:
+   a portrait, a heading, four prompts and a live chat card. A large motif behind that competes; a
+   small one repeated many times reads as woven paper.
+
+   "auto 34px" again, never a fixed width: the width follows the artwork's own aspect at that
+   height, so the grid cannot squash the motif or letterbox it. */
+.didi-section{
+  position: relative; isolation: isolate;
+}
+.didi-section::before{
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-color: #6f5b45;
+  opacity: .09;
+  -webkit-mask: url("/img/ornament/motifs-663.svg") repeat 0 0 / auto 34px;
+  mask: url("/img/ornament/motifs-663.svg") repeat 0 0 / auto 34px;
+}
+.didi-section > *{ position: relative; z-index: 1 }
