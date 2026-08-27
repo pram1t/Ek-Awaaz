@@ -617,11 +617,36 @@ function send(text) {
 /* ---------- the route screen ---------- */
 let routeTurn = null;
 
+/* Fields the citizen reads back. Filled by summariseIntake from the whole exchange; the labels
+   come from that summary or from the fixed list below, and never from the text of a question.
+   The old version truncated whatever had been asked into a label, which is how a Hinglish
+   question became a field name and a citizen aside became case content. */
+let summaryFields = null;
+
+async function loadSummary() {
+  if (!window.EAAPI) return;
+  const asked = steps.filter((s) => /^ask/.test(s.key))
+    .map((s) => ({ q: s.q, a: answers[s.key] || '' })).filter((x) => x.a);
+  const res = await window.EAAPI.summarise({
+    grievance: answers.grievance || issue,
+    domain: domain.key, office: domain.office, answers: asked
+  });
+  if (res && Array.isArray(res.fields) && res.fields.length) summaryFields = res.fields;
+}
+
 function saidRows() {
-  const rows = [['grievance', 'What you reported', answers.grievance || issue || '—']];
-  steps.forEach((s) => { if (/^ask/.test(s.key)) rows.push([s.key, s.label, answers[s.key] || '—']); });
-  rows.push(['location', 'Location', answers.location || '—']);
-  rows.push(['evidence', 'Evidence', answers.evidence || (files.length ? files.length + ' files' : 'None attached')]);
+  const rows = [];
+  if (summaryFields) {
+    summaryFields.forEach((f) => rows.push([f.key, f.label, f.value, f.kind || 'text']));
+  } else {
+    /* No model. Fixed labels - the point is that none of them is built from a question. */
+    rows.push(['grievance', 'What happened', answers.grievance || issue || '—', 'text']);
+    const said = steps.filter((s) => /^ask/.test(s.key)).map((s) => answers[s.key]).filter(Boolean);
+    if (said.length) rows.push(['detail', 'What you added', said.join(' · '), 'text']);
+  }
+  rows.push(['location', 'Where', answers.location || '—', 'place']);
+  rows.push(['evidence', 'Attached',
+    files.length ? files.map((f) => f.name).join(', ') : 'Nothing attached', 'file']);
   return rows;
 }
 
@@ -630,7 +655,7 @@ function route() {
   progressText.textContent = 'Ready to send';
   isPublic = isPublic || !!domain.isPublic;
   const ghost = typing();
-  fetchRoute().finally(() => {
+  Promise.all([fetchRoute(), loadSummary()]).finally(() => {
     ghost.remove();
     bubble('them', '<p>That is enough. Here is where it goes and what you hold — nothing has been sent yet.</p>');
     renderRoute();
@@ -644,7 +669,11 @@ function renderRoute() {
   let html = '<div class="route"><header><b>Route found · nothing sent yet</b><h2>Your case, and where it goes</h2><p>Read it back. Every line can be corrected before you send.</p></header>';
 
   html += '<div class="block"><p class="eyebrow">What you said</p><div class="said">'
-    + saidRows().map(([key, label, value]) => '<div><div><dt>' + esc(label) + '</dt><dd data-value="' + key + '">' + esc(value) + '</dd></div><button class="edit" type="button" data-edit="' + key + '">Edit</button></div>').join('')
+    + saidRows().map(([key, label, value, kind]) => '<div><div><dt>' + esc(label) + '</dt><dd data-value="' + key + '">' + esc(value) + '</dd></div>'
+        + (kind === 'file'
+            ? '<button class="edit" type="button" data-attach="1">Attach a file</button>'
+            : '<button class="edit" type="button" data-edit="' + key + '">Edit</button>')
+        + '</div>').join('')
     + '</div></div>';
 
   html += '<div class="block where"><p class="eyebrow">Where it goes</p><b>' + esc(domain.office) + '</b><p>' + esc(domain.reason) + '</p>'
@@ -707,6 +736,7 @@ function renderRoute() {
   thread.appendChild(routeTurn);
 
   routeTurn.querySelectorAll('[data-edit]').forEach((button) => button.addEventListener('click', () => inlineEdit(button.dataset.edit)));
+  routeTurn.querySelectorAll('[data-attach]').forEach((b) => b.addEventListener('click', attachFromReview));
   const join = routeTurn.querySelector('[data-join]');
   if (join) join.addEventListener('click', () => EA.join(domain.match.code, { onDone: (entry) => { bubble('them', '<p>Your name is on ' + esc(entry.id) + ' now — you are supporter ' + esc(entry.supporters) + ' of ' + esc(entry.target) + '. It is in My grievances under the cases you support.</p>'); } }));
   routeTurn.querySelectorAll('[data-tier]').forEach((button) => button.addEventListener('click', async () => {
@@ -750,6 +780,17 @@ function inlineEdit(key) {
 /* A typed message after the route screen corrects one line of it. */
 const fieldNames = { grievance: 'What you reported', location: 'Location', evidence: 'Evidence' };
 let pendingField = null;
+
+/* The review screen's attachment row opens the same hidden file input the composer clip uses.
+   It previously offered an Edit button that opened a text box, so the only way to change an
+   attachment was to type a sentence describing one. */
+function attachFromReview() {
+  const input = document.querySelector('#fileInput');
+  if (!input) return;
+  const once = () => { input.removeEventListener('change', once); renderRoute(); };
+  input.addEventListener('change', once);
+  input.click();
+}
 
 function editFromMessage(value) {
   const lower = value.toLowerCase();

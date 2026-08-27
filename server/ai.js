@@ -14,6 +14,7 @@
 import OpenAI from 'openai';
 import { routing, remedies } from './db.js';
 import { correctDomain } from './corrections.js';
+import { askIsBanned } from './banned-asks.js';
 import {
   validateClassification, validatePlain, validateSentence,
   canSpend, record, budgetLeft, cacheKey, cacheGet, cacheSet, clean
@@ -456,6 +457,276 @@ Reply as JSON: {"answer":""}`,
     return { answer, source: 'model', grounded: true, covered: covers(answer) };
   } catch (err) {
     console.warn('[ai] ask-about-case fell back:', err.message);
+    return fallback();
+  }
+}
+
+
+/* ────────────────────────────────────────────── THE NEXT QUESTION ──────────
+   One turn of the intake. Reads what has been said and asks the one thing most worth knowing
+   next, or reports that enough is known to route. This is what separates a conversation from a
+   form: the question depends on the answers. */
+
+/* Romanised Hindi is Latin script, so an alphabet test cannot see it. These are the function
+   words that carry it — if the citizen used none and the question uses them, the reply has
+   switched language on someone who did not ask it to. */
+const HINGLISH = /\b(aap|aapne|aapka|aapki|kya|kab|kaise|kahan|kyun|hai|hain|tha|thi|nahi|nahin|mera|meri|mujhe|humne|karo|kiya|karna|bataya|bataiye|zaroori|thoda|abhi|baar|pehli|wala|wali)\b/i;
+const DEVANAGARI = /[\u0900-\u097F]/;
+
+function scriptOf(text) {
+  const t = String(text || '');
+  if (DEVANAGARI.test(t)) return 'devanagari';
+  if (HINGLISH.test(t)) return 'hinglish';
+  return 'latin';
+}
+
+/** True when a question answers in a language the citizen did not use. */
+export function switchedLanguage(citizenText, question) {
+  const theirs = scriptOf(citizenText);
+  const ours = scriptOf(question);
+  if (theirs === ours) return false;
+  /* Devanagari to Devanagari and Latin to Latin are the only safe pairs. Hinglish at a citizen
+     writing plain English is the failure this exists to catch. */
+  if (theirs === 'latin' && ours === 'hinglish') return true;
+  if (theirs === 'latin' && ours === 'devanagari') return true;
+  if (theirs === 'devanagari' && ours !== 'devanagari') return true;
+  return false;
+}
+
+/** Rough similarity, to refuse asking the same thing twice in different words. */
+function tooSimilar(a, b) {
+  const words = (s) => new Set(String(s).toLowerCase().replace(/[^a-z\u0900-\u097F ]/g, '').split(/\s+/).filter((w) => w.length > 3));
+  const A = words(a), B = words(b);
+  if (!A.size || !B.size) return false;
+  let shared = 0;
+  for (const w of A) if (B.has(w)) shared++;
+  return shared / Math.min(A.size, B.size) > 0.6;
+}
+
+
+/* Whether the office could act on what is already on record. Deterministic, because "when to
+   stop asking" is a counting problem and the model is answering each turn in isolation. */
+const DUNNO = /\b(idk|dunno|no idea|don'?t know|do not know|nahi pata|nahin pata|pata nahi|malum nahi|not sure|no reference|nothing to attach|none)\b/i;
+const HAS_DATE = /\b(\d{1,2}\s*(st|nd|rd|th)?\s*(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)|(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*\s*\d{1,2}|\d{1,2}[\/.-]\d{1,2}|yesterday|last (week|month|year)|since \w+|\d+ (days?|weeks?|months?) ago|kal|pichhle)\b/i;
+
+function enoughKnown(grievance, answers) {
+  const said = answers.map((a) => String(a.a || ''));
+  const everything = [String(grievance || '')].concat(said).join(' ');
+
+  /* three answered questions is a full intake */
+  if (answers.length >= 3) return 'three answers';
+
+  /* two "I don't know" in a row: the citizen has told us they cannot help further */
+  const tail = said.slice(-2);
+  if (tail.length === 2 && tail.every((a) => DUNNO.test(a))) return 'twice unknown';
+
+  /* what happened plus roughly when is enough to open a file */
+  if (answers.length >= 2 && HAS_DATE.test(everything)) return 'what and when on record';
+
+  return null;
+}
+
+export const MAX_QUESTIONS = 4;
+
+/**
+ * The next thing to ask, given everything said so far.
+ * @returns { done, question: {q, hint}|null, source, reason? }
+ */
+export async function nextQuestion({ grievance, domain, office, answers = [], language = 'en', cannedAsks = [] }) {
+  const asked = answers.map((a) => a.q).filter(Boolean);
+  const lastCitizen = answers.length ? answers[answers.length - 1].a : grievance;
+
+  /* the ceiling, then the judgement — both before spending a call */
+  if (asked.length >= MAX_QUESTIONS) {
+    return { done: true, question: null, source: 'ceiling', reason: 'ceiling' };
+  }
+  const enough = enoughKnown(grievance, answers);
+  if (enough) {
+    return { done: true, question: null, source: 'sufficient', reason: enough };
+  }
+
+  /* Whatever happens below, the citizen gets a next question if one is still owed. A guardrail
+     that fires must not be able to end the intake — that turns protection into an outage, which
+     is exactly what happened when a banned ask returned nothing and the caller read it as done. */
+  const canned = () => {
+    const unused = cannedAsks.find((a) => a && a.q && !asked.some((p) => tooSimilar(p, a.q)));
+    if (!unused) return { done: true, question: null, source: 'exhausted' };
+    return { done: false, question: { q: unused.q, hint: unused.hint || '' }, source: 'canned' };
+  };
+
+  if (!client || !canSpend()) return canned();
+
+  /* An "I don't know" was recorded as just another answer, so the model read it as a data point
+     rather than as a closed door: told the bank was unknown, it asked what type of card. Marking
+     the dead answers in the transcript is the cheapest possible signal — no extra call, and it
+     sits exactly where the model is already reading. */
+  const transcript = [`They said: ${grievance}`]
+    .concat(answers.map((a) => `You asked: ${a.q}\nThey answered: ${a.a}`
+      + (DUNNO.test(String(a.a || ''))
+          ? '\n  ^ they cannot answer this. Do not ask it again, and do not ask anything adjacent'
+            + ' to it either — no narrowing, no rephrasing, no related detail.'
+          : '')))
+    .join('\n\n');
+
+  /* Two attempts. The second is told what was wrong with the first, which is the difference
+     between a retry and a repeat. */
+  let correction = '';
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    let out;
+    try {
+      out = await ask(
+        `${SMITI}
+
+You are taking a grievance. The office it will go to is already decided; you are only gathering
+what that office will need in order to act.
+
+Read the exchange and ask the ONE thing most worth knowing next, or stop.
+
+Already established: everything in their own grievance below. Treat it as fact and never ask
+for any part of it again — if they wrote the amount, the amount is known.
+
+Stop — return done true and no question — when the office could act on what you have: what went
+wrong, roughly when, and enough of a place or reference to identify it. Two questions is often a
+complete intake and four is the most that is ever useful. When in doubt, stop.
+
+Ask only what the OFFICE needs in order to act. Not what a form would collect. "Which account
+type" or "what was the transaction for" are form fields; whether they have complained to the bank
+already, and when, decides which remedy is open to them.
+
+Rules:
+- One question. Short. The way a person asks, not a form field.
+- If their last answer said they do not know something, accept it and move on. Never ask again.
+- Never ask which department, ministry or office. That is your job, not theirs.
+- Never ask for a full account number, card number, Aadhaar or PAN. A reference, docket, UAN or
+  consumer number is fine; the full account number is not.
+- Reply in the SAME language and script they used. If they wrote English, ask in English.
+- The hint is one short line saying why it matters. It is not a second question.
+${correction}
+Problem type: ${domain}. Office it will go to: ${office || 'to be identified'}.
+
+${transcript}
+
+Reply as JSON: {"done":false,"q":"","hint":""}`,
+        String(lastCitizen || '').slice(0, 600),
+        { maxTokens: 180, temperature: attempt === 2 ? 0.2 : 0.4 }
+      );
+    } catch (err) {
+      console.warn('[ai] next question threw:', err.message);
+      return canned();
+    }
+
+    if (!out) return canned();
+    if (out.done === true) return { done: true, question: null, source: 'model' };
+
+    const q = clean(out.q, 160);
+    const hint = clean(out.hint, 220);
+    if (!q) return canned();
+
+    if (askIsBanned(q)) {
+      console.warn('[ai] refused a generated ask (banned):', q);
+      correction = '\nYour previous attempt asked for a full account, card, Aadhaar or PAN number. '
+        + 'Ask for something else entirely — the date, the amount, a reference from the statement.\n';
+      continue;
+    }
+    if (asked.some((prev) => tooSimilar(prev, q))) {
+      correction = '\nYour previous attempt repeated a question already asked. Ask about something '
+        + 'genuinely not yet covered, or stop.\n';
+      continue;
+    }
+    if (switchedLanguage(lastCitizen, q)) {
+      console.warn('[ai] refused a language switch:', q);
+      correction = '\nYour previous attempt replied in a different language from the one they used. '
+        + 'Write the question in exactly the language and script of their own words.\n';
+      continue;
+    }
+
+    return { done: false, question: { q, hint }, source: attempt === 2 ? 'model-retry' : 'model' };
+  }
+
+  /* both attempts tripped a guardrail — hand over a written one rather than stopping */
+  console.warn('[ai] both attempts refused; serving a canned ask');
+  return canned();
+}
+
+
+/* ─────────────────────────────────────────── THE CASE, SUMMARISED ──────────
+   The citizen reads this screen and decides whether to file. It must show their case, not our
+   transcript — named fields drawn from the whole exchange, with anything that was not an answer
+   left out. */
+
+const FIELD_KINDS = new Set(['text', 'date', 'place', 'money', 'reference']);
+
+export async function summariseIntake({ grievance, domain, office, answers = [] }) {
+  /* Fixed labels, never derived from the question. This is the path that used to build a label
+     by truncating whatever had been asked. */
+  const fallback = () => {
+    const fields = [{ key: 'what', label: 'What happened', value: String(grievance || '').trim(), kind: 'text' }];
+    const said = answers.map((a) => String(a.a || '').trim()).filter(Boolean);
+    if (said.length) {
+      fields.push({ key: 'detail', label: 'What you added', value: said.join(' · '), kind: 'text' });
+    }
+    return { fields, source: 'fallback' };
+  };
+
+  if (!client || !canSpend()) return fallback();
+
+  const transcript = [`Their grievance: ${grievance}`]
+    .concat(answers.map((a) => `Asked: ${a.q}\nAnswered: ${a.a}`)).join('\n\n');
+
+  try {
+    const out = await ask(
+      `${SMITI}
+
+Turn this exchange into the case record the citizen will read back before filing.
+
+Return between two and six fields. Each has a short label in sentence case, a value written
+from everything they said, and a kind from: text, date, place, money, reference.
+
+Rules:
+- The first field is always what happened, in their own words, tidied but not rewritten.
+- Only include a field they actually gave you. Never invent a value and never write "unknown".
+- If they said they do not know something, leave that field out entirely.
+- Ignore anything that was not an answer — a question back, a complaint about the language, an
+  aside. That is conversation, not case content.
+- Labels are what the thing IS ("When it happened", "Which bank", "Where"), never the question
+  that was asked.
+- Same language and script the citizen used.
+
+Problem type: ${domain}. Office: ${office || 'to be identified'}.
+
+${transcript}
+
+Reply as JSON: {"fields":[{"label":"","value":"","kind":"text"}]}`,
+      String(grievance || '').slice(0, 800),
+      { maxTokens: 420, temperature: 0.2 }
+    );
+
+    const raw = Array.isArray(out && out.fields) ? out.fields : [];
+    const fields = raw.slice(0, 6).map((f, i) => ({
+      key: 'f' + i,
+      label: clean(f.label, 40) || 'Detail',
+      value: clean(f.value, 400),
+      kind: FIELD_KINDS.has(f.kind) ? f.kind : 'text'
+    })).filter((f) => f.value);
+
+    /* The model returned one field for a conversation with three answers once. The grievance is
+       always field one whatever it says, and anything the citizen actually told us is appended
+       rather than left out — a review screen thinner than the exchange it summarises is a
+       screen that loses what someone said. */
+    if (!fields.length) return fallback();
+    if (!/^(what happened|what went wrong|the problem)/i.test(fields[0].label)) {
+      fields.unshift({ key: 'what', label: 'What happened', value: String(grievance || '').trim(), kind: 'text' });
+    }
+    const covered = fields.map((f) => f.value.toLowerCase()).join(' ');
+    const missed = answers
+      .map((a) => String(a.a || '').trim())
+      .filter((a) => a && !DUNNO.test(a) && !covered.includes(a.toLowerCase().slice(0, 14)));
+    if (missed.length) {
+      fields.push({ key: 'added', label: 'What you added', value: missed.join(' · '), kind: 'text' });
+    }
+    return { fields: fields.slice(0, 7), source: 'model' };
+  } catch (err) {
+    console.warn('[ai] summary fell back:', err.message);
     return fallback();
   }
 }

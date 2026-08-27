@@ -43,6 +43,12 @@
     /* Step 1 — the citizen has said what happened. */
     intake: (text) => call('/intake', { method: 'POST', body: { text } }),
 
+    /* One turn of the intake: the next question, given what has been said. */
+    nextQuestion: (payload) => call('/next', { method: 'POST', body: payload }),
+
+    /* The case as the citizen will read it back: named fields, not the transcript. */
+    summarise: (payload) => call('/summarise', { method: 'POST', body: payload }),
+
     /* Step 3 — the route screen: office, reason, stronger remedy, joinder match. */
     route: (payload) => call('/route', { method: 'POST', body: payload }),
 

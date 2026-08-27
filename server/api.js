@@ -11,7 +11,7 @@
 import express, { Router } from 'express';
 import * as db from './db.js';
 import { routing, remedies } from './db.js';
-import { classify, pickOption, plainLanguage, routingSentence, aiAvailable, answerAboutCase } from './ai.js';
+import { classify, pickOption, plainLanguage, routingSentence, aiAvailable, answerAboutCase, nextQuestion, MAX_QUESTIONS, summariseIntake } from './ai.js';
 import { sanitizeInput, detectEmergency, rateLimit, budgetReport, cacheReport, MAX_INPUT_CHARS } from './guardrails.js';
 import { speak, listen, speechAvailable, speechReport, ttsLanguages, etag, VOICE } from './speech.js';
 
@@ -263,6 +263,61 @@ api.post('/otp/verify', (req, res) => {
   const code = digits(req.body?.code);
   if (code !== MOCK_OTP) return res.status(401).json({ error: `Demo mode — the code is ${MOCK_OTP}.` });
   res.json({ verified: true, phone, mock: true });
+});
+
+/** THE CASE AS THE CITIZEN WILL READ IT. Named fields from the exchange, not the exchange. */
+api.post('/summarise', metered, async (req, res) => {
+  const b = req.body || {};
+  const clean = sanitizeInput(b.grievance);
+  if (clean.blocked) return res.status(400).json({ error: clean.reason });
+
+  const answers = Array.isArray(b.answers) ? b.answers.slice(0, 8).map((a) => ({
+    q: String(a.q || '').slice(0, 200),
+    a: sanitizeInput(a.a).text || String(a.a || '').slice(0, 600)
+  })) : [];
+
+  const out = await summariseIntake({
+    grievance: clean.text || String(b.grievance || ''),
+    domain: String(b.domain || 'other'),
+    office: String(b.office || ''),
+    answers
+  });
+  res.json(out);
+});
+
+/** ONE TURN of the intake. The question depends on the answers, which is the whole point. */
+api.post('/next', metered, async (req, res) => {
+  const b = req.body || {};
+  const clean = sanitizeInput(b.grievance);
+  if (clean.blocked) return res.status(400).json({ error: clean.reason });
+
+  /* Answers are citizen text and go through the same sanitiser as anything else they type. */
+  const answers = Array.isArray(b.answers) ? b.answers.slice(0, MAX_QUESTIONS).map((a) => ({
+    q: String(a.q || '').slice(0, 200),
+    a: sanitizeInput(a.a).text || String(a.a || '').slice(0, 600)
+  })) : [];
+
+  /* The written asks for this domain travel with the request, so a refused question can be
+     replaced by a sensible one instead of ending the intake. */
+  const d = routing.domains[String(b.domain || 'other')] || {};
+
+  const out = await nextQuestion({
+    grievance: clean.text || String(b.grievance || ''),
+    domain: String(b.domain || 'other'),
+    office: String(b.office || ''),
+    answers,
+    language: String(b.language || 'en'),
+    cannedAsks: Array.isArray(d.asks) ? d.asks : []
+  });
+
+  res.json({
+    done: !!out.done,
+    question: out.question || null,
+    source: out.source,
+    reason: out.reason || null,
+    asked: answers.length,
+    max: MAX_QUESTIONS
+  });
 });
 
 /** STEP 4 — file it. Creates the case. Filing into the government channel is simulated. */

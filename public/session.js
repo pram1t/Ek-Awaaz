@@ -5,10 +5,10 @@
   const blank = { loggedIn: false, phone: '', name: '', filed: [], joined: [], draft: null };
 
   function read() {
-    try { return Object.assign({}, blank, JSON.parse(sessionStorage.getItem(KEY) || '{}')); }
+    try { return Object.assign({}, blank, JSON.parse(localStorage.getItem(KEY) || '{}')); }
     catch (e) { return Object.assign({}, blank); }
   }
-  function write(next) { sessionStorage.setItem(KEY, JSON.stringify(next)); return next; }
+  function write(next) { localStorage.setItem(KEY, JSON.stringify(next)); return next; }
   function patch(changes) { return write(Object.assign(read(), changes)); }
 
   const esc = (t) => String(t == null ? '' : t).replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
