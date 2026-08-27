@@ -1,0 +1,138 @@
+/* Ek Awaaz — the concern card, rebuilt as an illustrated panel.
+ *
+ * These cards were solid blocks of colour with white text on them: three saturated fields in
+ * a row, which is why the page read as tinted rather than designed. The content inside them is
+ * the substance of the product — which office, which clock, which remedy — so none of it moves.
+ * Only the container changes.
+ *
+ * The shape: a pale illustrated panel on top, a white body beneath, and a scalloped kolam edge
+ * where they meet. Colour now enters through the drawing rather than by flooding the card, and
+ * a row of these reads as nine doorways into nine subjects instead of nine coloured tiles.
+ *
+ * Loaded after structure.css. The overrides are narrow but they do need to win against the
+ * original rules, which set background and colour on .c1 … .c5 directly.
+ */
+
+/* ── the card ─────────────────────────────────────────────────────────────────── */
+.category-card.has-panel{
+  background: #fff !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--rule);
+  padding: 0 !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform .22s cubic-bezier(.22,.61,.36,1),
+              box-shadow .22s ease, border-color .22s ease;
+}
+.category-card.has-panel:hover{
+  transform: translateY(-4px);
+  box-shadow: 0 16px 34px #241a1414;
+  border-color: var(--madder);
+}
+
+/* The old ripple decoration painted radial gradients over the whole card. With a drawing in
+   the panel it is noise on top of an image, so it goes. */
+.category-card.has-panel::before,
+.category-card.has-panel::after{ content: none !important; display: none !important }
+
+/* ── the panel ────────────────────────────────────────────────────────────────── */
+.category-card.has-panel .panel{
+  position: relative;
+  aspect-ratio: 16 / 10.5;
+  background: #cfdfca;
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+.category-card.has-panel .panel svg{
+  width: 100%; height: 100%; display: block;
+}
+/* the scalloped edge: a row of half-circles bitten out of the white body below */
+.category-card.has-panel .panel::after{
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: -1px; height: 12px;
+  background: #fff;
+  -webkit-mask: radial-gradient(circle 7px at 7px 12px, transparent 98%, #000 100%) repeat-x 0 0 / 14px 12px;
+  mask: radial-gradient(circle 7px at 7px 12px, transparent 98%, #000 100%) repeat-x 0 0 / 14px 12px;
+}
+
+/* ── the body ─────────────────────────────────────────────────────────────────── */
+.category-card.has-panel > *:not(.panel){
+  padding-left: 21px; padding-right: 21px;
+}
+.category-card.has-panel .card-number{
+  position: absolute; top: 12px; left: 14px;
+  z-index: 2; padding: 0 !important;
+  font: 600 11px Mukta, sans-serif; letter-spacing: .12em;
+  color: var(--cream);
+  text-shadow: 0 1px 3px #241a1466;
+}
+.category-card.has-panel .hindi{
+  color: var(--madder) !important;
+  font: 400 15.5px "Tiro Devanagari Hindi", serif !important;
+  margin: 15px 0 1px !important;
+}
+.category-card.has-panel h3{
+  color: var(--ink) !important;
+  font-size: 19px !important;
+  margin: 0 0 10px !important;
+}
+
+/* "Where it actually goes" — the routing fact, on a tinted shelf so it reads as evidence */
+.category-card.has-panel > div{
+  background: var(--ivory) !important;
+  border-left: 2px solid var(--leaf);
+  padding: 12px 14px !important;
+  margin: 0 21px 12px !important;
+}
+.category-card.has-panel > div b{
+  display: block;
+  font: 600 9.5px Mukta, sans-serif !important;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--leaf) !important;
+  margin-bottom: 5px;
+}
+.category-card.has-panel > div p{
+  margin: 0 !important;
+  font-size: 13px !important;
+  color: var(--ink) !important;
+  line-height: 1.55;
+}
+
+/* the remedy: the thing with teeth, so it gets the madder rule */
+.category-card.has-panel .card-remedy{
+  background: transparent !important;
+  border: 0 !important;
+  border-top: 1px solid var(--rule) !important;
+  border-left: 2px solid var(--madder) !important;
+  margin: 0 21px 4px !important;
+  padding: 12px 14px !important;
+  margin-top: auto !important;
+}
+.category-card.has-panel .card-remedy b{
+  display: block;
+  font: 600 9.5px Mukta, sans-serif !important;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--madder) !important;
+  margin-bottom: 5px;
+}
+.category-card.has-panel .card-remedy p{
+  margin: 0 !important;
+  font-size: 13px !important;
+  color: var(--ink-soft) !important;
+  line-height: 1.55;
+}
+
+.category-card.has-panel > a{
+  display: block;
+  padding: 14px 21px 18px !important;
+  font: 600 12.5px Mukta, sans-serif !important;
+  color: var(--leaf) !important;
+  text-decoration: none;
+  letter-spacing: .01em;
+}
+.category-card.has-panel:hover > a{ color: var(--madder) !important }
+
+/* ── the same treatment where the feature grid uses coloured blocks ──────────── */
+.feature-grid > *{ transition: transform .2s ease, box-shadow .2s ease }
+.feature-grid > *:hover{ transform: translateY(-3px) }
