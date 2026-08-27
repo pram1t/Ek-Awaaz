@@ -1,15 +1,9 @@
-India's grievance portal makes you name the office that owns your problem: 92 organisations, then a category, then a sub-category. Ek Awaaz never asks.
+Between 2022 and 2024, CPGRAMS "resolved" roughly 70 million grievances. Citizen satisfaction stayed barely above 50%, and DARPG's own study of 5 lakh recurring grievances found that fast closure does not mean relief. Three reasons, and what we changed.
 
-Say what happened, in your words or your voice. Smiti Didi asks two or three questions and answers aloud in the language you spoke, detected from the audio, never chosen from a menu. Eleven Indian languages. Built for the person the current portal was not.
+**Reach.** CPGRAMS routes to 92 central organisations and 36 integrated state portals — and still cannot reach a Gram Panchayat or a municipal body. Local government is Entry 5 of the State List, so a pothole was never a category here, and no standard Panchayat API exists anywhere in India. A collapsed anganwadi roof has nowhere to go. We route across five constitutional tiers, naming the officer answerable and the provision.
 
-It routes across five constitutional tiers — Panchayat, municipal, state, central scheme, Union — naming the officer and the provision that makes them answerable. No central ministry can fix a village road.
+**Duplicates.** Fifty households reporting one road file fifty cases. Volume, not classification, is what breaks quality: DARPG had to add a spam box, auto-closure for frivolous cases, and blocking of habitual complainants. Ek Awaaz co-signs instead. One case, fifty names, one report — more citizens filing means less officer work.
 
-It names the stronger remedy you already hold, before filing: the RBI Ombudsman can award ₹20 lakh; NFSA section 15 puts an officer in your district. Twelve mapped, eleven live. Nobody says so.
+**Day 22.** The 21-day target comes from an office memorandum, not a law. When the Action Taken Report says "disposed" and nothing changed, the citizen has nothing left. We show what was always there: the RBI Ombudsman can award ₹20 lakh; Section 244A owes you interest; NFSA section 15 puts an officer in your district. Twelve mapped, eleven live — named before you file.
 
-Fifty neighbours with one broken road become one case with fifty names, not fifty dismissals — one report for the officer, so more citizens filing means less work, not more. One signature per verified mobile, enforced in the database. Two taps to join a nearby case.
-
-Only the citizen closes a case. An officer's report reaches "awaiting your confirmation" and no further; "not fixed" reopens the same case.
-
-That gate is a database constraint, not a screen. Every rule the model must obey is enforced in code, not asked in a prompt. A full walkthrough costs about $0.001, so national scale is arguable.
-
-Filing into government systems is simulated, and every case says so.
+Built with Codex; Smiti Didi runs on the OpenAI API, by voice, in eleven Indian languages. Filing is simulated, and every case says so.
