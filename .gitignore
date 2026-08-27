@@ -20,3 +20,5 @@ server.err.log
 
 .vercel
 .env*
+
+public/_preview

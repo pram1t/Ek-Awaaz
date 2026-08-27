@@ -4,3 +4,7 @@ node_modules
 server.log
 server.err.log
 data/ekawaaz.db
+
+# design mockups: viewable locally, never shipped
+public/_preview
+design

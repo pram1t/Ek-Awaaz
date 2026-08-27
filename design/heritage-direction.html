@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Ek Awaaz — heritage direction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi:ital@0;1&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Mukta:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+/* ── palette, sampled from the terracotta temple illustration ─────────────────
+   Four families and nothing else. A tight palette is what makes flat
+   illustration read as considered rather than as clip art. */
+:root{
+  --terra-lt:#D9906F; --terra:#C4714F; --terra-dk:#A65238; --terra-pale:#EBC4AE;
+  --green-dk:#1F4D30; --green:#2E6B3F; --green-lt:#3E8450; --green-pale:#D8E5D5;
+  --roof:#4A3B36;
+  --cream:#F6F0E6; --cream-dk:#EDE3D3; --paper:#FDFAF4;
+  --ink:#241C17; --ink-soft:#6B5D53;
+  --rubric:#9E2B25;          /* rubricated red: authority marks only, never decoration */
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);
+  font:16px/1.6 Mukta,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.shell{width:min(1080px,calc(100% - 44px));margin:auto}
+h1,h2,h3{margin:0;font-family:"Source Serif 4",Georgia,serif;font-weight:600;
+  line-height:1.12;letter-spacing:-.015em;color:var(--ink)}
+.dev{font-family:"Tiro Devanagari Hindi",serif}
+
+/* ── the annotation chrome for this proposal page only ─────────────────────── */
+.note{background:var(--ink);color:#EDE3D3;padding:26px 0;font-size:14px}
+.note b{color:#fff}
+.note .shell{display:grid;gap:8px}
+.tag{display:inline-block;font:700 10px Mukta,sans-serif;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--rubric);background:#fff;border:1px solid var(--terra-pale);
+  padding:5px 9px;border-radius:2px}
+.why{border-left:3px solid var(--terra);background:var(--paper);padding:14px 18px;
+  font-size:14px;color:var(--ink-soft);margin:0}
+.why b{color:var(--ink)}
+section.demo{padding:0 0 10px}
+.label{background:var(--cream-dk);padding:12px 0;border-top:1px solid #DDD0BC;border-bottom:1px solid #DDD0BC}
+.label .shell{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap}
+.label b{font:700 11px Mukta,sans-serif;letter-spacing:.13em;text-transform:uppercase;color:var(--ink)}
+.label span{font-size:13px;color:var(--ink-soft)}
+
+/* ── border-and-field: the sari principle ─────────────────────────────────────
+   A plain generous field with the ornament concentrated in one narrow dense
+   band. Drawn in CSS from a repeating geometric unit, so it is structure
+   borrowed from weaving rather than folk art lifted off a wall. */
+.weave{height:9px;background:
+   repeating-linear-gradient(90deg,var(--terra) 0 6px,transparent 6px 12px),
+   repeating-linear-gradient(90deg,var(--green-dk) 0 3px,var(--terra-dk) 3px 6px);
+  background-size:12px 4px,6px 100%;background-position:0 0,0 5px;background-repeat:repeat-x}
+
+/* ── masthead ─────────────────────────────────────────────────────────────── */
+header{background:var(--paper);border-bottom:1px solid #E3D6C4}
+.mast{display:flex;align-items:center;justify-content:space-between;gap:20px;
+  min-height:88px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit}
+/* an abstract seal: concentric rings. No state emblem, no flag - this is not a
+   government product and must never dress as one. */
+.seal{width:46px;height:46px;flex:0 0 46px;border-radius:50%;position:relative;
+  border:1.5px solid var(--terra);display:grid;place-items:center}
+.seal i{position:absolute;border-radius:50%;border:1.5px solid var(--terra)}
+.seal i:nth-child(1){inset:5px}
+.seal i:nth-child(2){inset:11px;border-color:var(--green)}
+.seal i:nth-child(3){inset:18px;background:var(--green-dk);border:0}
+.brand strong{display:block;font:400 27px "Tiro Devanagari Hindi",serif;line-height:1}
+.brand small{display:block;font:700 9px Mukta,sans-serif;letter-spacing:.24em;
+  color:var(--ink-soft);margin-top:5px}
+nav{display:flex;align-items:center;gap:22px}
+nav a{color:var(--ink);text-decoration:none;font-size:14px;font-weight:600}
+nav a:hover{color:var(--terra-dk)}
+.btn{display:inline-block;background:var(--green-dk);color:var(--paper);
+  padding:13px 20px;border-radius:3px;text-decoration:none;
+  font:700 13px Mukta,sans-serif;border:0;cursor:pointer}
+.btn:hover{background:#173B24}
+.btn.terra{background:var(--terra-dk)}
+.btn.terra:hover{background:#8E4530}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid #CDBCA6}
+.btn.ghost:hover{border-color:var(--terra);color:var(--terra-dk)}
+
+/* ── hero ─────────────────────────────────────────────────────────────────── */
+.hero{background:var(--paper);padding:64px 0 0}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
+  gap:52px;align-items:center}
+.hero .dev-line{font:400 26px "Tiro Devanagari Hindi",serif;color:var(--terra-dk);margin:0 0 10px}
+.hero h1{font-size:52px}
+.hero p.lede{font-size:17px;color:var(--ink-soft);margin:20px 0 0;max-width:46ch}
+.acts{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap}
+.hero svg{width:100%;height:auto;display:block}
+.honest{margin-top:44px;border-top:1px solid #E3D6C4;padding:16px 0;
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+  font-size:13px;color:var(--ink-soft)}
+.honest .dot{width:6px;height:6px;border-radius:50%;background:var(--rubric)}
+
+/* ── domain cards, each with its own drawing ──────────────────────────────── */
+.cards{padding:60px 0}
+.cards h2{font-size:34px;margin-bottom:6px}
+.cards>.shell>p{color:var(--ink-soft);margin:0 0 30px;max-width:52ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:18px}
+.card{background:var(--paper);border:1px solid #E7DACA;border-radius:5px;
+  overflow:hidden;display:flex;flex-direction:column;text-decoration:none;color:inherit;
+  transition:transform .18s ease,box-shadow .18s ease}
+.card:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(36,28,23,.09)}
+.card figure{margin:0;background:var(--green-pale);line-height:0}
+.card svg{width:100%;height:auto;display:block}
+.card .body{padding:17px 19px 20px}
+.card .hi{font:400 17px "Tiro Devanagari Hindi",serif;color:var(--terra-dk);display:block}
+.card h3{font-size:18px;margin:2px 0 6px}
+.card p{margin:0;font-size:13.5px;color:var(--ink-soft);line-height:1.55}
+.card .go{display:block;margin-top:12px;font:700 12px Mukta,sans-serif;color:var(--green-dk)}
+
+/* ── a case row, the register idiom ───────────────────────────────────────── */
+.record{background:var(--cream-dk);padding:60px 0}
+.record h2{font-size:32px;margin-bottom:24px}
+.reg{background:var(--paper);border:1px solid #DFD1BE;border-radius:4px;overflow:hidden}
+.reg-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:18px;
+  padding:15px 20px;background:#F1E7D8;border-bottom:1px solid #DFD1BE;align-items:center}
+.serial{font:700 12px/1 Mukta,sans-serif;color:var(--rubric);letter-spacing:.06em;
+  border:1px solid var(--terra-pale);padding:7px 9px;border-radius:2px;background:var(--paper)}
+.reg-head b{font-family:"Source Serif 4",serif;font-size:17px;font-weight:600}
+.chip{font:700 10px Mukta,sans-serif;letter-spacing:.1em;text-transform:uppercase;
+  padding:5px 9px;border-radius:2px;background:var(--green-pale);color:var(--green-dk)}
+.chip.wait{background:#F6E2CC;color:#8E4530}
+.reg-body{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:1px;background:#EADDC9}
+.cell{background:var(--paper);padding:15px 20px}
+.cell small{display:block;font:700 9.5px Mukta,sans-serif;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-soft);margin-bottom:5px}
+.cell b{font-size:14px;font-weight:700}
+/* the danda as separator, instead of a bullet - a real Devanagari convention */
+.danda{color:var(--terra);margin:0 7px;font-family:"Tiro Devanagari Hindi",serif}
+.gate{padding:20px;border-top:1px solid #DFD1BE;background:#FBF4E9}
+.gate p{margin:0 0 12px;font-size:14px;color:var(--ink)}
+.gate p b{color:var(--rubric)}
+.gate .row{display:flex;gap:9px;flex-wrap:wrap}
+.gate button{border:1px solid #CDBCA6;background:var(--paper);color:var(--ink);
+  padding:10px 14px;border-radius:3px;font:700 12px Mukta,sans-serif;cursor:pointer}
+.gate button:hover{border-color:var(--green);color:var(--green-dk);background:#F4F8F2}
+
+footer{background:var(--green-dk);color:#CFE0CB;padding:40px 0;font-size:13px}
+footer .shell{display:grid;gap:10px}
+footer b{color:#fff}
+
+@media(max-width:860px){
+  .hero-grid{grid-template-columns:1fr;gap:32px}
+  .hero h1{font-size:38px}
+  .cards h2,.record h2{font-size:26px}
+  nav{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="note"><div class="shell">
+  <b>Ek Awaaz · heritage direction — "register, not monument"</b>
+  <span>The style you pointed at: flat, four colours, soft hand-drawn edges. Pointed at what people actually report about, not at monuments. Every drawing below is inline SVG — the whole page weighs a few KB and works on a 2G connection, which is the claim the product makes about villagers on cheap phones.</span>
+  <span><b>Held deliberately:</b> no tricolour, no state emblem, no Gandhi, no invented statistics. An independent prototype dressing as a government product is a real risk, and a 96% redressal figure would contradict the closure gate on the very same site.</span>
+</div></div>
+
+<div class="weave"></div>
+
+<!-- ══════════════════════════════ MASTHEAD ══════════════════════════════ -->
+<header><div class="shell mast">
+  <a class="brand" href="#">
+    <span class="seal" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span><strong class="dev">एक आवाज़</strong><small>EK AWAAZ</small></span>
+  </a>
+  <nav>
+    <a href="#">How it works</a>
+    <a href="#">Near you</a>
+    <a href="#">My grievances</a>
+    <a class="btn" href="#">Tell us what happened</a>
+  </nav>
+</div></header>
+
+<div class="label"><div class="shell">
+  <b>1 · Masthead</b>
+  <span>An abstract seal of concentric rings, not the Ashoka emblem. Devanagari set in Tiro Devanagari Hindi at full size — the name is एक आवाज़, and the Latin is the subtitle, not the reverse.</span>
+</div></div>
+
+<!-- ══════════════════════════════ HERO ══════════════════════════════ -->
+<section class="demo hero"><div class="shell">
+  <div class="hero-grid">
+    <div>
+      <p class="dev-line">आपकी बात, सही दफ़्तर तक।</p>
+      <h1>Your complaint,<br />the right office.</h1>
+      <p class="lede">Say what went wrong in your own words. No department list, no category. Ek Awaaz finds the office that can act, the clock it is on, and the stronger remedy you already have.</p>
+      <div class="acts">
+        <a class="btn" href="#">Tell us what happened</a>
+        <a class="btn ghost" href="#">See what is reported near you</a>
+      </div>
+      <div class="honest">
+        <span class="dot"></span>
+        <span>An independent prototype. Not a government website. Officer actions shown here are simulated, and it says so on every case.</span>
+      </div>
+    </div>
+
+    <!-- A village road, the single most reported thing in the country.
+         Flat, four colours, soft brushy edge - the idiom of the reference
+         image applied to the subject that belongs on a grievance portal. -->
+    <svg viewBox="0 0 560 400" role="img" aria-label="Illustration of a village road with potholes running past fields and a small building">
+      <defs>
+        <filter id="rough" x="-6%" y="-6%" width="112%" height="112%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" seed="7" result="n"/>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+        <linearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#3E8450"/><stop offset="1" stop-color="#1F4D30"/>
+        </linearGradient>
+      </defs>
+
+      <g filter="url(#rough)">
+        <rect x="8" y="8" width="544" height="384" rx="10" fill="url(#field)"/>
+      </g>
+
+      <!-- horizon and sky sliver -->
+      <path d="M8 132 Q 280 104 552 132 L552 18 Q 280 8 8 18 Z" fill="#EBC4AE" opacity=".5"/>
+
+      <!-- the road: a terracotta band, widening toward the viewer -->
+      <path d="M212 118 Q 236 240 128 392 L392 392 Q 320 236 268 118 Z" fill="#C4714F"/>
+      <path d="M212 118 Q 236 240 128 392 L168 392 Q 250 240 232 118 Z" fill="#D9906F" opacity=".55"/>
+
+      <!-- potholes: the grievance itself, drawn plainly -->
+      <ellipse cx="205" cy="300" rx="30" ry="13" fill="#8E4530"/>
+      <ellipse cx="205" cy="297" rx="30" ry="13" fill="#6E3324"/>
+      <ellipse cx="268" cy="352" rx="38" ry="16" fill="#8E4530"/>
+      <ellipse cx="268" cy="348" rx="38" ry="16" fill="#6E3324"/>
+      <ellipse cx="240" cy="228" rx="18" ry="8" fill="#8E4530"/>
+      <ellipse cx="240" cy="226" rx="18" ry="8" fill="#6E3324"/>
+
+      <!-- a small terracotta building on the ridge, in the reference idiom -->
+      <g>
+        <rect x="392" y="150" width="96" height="58" fill="#D9906F"/>
+        <path d="M386 152 Q 440 118 494 152 Z" fill="#4A3B36"/>
+        <rect x="432" y="104" width="16" height="22" fill="#C4714F"/>
+        <path d="M428 106 Q 440 94 452 106 Z" fill="#4A3B36"/>
+        <path d="M406 208 v-34 a10 10 0 0 1 20 0 v34 Z" fill="#A65238"/>
+        <path d="M454 208 v-34 a10 10 0 0 1 20 0 v34 Z" fill="#A65238"/>
+        <rect x="384" y="206" width="112" height="7" fill="#EBC4AE"/>
+      </g>
+
+      <!-- bushes and grass marks, the loose hand of the reference -->
+      <g fill="#2E6B3F">
+        <ellipse cx="96" cy="196" rx="34" ry="16"/><ellipse cx="118" cy="186" rx="24" ry="13"/>
+        <ellipse cx="470" cy="300" rx="40" ry="18"/><ellipse cx="496" cy="288" rx="26" ry="14"/>
+        <ellipse cx="82" cy="330" rx="30" ry="14"/>
+      </g>
+      <g stroke="#173B24" stroke-width="3" stroke-linecap="round" opacity=".55">
+        <path d="M60 250 q 3 -13 7 -18"/><path d="M78 268 q 3 -13 7 -18"/>
+        <path d="M420 254 q 3 -13 7 -18"/><path d="M448 236 q 3 -13 7 -18"/>
+        <path d="M132 154 q 3 -11 7 -15"/><path d="M330 300 q 3 -13 7 -18"/>
+        <path d="M356 348 q 3 -13 7 -18"/><path d="M100 372 q 3 -13 7 -18"/>
+      </g>
+
+      <!-- a milestone: quiet, and it carries the case idea -->
+      <g>
+        <path d="M330 246 h26 v22 a13 13 0 0 1 -26 0 Z" fill="#F6F0E6"/>
+        <path d="M330 246 h26 v9 h-26 Z" fill="#9E2B25"/>
+      </g>
+    </svg>
+  </div>
+</div></section>
+
+<div class="label"><div class="shell">
+  <b>2 · Hero</b>
+  <span>The illustration is the reported problem, not a landmark. A road with potholes, a field, one small terracotta building on the ridge as a nod to the style you liked. The honesty line sits under the actions where it cannot be missed.</span>
+</div></div>
+
+<!-- ══════════════════════════════ DOMAIN CARDS ══════════════════════════════ -->
+<section class="demo cards"><div class="shell">
+  <span class="tag">Common concerns</span>
+  <h2 style="margin-top:14px">What do you need help with?</h2>
+  <p>Pick one if it helps. You can also just say what happened and skip all of this.</p>
+
+  <div class="grid">
+
+    <a class="card" href="#"><figure>
+      <svg viewBox="0 0 320 190" role="img" aria-label="A handpump on a platform">
+        <rect width="320" height="190" fill="#D8E5D5"/>
+        <ellipse cx="160" cy="176" rx="150" ry="26" fill="#3E8450" opacity=".35"/>
+        <rect x="96" y="140" width="128" height="16" rx="3" fill="#D9906F"/>
+        <rect x="104" y="132" width="112" height="10" rx="2" fill="#EBC4AE"/>
+        <rect x="152" y="58" width="14" height="78" fill="#4A3B36"/>
+        <path d="M124 66 h44 v11 h-44 a6 6 0 0 1 0 -11 Z" fill="#4A3B36"/>
+        <path d="M166 84 h30 l-8 14 h-22 Z" fill="#4A3B36"/>
+        <g fill="#3E8450" opacity=".9">
+          <ellipse cx="188" cy="122" rx="4" ry="7"/><ellipse cx="196" cy="136" rx="3" ry="6"/>
+          <ellipse cx="182" cy="140" rx="3" ry="5"/>
+        </g>
+        <g fill="#2E6B3F"><ellipse cx="42" cy="152" rx="30" ry="14"/><ellipse cx="284" cy="158" rx="26" ry="12"/></g>
+      </svg>
+    </figure><div class="body">
+      <span class="hi dev">जल और स्वच्छता</span>
+      <h3>Water &amp; sanitation</h3>
+      <p>Supply that stops, a handpump that has failed, drainage that stands.</p>
+      <span class="go">Report a water issue →</span>
+    </div></a>
+
+    <a class="card" href="#"><figure>
+      <svg viewBox="0 0 320 190" role="img" aria-label="An electricity pole with a transformer">
+        <rect width="320" height="190" fill="#D8E5D5"/>
+        <ellipse cx="160" cy="176" rx="150" ry="26" fill="#3E8450" opacity=".35"/>
+        <rect x="150" y="40" width="13" height="122" fill="#4A3B36"/>
+        <rect x="112" y="58" width="90" height="9" fill="#4A3B36"/>
+        <rect x="120" y="80" width="74" height="8" fill="#4A3B36"/>
+        <rect x="176" y="96" width="42" height="40" rx="4" fill="#C4714F"/>
+        <rect x="182" y="102" width="30" height="7" fill="#EBC4AE"/>
+        <rect x="182" y="114" width="30" height="7" fill="#EBC4AE"/>
+        <path d="M112 62 q 40 22 78 -22" stroke="#4A3B36" stroke-width="3" fill="none"/>
+        <path d="M202 62 q 60 26 116 -8" stroke="#4A3B36" stroke-width="3" fill="none"/>
+        <g fill="#2E6B3F"><ellipse cx="52" cy="156" rx="34" ry="15"/><ellipse cx="272" cy="162" rx="26" ry="12"/></g>
+      </svg>
+    </figure><div class="body">
+      <span class="hi dev">बिजली</span>
+      <h3>Electricity</h3>
+      <p>Outages, a burnt transformer, a meter reading nobody will check.</p>
+      <span class="go">Report an electricity issue →</span>
+    </div></a>
+
+    <a class="card" href="#"><figure>
+      <svg viewBox="0 0 320 190" role="img" aria-label="A ration shop with sacks outside">
+        <rect width="320" height="190" fill="#D8E5D5"/>
+        <ellipse cx="160" cy="176" rx="150" ry="26" fill="#3E8450" opacity=".35"/>
+        <rect x="86" y="76" width="150" height="84" fill="#D9906F"/>
+        <path d="M78 78 q 83 -36 166 0 Z" fill="#4A3B36"/>
+        <rect x="106" y="104" width="52" height="56" fill="#A65238"/>
+        <rect x="178" y="104" width="38" height="30" fill="#EBC4AE"/>
+        <rect x="78" y="158" width="166" height="8" fill="#EBC4AE"/>
+        <g fill="#C4714F"><ellipse cx="256" cy="148" rx="18" ry="20"/><ellipse cx="278" cy="152" rx="15" ry="16"/></g>
+        <g fill="#2E6B3F"><ellipse cx="40" cy="154" rx="28" ry="13"/></g>
+      </svg>
+    </figure><div class="body">
+      <span class="hi dev">राशन और हक़</span>
+      <h3>Ration &amp; entitlements</h3>
+      <p>Grain short of the quota, a card refused, a pension that stopped.</p>
+      <span class="go">Report an entitlement issue →</span>
+    </div></a>
+
+    <a class="card" href="#"><figure>
+      <svg viewBox="0 0 320 190" role="img" aria-label="A small bank branch building">
+        <rect width="320" height="190" fill="#D8E5D5"/>
+        <ellipse cx="160" cy="176" rx="150" ry="26" fill="#3E8450" opacity=".35"/>
+        <rect x="80" y="86" width="160" height="74" fill="#D9906F"/>
+        <path d="M70 88 L160 44 L250 88 Z" fill="#4A3B36"/>
+        <g fill="#A65238">
+          <rect x="98" y="104" width="16" height="56"/><rect x="128" y="104" width="16" height="56"/>
+          <rect x="176" y="104" width="16" height="56"/><rect x="206" y="104" width="16" height="56"/>
+        </g>
+        <rect x="150" y="118" width="20" height="42" fill="#4A3B36"/>
+        <rect x="70" y="158" width="180" height="8" fill="#EBC4AE"/>
+        <rect x="152" y="30" width="16" height="16" rx="8" fill="#C4714F"/>
+        <g fill="#2E6B3F"><ellipse cx="42" cy="152" rx="28" ry="13"/><ellipse cx="282" cy="158" rx="24" ry="11"/></g>
+      </svg>
+    </figure><div class="body">
+      <span class="hi dev">बैंक और भुगतान</span>
+      <h3>Bank &amp; payments</h3>
+      <p>A debit you did not make, a claim stuck, a loan account misread.</p>
+      <span class="go">Report a bank issue →</span>
+    </div></a>
+
+  </div>
+</div></section>
+
+<div class="label"><div class="shell">
+  <b>3 · Domain cards</b>
+  <span>One drawing each, same four colours, same soft edge. A handpump, a transformer, a ration shop, a branch — the things people report, drawn with the warmth of the style you liked. Devanagari above English on every card.</span>
+</div></div>
+
+<!-- ══════════════════════════════ THE REGISTER ══════════════════════════════ -->
+<section class="demo record"><div class="shell">
+  <span class="tag">Case record</span>
+  <h2 style="margin-top:14px">A case stays open until you say it is fixed.</h2>
+
+  <div class="reg">
+    <div class="reg-head">
+      <span class="serial">EA·2026·04412</span>
+      <b>Panchayat road, Rajnagar Ward 4</b>
+      <span class="chip wait">Awaiting your confirmation</span>
+    </div>
+    <div class="reg-body">
+      <div class="cell"><small>With</small><b>Block Development Officer</b></div>
+      <div class="cell"><small>Clock</small><b>Day 18 <span class="danda">।</span> of 21</b></div>
+      <div class="cell"><small>Households</small><b>34 <span class="danda">।</span> of 50</b></div>
+      <div class="cell"><small>Basis</small><b>Art. 243G <span class="danda">।</span> Sch. XI</b></div>
+    </div>
+    <div class="gate">
+      <p>Their report says <b>disposed of</b>. This case still says <b>open</b>. On the current portal that report would have closed it. Here only you can.</p>
+      <div class="row">
+        <button type="button">Yes, it is fixed</button>
+        <button type="button">No, it is not fixed</button>
+        <button type="button">Partly</button>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<div class="label"><div class="shell">
+  <b>4 · The register idiom</b>
+  <span>Serial number in the margin in rubricated red, ruled cells, the danda (।) as separator instead of a bullet. This is the visual language an Indian citizen already reads as official — the bahi-khata and the endorsement stamp, not a monument.</span>
+</div></div>
+
+<div class="weave"></div>
+<footer><div class="shell">
+  <b>एक आवाज़ · EK AWAAZ</b>
+  <span>Independent hackathon prototype. Not a government product. Filing into government channels, officer actions and dates shown here are simulated.</span>
+  <span>Accessible, multilingual, privacy-conscious, and built to work on a slow connection.</span>
+</div></footer>
+
+</body>
+</html>

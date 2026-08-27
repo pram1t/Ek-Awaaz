@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Ek Awaaz — niche direction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Tiro+Devanagari+Hindi&family=Mukta:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+/* ─────────────────────────────────────────────────────────────────────────────
+   THE NICHE DIRECTION — light ground, colour held in the arches
+
+   The page is ivory and mostly empty. Every dye colour is spent inside a cusped
+   arch and nowhere else, so the colour means something when it appears: it marks
+   a thing you can act on. That is the discipline the reference had — one field,
+   one motif, a lot of air — turned into a rule a whole site can follow.
+
+   The arch is a container, not an ornament. A jharokha frames real content, so
+   the heritage sits in the structure of the page and nothing has to be pasted on.
+
+   Ornament is jali: pierced-screen geometry from circles and straight lines in an
+   SVG tile, sitting faintly behind each subject mark. Geometry is what Indian
+   architectural ornament actually is. It also weighs nothing and cannot look
+   amateur the way a hand-drawn scene can.
+
+   Palette is the dye chest — madder, leaf, turmeric, indigo — not the flag. An
+   independent prototype must never dress as a government product.
+   ───────────────────────────────────────────────────────────────────────── */
+:root{
+  --madder:#8C2416; --leaf:#1E4633; --turmeric:#8A5A1C; --indigo:#3A2E52;
+  --cream:#F2E5D0; --ivory:#FBF6EC; --ivory-dk:#F1E8D9; --rule:#E4D8C4;
+  --ink:#241A14; --ink-soft:#7A6455;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ivory);color:var(--ink);
+  font:16px/1.65 Mukta,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.shell{width:min(1120px,calc(100% - 48px));margin:auto}
+h1,h2,h3{margin:0;font-family:Marcellus,Georgia,serif;font-weight:400;line-height:1.12}
+.dev{font-family:"Tiro Devanagari Hindi",serif}
+.niche{clip-path:url(#niche)}
+
+/* annotation chrome, this proposal page only */
+.memo{background:var(--ink);color:#E4D6C4;padding:22px 0;font-size:14px}
+.memo .shell{display:grid;gap:6px}
+.memo b{color:#fff;font-family:Marcellus,serif;font-size:16px;font-weight:400}
+.caption{background:var(--ivory-dk);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:13px 0}
+.caption .shell{display:flex;gap:18px;justify-content:space-between;align-items:baseline;flex-wrap:wrap}
+.caption b{font:600 11px Mukta,sans-serif;letter-spacing:.15em;text-transform:uppercase;white-space:nowrap}
+.caption span{font-size:13.5px;color:var(--ink-soft);max-width:74ch}
+
+/* ── logo options ─────────────────────────────────────────────────────────── */
+.logos{padding:44px 0 8px}
+.logo-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:26px;margin-top:24px}
+.opt{border:1px solid var(--rule);background:#fff;padding:26px 24px}
+.opt .lockup{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.opt svg{flex:0 0 auto}
+.opt strong{display:block;font:400 26px "Tiro Devanagari Hindi",serif;line-height:1;color:var(--ink)}
+.opt small{display:block;font:600 9px Mukta,sans-serif;letter-spacing:.26em;color:var(--ink-soft);margin-top:6px}
+.opt .name{font:600 11px Mukta,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--madder)}
+.opt p{margin:7px 0 0;font-size:13.5px;color:var(--ink-soft);line-height:1.55}
+
+/* ── masthead ─────────────────────────────────────────────────────────────── */
+header{background:var(--ivory);border-bottom:1px solid var(--rule)}
+.mast{display:flex;align-items:center;justify-content:space-between;gap:22px;min-height:92px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:13px;text-decoration:none;color:inherit}
+.brand strong{display:block;font:400 27px "Tiro Devanagari Hindi",serif;line-height:1}
+.brand small{display:block;font:600 9px Mukta,sans-serif;letter-spacing:.26em;color:var(--ink-soft);margin-top:6px}
+nav{display:flex;align-items:center;gap:24px}
+nav a{color:var(--ink);text-decoration:none;font-size:14.5px;font-weight:500}
+nav a:hover{color:var(--madder)}
+.btn{display:inline-block;padding:14px 21px;border-radius:2px;text-decoration:none;
+  font:600 13.5px Mukta,sans-serif;border:1px solid transparent;cursor:pointer}
+.btn.solid{background:var(--leaf);color:var(--cream)}
+.btn.solid:hover{background:#163325}
+.btn.line{border-color:#CFC0A8;color:var(--ink);background:transparent}
+.btn.line:hover{border-color:var(--madder);color:var(--madder)}
+
+/* ── hero: ivory, wide margins, colour withheld ──────────────────────────── */
+.hero{padding:88px 0 76px}
+.hero .hi{display:block;font:400 clamp(21px,2.9vw,32px)/1.4 "Tiro Devanagari Hindi",serif;
+  color:var(--madder);margin-bottom:18px}
+.hero h1{font-size:clamp(38px,5.4vw,66px);max-width:18ch}
+.hero .lede{max-width:46ch;margin:26px 0 0;color:var(--ink-soft);font-size:16.5px}
+.acts{display:flex;gap:12px;margin:32px 0 0;flex-wrap:wrap}
+.honest{margin-top:52px;padding-top:18px;border-top:1px solid var(--rule);
+  display:flex;gap:11px;align-items:center;flex-wrap:wrap;font-size:13.5px;color:var(--ink-soft)}
+.honest i{width:6px;height:6px;border-radius:50%;background:var(--madder);flex:0 0 6px}
+
+/* ── domains: the section you liked. Colour lives here. ──────────────────── */
+.domains{padding:12px 0 90px}
+.kicker{font:600 11px Mukta,sans-serif;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--madder);margin:0 0 16px}
+.domains h2{font-size:clamp(27px,3.8vw,40px);max-width:26ch}
+.domains>.shell>p{color:var(--ink-soft);margin:15px 0 42px;max-width:50ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(208px,1fr));gap:22px}
+.tile{text-decoration:none;color:inherit;display:block}
+.tile .frame{aspect-ratio:3/3.5;position:relative;overflow:hidden;
+  display:grid;place-items:center;transition:filter .2s ease}
+.tile:hover .frame{filter:brightness(1.1)}
+.tile .frame .jali{position:absolute;inset:0;width:100%;height:100%;opacity:.4}
+.tile .frame .mark{position:relative;width:46%;height:auto;display:block}
+.tile .hi{display:block;font:400 16px "Tiro Devanagari Hindi",serif;color:var(--madder);margin:17px 0 2px}
+.tile h3{font-size:20px}
+.tile p{margin:7px 0 0;font-size:13.5px;color:var(--ink-soft);line-height:1.55}
+
+/* ── the three promises: outlined arches on ivory, no fill ───────────────── */
+.promise{padding:0 0 90px}
+.arcade{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;margin-top:34px}
+.bay{border:1px solid var(--rule);background:#fff;padding:30px 26px 28px;position:relative}
+.bay .cap{position:absolute;left:0;right:0;top:0;height:5px;background:var(--madder)}
+.bay:nth-child(2) .cap{background:var(--leaf)}
+.bay:nth-child(3) .cap{background:var(--turmeric)}
+.bay b{display:block;font-family:Marcellus,serif;font-weight:400;font-size:21px;margin:6px 0 8px}
+.bay span{font-size:14px;color:var(--ink-soft);line-height:1.6}
+
+/* ── the record, framed as a jharokha ────────────────────────────────────── */
+.record{background:var(--ivory-dk);padding:88px 0}
+.record .kicker{color:var(--madder)}
+.record h2{font-size:clamp(26px,3.6vw,38px);max-width:30ch}
+.jharokha{margin-top:42px;background:#fff;padding:0 0 30px;position:relative;
+  border:1px solid var(--rule)}
+.jh-band{height:6px;background:var(--madder)}
+.jh-top{display:flex;gap:18px;align-items:center;justify-content:space-between;
+  padding:26px 34px 20px;flex-wrap:wrap}
+.serial{font:600 12px Mukta,sans-serif;letter-spacing:.09em;color:var(--madder);
+  border:1px solid #E6D2C9;padding:7px 11px}
+.jh-top b{font-family:Marcellus,serif;font-weight:400;font-size:22px}
+.chip{font:600 10px Mukta,sans-serif;letter-spacing:.13em;text-transform:uppercase;
+  padding:6px 11px;background:#F3E4CC;color:var(--turmeric)}
+.cells{display:grid;grid-template-columns:repeat(auto-fit,minmax(146px,1fr));
+  gap:1px;background:var(--rule);margin:0 34px}
+.cell{background:#fff;padding:16px 8px}
+.cell small{display:block;font:600 9.5px Mukta,sans-serif;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px}
+.cell b{font-size:14.5px;font-weight:600}
+.danda{color:var(--madder);margin:0 6px;font-family:"Tiro Devanagari Hindi",serif}
+.gate{margin:26px 34px 0;padding:22px 24px;background:var(--ivory);border-left:2px solid var(--madder)}
+.gate p{margin:0 0 15px;font-size:15px}
+.gate p b{color:var(--madder)}
+.gate .row{display:flex;gap:10px;flex-wrap:wrap}
+.gate button{border:1px solid #D8C6AE;background:#fff;color:var(--ink);
+  padding:11px 16px;font:600 13px Mukta,sans-serif;cursor:pointer}
+.gate button:hover{border-color:var(--leaf);color:var(--leaf)}
+
+footer{background:var(--ink);color:#CBB9A8;padding:50px 0;font-size:13.5px}
+footer .shell{display:grid;gap:9px}
+footer b{color:var(--cream);font-family:Marcellus,serif;font-weight:400;font-size:19px}
+
+@media(max-width:860px){
+  nav{display:none}
+  .hero{padding:52px 0 46px}
+  .jh-top{padding:22px 20px 16px}
+  .cells,.gate{margin-inline:20px}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════ the arch, the jali tiles, and the subject marks ════════ -->
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <defs>
+    <clipPath id="niche" clipPathUnits="objectBoundingBox"><path id="nichePath" d=""/></clipPath>
+
+    <!-- a small cusped arch, five foils, for logos and inline use -->
+    <symbol id="arch" viewBox="0 0 40 44">
+      <path d="M4 42 L4 20
+               A 5.50 5.50 0 0 1 7.06 9.42
+               A 5.20 5.20 0 0 1 15.06 2.88
+               A 4.94 4.94 0 0 1 24.94 2.88
+               A 5.20 5.20 0 0 1 32.94 9.42
+               A 5.50 5.50 0 0 1 36 20
+               L 36 42 Z"/>
+    </symbol>
+
+    <pattern id="jaliHex" width="46" height="80" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M23 2 L44 14 L44 38 L23 50 L2 38 L2 14 Z"/>
+        <path d="M23 42 L44 54 L44 78 L23 90 L2 78 L2 54 Z"/>
+      </g>
+    </pattern>
+    <pattern id="jaliStar" width="56" height="56" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M28 4 L38 18 L52 28 L38 38 L28 52 L18 38 L4 28 L18 18 Z"/>
+        <path d="M28 15 L34 24 L43 28 L34 32 L28 41 L22 32 L13 28 L22 24 Z"/>
+      </g>
+    </pattern>
+    <pattern id="jaliCircle" width="44" height="44" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="0" cy="0" r="16"/><circle cx="44" cy="0" r="16"/>
+        <circle cx="0" cy="44" r="16"/><circle cx="44" cy="44" r="16"/>
+        <circle cx="22" cy="22" r="16"/>
+      </g>
+    </pattern>
+    <pattern id="jaliLattice" width="40" height="40" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M-4 20 L20 -4 L44 20 L20 44 Z"/><path d="M20 8 L32 20 L20 32 L8 20 Z"/>
+      </g>
+    </pattern>
+  </defs>
+</svg>
+
+<div class="memo"><div class="shell">
+  <b>Ek Awaaz · the niche direction</b>
+  <span>Ivory ground, wide margins, and every dye colour spent <b>inside an arch and nowhere else</b> — so when colour appears it means "here is something you can act on". The card section you liked, with the rest of the page quietened around it.</span>
+  <span>Ornament is jali geometry sitting faintly behind each subject mark, never a drawn scene. Palette is the dye chest, not the flag: no tricolour, no state emblem, no invented statistics.</span>
+</div></div>
+
+<!-- ══════════════════════════ LOGO OPTIONS ══════════════════════════ -->
+<section class="logos"><div class="shell">
+  <p class="kicker">Three marks to choose from</p>
+  <h2 style="font-size:30px;max-width:30ch">The rings read as a target.</h2>
+  <p style="color:var(--ink-soft);margin:14px 0 0;max-width:56ch">A bullseye says "aim at a goal", which is the wrong idea for <span class="dev">एक आवाज़</span> — and it looks like a shooting target. Each of these is built from the same geometry as the rest of the site.</p>
+
+  <div class="logo-row">
+
+    <div class="opt">
+      <div class="lockup">
+        <svg width="106" height="40" viewBox="0 0 116 44" aria-hidden="true">
+          <!-- three arches, the middle one solid: one voice among many, many as one -->
+          <use href="#arch" x="0" y="4" width="34" height="37" fill="none" stroke="#8C2416" stroke-width="2.4"/>
+          <use href="#arch" x="40" y="0" width="36" height="44" fill="#8C2416"/>
+          <use href="#arch" x="82" y="4" width="34" height="37" fill="none" stroke="#8C2416" stroke-width="2.4"/>
+        </svg>
+        <span><strong class="dev">एक आवाज़</strong><small>EK AWAAZ</small></span>
+      </div>
+      <span class="name">A · The arcade</span>
+      <p>Three bays, the middle one filled. One voice standing among many — and the joinder mechanic, which is the product's actual argument, sitting in the mark itself.</p>
+    </div>
+
+    <div class="opt">
+      <div class="lockup">
+        <svg width="42" height="46" viewBox="0 0 40 44" aria-hidden="true">
+          <!-- one niche, one voice on the record -->
+          <use href="#arch" width="40" height="44" fill="none" stroke="#8C2416" stroke-width="2.6"/>
+          <rect x="18" y="20" width="4" height="16" fill="#1E4633"/>
+          <circle cx="20" cy="15" r="3.4" fill="#1E4633"/>
+        </svg>
+        <span><strong class="dev">एक आवाज़</strong><small>EK AWAAZ</small></span>
+      </div>
+      <span class="name">B · The niche</span>
+      <p>A single jharokha with one figure standing in it, drawn as a danda and a dot. Quietest of the three, and it is literally the container the whole site is built from.</p>
+    </div>
+
+    <div class="opt">
+      <div class="lockup">
+        <svg width="48" height="46" viewBox="0 0 46 44" aria-hidden="true">
+          <!-- open arcs, not closed rings: sound leaving a point, not a target -->
+          <circle cx="9" cy="22" r="4" fill="#8C2416"/>
+          <path d="M17 12 a 13 13 0 0 1 0 20" fill="none" stroke="#8C2416" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M25 6 a 20 20 0 0 1 0 32" fill="none" stroke="#8C2416" stroke-width="2.4" stroke-linecap="round" opacity=".68"/>
+          <path d="M33 1 a 27 27 0 0 1 0 42" fill="none" stroke="#8C2416" stroke-width="2.4" stroke-linecap="round" opacity=".38"/>
+        </svg>
+        <span><strong class="dev">एक आवाज़</strong><small>EK AWAAZ</small></span>
+      </div>
+      <span class="name">C · The carry</span>
+      <p>Open arcs, not closed rings — the reason the old mark failed. A voice leaving a point and travelling outward. Reads as sound, never as a target.</p>
+    </div>
+
+  </div>
+</div></section>
+
+<div class="caption"><div class="shell">
+  <b>Logo</b>
+  <span>My pick is <b>A, the arcade</b>. It carries the joinder idea, it is the only one that could not belong to any other product, and it is drawn from the exact arch the pages are built from — so the identity and the layout are the same idea at two scales. B is the safest. C is the most literal.</span>
+</div></div>
+
+<!-- ══════════════════════════ MASTHEAD + HERO ══════════════════════════ -->
+<header><div class="shell mast">
+  <a class="brand" href="#">
+    <svg width="106" height="40" viewBox="0 0 116 44" aria-hidden="true">
+      <use href="#arch" x="0" y="4" width="34" height="37" fill="none" stroke="#8C2416" stroke-width="2.4"/>
+      <use href="#arch" x="40" y="0" width="36" height="44" fill="#8C2416"/>
+      <use href="#arch" x="82" y="4" width="34" height="37" fill="none" stroke="#8C2416" stroke-width="2.4"/>
+    </svg>
+    <span><strong class="dev">एक आवाज़</strong><small>EK AWAAZ</small></span>
+  </a>
+  <nav>
+    <a href="#">How it works</a><a href="#">Near you</a><a href="#">My grievances</a>
+    <a class="btn solid" href="#">Tell us what happened</a>
+  </nav>
+</div></header>
+
+<section class="hero"><div class="shell">
+  <span class="hi">आपकी बात, सही दफ़्तर तक।</span>
+  <h1>Your complaint,<br />the right office.</h1>
+  <p class="lede">Say what went wrong in your own words. No department list, no category, no form. We find the office that can act, the clock it is on, and the stronger remedy you already have.</p>
+  <div class="acts">
+    <a class="btn solid" href="#">Tell us what happened</a>
+    <a class="btn line" href="#">See what is reported near you</a>
+  </div>
+  <div class="honest"><i></i>
+    <span>An independent prototype — not a government website. Officer actions and dates shown here are simulated, and every case says so.</span>
+  </div>
+</div></section>
+
+<div class="caption"><div class="shell">
+  <b>1 · Hero</b>
+  <span>Ivory, wide margins, no colour field. Devanagari leads the headline. The whole hero spends one colour — the madder of the Hindi line and the mark — and holds the rest back for the cards below.</span>
+</div></div>
+
+<!-- ══════════════════════════ DOMAINS ══════════════════════════ -->
+<section class="domains"><div class="shell">
+  <p class="kicker" style="margin-top:44px">Common concerns</p>
+  <h2>Start with your problem, not a department.</h2>
+  <p>Pick one if it helps. You can also just say what happened and skip all of this.</p>
+
+  <div class="grid">
+    <a class="tile" href="#">
+      <div class="frame niche" style="background:var(--leaf)">
+        <svg class="jali" style="color:#5C8770" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <rect width="100%" height="100%" fill="url(#jaliCircle)"/></svg>
+        <svg class="mark" viewBox="0 0 120 130" fill="#F2E5D0" aria-hidden="true">
+          <rect x="16" y="108" width="88" height="9"/><rect x="25" y="99" width="70" height="7"/>
+          <rect x="55" y="30" width="10" height="69"/>
+          <path d="M30 36h35v9H30a4.5 4.5 0 0 1 0-9Z"/><path d="M65 50h25l-7 12H65Z"/>
+          <ellipse cx="86" cy="80" rx="3.2" ry="5.6"/><ellipse cx="93" cy="92" rx="2.4" ry="4.6"/>
+        </svg>
+      </div>
+      <span class="hi">जल और स्वच्छता</span>
+      <h3>Water</h3>
+      <p>Supply that stops, a handpump that failed, drainage that stands.</p>
+    </a>
+
+    <a class="tile" href="#">
+      <div class="frame niche" style="background:var(--madder)">
+        <svg class="jali" style="color:#B25B48" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <rect width="100%" height="100%" fill="url(#jaliHex)"/></svg>
+        <svg class="mark" viewBox="0 0 120 130" fill="#F2E5D0" aria-hidden="true">
+          <rect x="55" y="16" width="10" height="99"/>
+          <rect x="24" y="33" width="72" height="7"/><rect x="33" y="52" width="54" height="6"/>
+          <rect x="70" y="66" width="30" height="28" rx="3"/>
+          <rect x="18" y="115" width="84" height="7"/>
+        </svg>
+      </div>
+      <span class="hi">बिजली</span>
+      <h3>Electricity</h3>
+      <p>Outages, a burnt transformer, a meter nobody will check.</p>
+    </a>
+
+    <a class="tile" href="#">
+      <div class="frame niche" style="background:var(--turmeric)">
+        <svg class="jali" style="color:#B4874B" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <rect width="100%" height="100%" fill="url(#jaliStar)"/></svg>
+        <svg class="mark" viewBox="0 0 120 130" fill="#F2E5D0" aria-hidden="true">
+          <path d="M14 52 L60 24 L106 52 Z"/><rect x="22" y="54" width="76" height="61"/>
+          <rect x="46" y="80" width="28" height="35" fill="#8A5A1C"/>
+          <rect x="14" y="115" width="92" height="7"/>
+        </svg>
+      </div>
+      <span class="hi">राशन और हक़</span>
+      <h3>Ration &amp; entitlements</h3>
+      <p>Grain short of the quota, a card refused, a pension stopped.</p>
+    </a>
+
+    <a class="tile" href="#">
+      <div class="frame niche" style="background:var(--indigo)">
+        <svg class="jali" style="color:#6A5C82" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <rect width="100%" height="100%" fill="url(#jaliLattice)"/></svg>
+        <svg class="mark" viewBox="0 0 120 130" fill="#F2E5D0" aria-hidden="true">
+          <path d="M12 50 L60 22 L108 50 Z"/><rect x="22" y="52" width="76" height="62"/>
+          <rect x="34" y="66" width="9" height="48" fill="#3A2E52"/>
+          <rect x="52" y="66" width="9" height="48" fill="#3A2E52"/>
+          <rect x="70" y="66" width="9" height="48" fill="#3A2E52"/>
+          <rect x="14" y="114" width="92" height="8"/>
+        </svg>
+      </div>
+      <span class="hi">बैंक और भुगतान</span>
+      <h3>Bank &amp; payments</h3>
+      <p>A debit you did not make, a claim stuck, an account misread.</p>
+    </a>
+  </div>
+</div></section>
+
+<div class="caption"><div class="shell">
+  <b>2 · Domains</b>
+  <span>The section you liked, kept. One dye colour per subject, a faint jali behind, one cream mark in front. Told apart by colour and pattern the way a tiled facade distinguishes its bays — and the arch top means these read as doorways, not tiles.</span>
+</div></div>
+
+<!-- ══════════════════════════ THE PROMISES ══════════════════════════ -->
+<section class="promise"><div class="shell">
+  <p class="kicker">How it works</p>
+  <h2 style="font-size:clamp(25px,3.4vw,34px);max-width:28ch">Three things happen before you send anything.</h2>
+  <div class="arcade">
+    <div class="bay"><span class="cap"></span>
+      <b>The right office</b>
+      <span>Not a ministry list. The one officer who can act on this, and the reason it is them.</span>
+    </div>
+    <div class="bay"><span class="cap"></span>
+      <b>The stronger remedy</b>
+      <span>An ombudsman or a statutory appeal often beats a grievance. We say so before you file, not after.</span>
+    </div>
+    <div class="bay"><span class="cap"></span>
+      <b>One shared case</b>
+      <span>Fifty separate filings split a problem. Fifty names on one case escalate it.</span>
+    </div>
+  </div>
+</div></section>
+
+<!-- ══════════════════════════ THE RECORD ══════════════════════════ -->
+<section class="record"><div class="shell">
+  <p class="kicker">Case record</p>
+  <h2>A case stays open until you say it is fixed.</h2>
+
+  <div class="jharokha">
+    <span class="jh-band"></span>
+    <div class="jh-top">
+      <span class="serial">EA · 2026 · 04412</span>
+      <b>Panchayat road, Rajnagar Ward 4</b>
+      <span class="chip">Awaiting your confirmation</span>
+    </div>
+    <div class="cells">
+      <div class="cell"><small>With</small><b>Block Development Officer</b></div>
+      <div class="cell"><small>Clock</small><b>Day 18 <span class="danda">।</span> of 21</b></div>
+      <div class="cell"><small>Households</small><b>34 <span class="danda">।</span> of 50</b></div>
+      <div class="cell"><small>Basis</small><b>Art. 243G <span class="danda">।</span> Sch. XI</b></div>
+    </div>
+    <div class="gate">
+      <p>Their report says <b>disposed of</b>. This case still says <b>open</b>. On the current portal that report would have closed it. Here only you can.</p>
+      <div class="row">
+        <button type="button">Yes, it is fixed</button>
+        <button type="button">No, it is not fixed</button>
+        <button type="button">Partly</button>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<div class="caption"><div class="shell">
+  <b>3 · The record</b>
+  <span>Serial number in the margin in madder, ruled cells, and the danda (।) as separator instead of a bullet — a real Devanagari convention doing real work. The register a citizen already reads as official, arrived at without borrowing a state emblem to say so.</span>
+</div></div>
+
+<footer><div class="shell">
+  <b>एक आवाज़ · EK AWAAZ</b>
+  <span>Independent hackathon prototype. Not a government product. Filing into government channels, officer actions and dates shown here are simulated.</span>
+  <span>Four dye colours, no photographs, a few kilobytes — built for the connection most of the country actually has.</span>
+</div></footer>
+
+<script>
+/* The cusped arch used by the cards, generated so the foil count and springline
+   are parameters and one path serves a 210px tile and an 1100px panel alike. */
+(function () {
+  function nichePath(foils, spring) {
+    const rx = 0.5, ry = spring, cx = 0.5, pts = [];
+    for (let i = 0; i <= foils; i++) {
+      const th = Math.PI * (1 - i / foils);
+      pts.push([cx + rx * Math.cos(th), spring - ry * Math.sin(th)]);
+    }
+    let d = 'M 0 1 L 0 ' + spring;
+    for (let i = 1; i < pts.length; i++) {
+      const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+      const r = (Math.hypot(x1 - x0, y1 - y0) / 2) * 1.06;
+      d += ' A ' + r.toFixed(4) + ' ' + r.toFixed(4) + ' 0 0 1 ' + x1.toFixed(4) + ' ' + y1.toFixed(4);
+    }
+    return d + ' L 1 1 Z';
+  }
+  document.getElementById('nichePath').setAttribute('d', nichePath(9, 0.34));
+})();
+</script>
+</body>
+</html>
