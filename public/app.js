@@ -137,59 +137,63 @@ document.querySelectorAll('.category-card').forEach((card) => {
   });
 });
 
-const metricsCarousel = document.querySelector('#metricsCarousel');
-const metricTrack = metricsCarousel.querySelector('.metric-track');
-const metricStatus = document.querySelector('#metricStatus');
-const metricPages = metricTrack.querySelectorAll('.metric-page');
-const N = metricPages.length;
-metricTrack.appendChild(metricPages[0].cloneNode(true));
-metricTrack.style.transition = 'none';
-metricTrack.style.willChange = 'transform';
+/* The metric carousel is optional. It was read without a null check, and one absent
+   element there used to throw and silently kill every handler declared below it. */
+if (document.querySelector('#metricsCarousel')) {
+  const metricsCarousel = document.querySelector('#metricsCarousel');
+  const metricTrack = metricsCarousel.querySelector('.metric-track');
+  const metricStatus = document.querySelector('#metricStatus');
+  const metricPages = metricTrack.querySelectorAll('.metric-page');
+  const N = metricPages.length;
+  metricTrack.appendChild(metricPages[0].cloneNode(true));
+  metricTrack.style.transition = 'none';
+  metricTrack.style.willChange = 'transform';
 
-let pos = 0;
-let aim = 0;
-let scrubbing = false;
-let idleAt = 0;
-let autoAt = performance.now() - 4201;
-let lastY = window.scrollY;
+  let pos = 0;
+  let aim = 0;
+  let scrubbing = false;
+  let idleAt = 0;
+  let autoAt = performance.now() - 4201;
+  let lastY = window.scrollY;
 
-const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-function resetAutoClock() { autoAt = performance.now(); }
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  function resetAutoClock() { autoAt = performance.now(); }
 
-document.querySelector('#metricPrev')?.addEventListener('click', () => { aim = clamp(Math.round(aim) - 1, 0, N); scrubbing = false; resetAutoClock(); });
-document.querySelector('#metricNext')?.addEventListener('click', () => { aim = clamp(Math.round(aim) + 1, 0, N); scrubbing = false; resetAutoClock(); });
+  document.querySelector('#metricPrev')?.addEventListener('click', () => { aim = clamp(Math.round(aim) - 1, 0, N); scrubbing = false; resetAutoClock(); });
+  document.querySelector('#metricNext')?.addEventListener('click', () => { aim = clamp(Math.round(aim) + 1, 0, N); scrubbing = false; resetAutoClock(); });
 
-function animateMetrics(now) {
-  const dy = window.scrollY - lastY;
-  lastY = window.scrollY;
+  function animateMetrics(now) {
+    const dy = window.scrollY - lastY;
+    lastY = window.scrollY;
 
-  if (Math.abs(dy) > 0.5) {
-    aim = clamp(aim + dy * 0.0014, 0, N);
-    scrubbing = true;
-    idleAt = now;
-    autoAt = now;
-  } else if (scrubbing && now - idleAt > 420) {
-    aim = Math.round(aim);
-    scrubbing = false;
-    autoAt = now;
-  } else if (!scrubbing && now - autoAt > 4200) {
-    aim = clamp(Math.round(aim) + 1, 0, N);
-    autoAt = now;
+    if (Math.abs(dy) > 0.5) {
+      aim = clamp(aim + dy * 0.0014, 0, N);
+      scrubbing = true;
+      idleAt = now;
+      autoAt = now;
+    } else if (scrubbing && now - idleAt > 420) {
+      aim = Math.round(aim);
+      scrubbing = false;
+      autoAt = now;
+    } else if (!scrubbing && now - autoAt > 4200) {
+      aim = clamp(Math.round(aim) + 1, 0, N);
+      autoAt = now;
+    }
+
+    pos += (aim - pos) * 0.032;
+
+    if (aim >= N && Math.abs(aim - pos) < 0.002) {
+      aim -= N;
+      pos -= N;
+    }
+
+    metricTrack.style.transform = `translate3d(${-pos * (100 / (N + 1))}%, 0, 0)`;
+    metricStatus.textContent = `${Math.min(N, Math.round(pos) + 1)} of ${N}`;
+    requestAnimationFrame(animateMetrics);
   }
 
-  pos += (aim - pos) * 0.032;
-
-  if (aim >= N && Math.abs(aim - pos) < 0.002) {
-    aim -= N;
-    pos -= N;
-  }
-
-  metricTrack.style.transform = `translate3d(${-pos * (100 / (N + 1))}%, 0, 0)`;
-  metricStatus.textContent = `${Math.min(N, Math.round(pos) + 1)} of ${N}`;
   requestAnimationFrame(animateMetrics);
 }
-
-requestAnimationFrame(animateMetrics);
 
 // Category cards: droplet ripple from the click point.
 document.querySelectorAll('.category-card').forEach((card) => {

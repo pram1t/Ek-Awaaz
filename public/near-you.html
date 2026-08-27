@@ -96,6 +96,7 @@
     }
   </style>
   <link rel="stylesheet" href="/heritage.css?v=20260827-h1" />
+  <link rel="stylesheet" href="/structure.css?v=20260827-s1" />
 </head>
 <body>
   <div class="top"><div class="shell">Ek Awaaz · Reported near you</div></div>
@@ -108,7 +109,7 @@
     </div>
   </div></header>
 
-  <main class="main"><div class="shell">
+  <main class="main has-kolam"><div class="kolam-field soft leaf" data-kolam data-kolam-rings="3" data-kolam-petals="6" aria-hidden="true"></div><div class="shell">
     <div class="lede">
       <div>
         <p class="eyebrow">Public cases</p>
@@ -141,7 +142,7 @@
     </div>
 
     <div class="count-line"><p id="countLabel">Loading public cases…</p><span id="scopeLabel"></span></div>
-    <div class="wall" id="wall"></div>
+    <div class="wall" id="wall" data-reveal data-reveal-children></div>
 
     <p class="foot">Only public cases appear here. A personal grievance — a pension, a bank debit, a service matter — is never listed, and nobody can add their name to it. Names of people supporting a case are never shown to other signatories.</p>
   </div></main>
@@ -305,5 +306,6 @@ document.querySelector('#useLoc').addEventListener('click', (e) => {
 
 load();
 </script>
+<script src="kolam.js?v=20260827-s1"></script>
 </body>
 </html>

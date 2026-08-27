@@ -1,0 +1,152 @@
+/* Ek Awaaz — structure, not tint.
+ *
+ * The colour pass changed hue and left the page inert: same boxes, same rhythm, warmer
+ * palette. This file changes shape and behaviour — an abstract kolam that draws itself
+ * behind the hero, rangoli laid into section grounds as real pattern, cards rebuilt as
+ * illustrated panels, entrance motion so a screen arrives rather than merely being there,
+ * and the headline statistic rebuilt as an argument instead of three numbers in boxes.
+ *
+ * Loaded after heritage.css. Motion states are applied by kolam.js and never declared as a
+ * default here, so a visitor with no JavaScript or with reduced motion requested is never
+ * left looking at hidden content.
+ */
+
+/* ── 1 · the kolam field ──────────────────────────────────────────────────────
+   Sits behind the hero and bleeds off the edge. Deliberately faint — it is the ground the
+   page stands on, not a graphic competing with the headline. */
+.kolam-field{
+  position: absolute; z-index: 0; pointer-events: none;
+  color: var(--madder); opacity: .13;
+  inset: auto -14% -30% auto;
+  width: min(62vw, 760px); aspect-ratio: 1;
+}
+.kolam-field .kolam{ width: 100%; height: 100%; display: block; overflow: visible }
+.kolam-field.leaf{ color: var(--leaf) }
+.kolam-field.soft{ opacity: .085 }
+.kolam-field.tl{ inset: -22% auto auto -12%; width: min(38vw, 430px) }
+
+@media (max-width: 900px){
+  .kolam-field{ width: 120vw; inset: auto -42% -16% auto; opacity: .1 }
+  .kolam-field.tl{ display: none }
+}
+
+/* a host needs its own stacking context, and its content lifted clear of the pattern */
+.has-kolam{ position: relative; overflow: hidden; isolation: isolate }
+.has-kolam > *:not(.kolam-field){ position: relative; z-index: 1 }
+
+/* ── 2 · rangoli as section ground ────────────────────────────────────────────
+   A repeating kolam unit at very low contrast. A data-uri, so it costs one declaration and
+   no request; the motif is drawn on the tile edges as well as its centre, which is what
+   makes it tile seamlessly instead of showing a grid of stamps. */
+.ground-rangoli{
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%238c2416' stroke-opacity='.08' stroke-width='1.2'%3E%3Ccircle cx='36' cy='36' r='15'/%3E%3Ccircle cx='0' cy='0' r='15'/%3E%3Ccircle cx='72' cy='0' r='15'/%3E%3Ccircle cx='0' cy='72' r='15'/%3E%3Ccircle cx='72' cy='72' r='15'/%3E%3Ccircle cx='36' cy='0' r='15'/%3E%3Ccircle cx='0' cy='36' r='15'/%3E%3Ccircle cx='72' cy='36' r='15'/%3E%3Ccircle cx='36' cy='72' r='15'/%3E%3C/g%3E%3Cg fill='%238c2416' fill-opacity='.13'%3E%3Ccircle cx='18' cy='18' r='1.5'/%3E%3Ccircle cx='54' cy='18' r='1.5'/%3E%3Ccircle cx='18' cy='54' r='1.5'/%3E%3Ccircle cx='54' cy='54' r='1.5'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+.ground-rangoli.on-dark{
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23f2e5d0' stroke-opacity='.1' stroke-width='1.2'%3E%3Ccircle cx='36' cy='36' r='15'/%3E%3Ccircle cx='0' cy='0' r='15'/%3E%3Ccircle cx='72' cy='0' r='15'/%3E%3Ccircle cx='0' cy='72' r='15'/%3E%3Ccircle cx='72' cy='72' r='15'/%3E%3Ccircle cx='36' cy='0' r='15'/%3E%3Ccircle cx='0' cy='36' r='15'/%3E%3Ccircle cx='72' cy='36' r='15'/%3E%3Ccircle cx='36' cy='72' r='15'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ── 3 · entrance motion ─────────────────────────────────────────────────────── */
+.will-reveal{
+  opacity: 0; transform: translateY(15px);
+  transition: opacity .62s cubic-bezier(.22,.61,.36,1),
+              transform .62s cubic-bezier(.22,.61,.36,1);
+}
+.will-reveal.is-revealed{ opacity: 1; transform: none }
+@media (prefers-reduced-motion: reduce){
+  .will-reveal{ opacity: 1 !important; transform: none !important; transition: none !important }
+}
+
+/* ── 4 · the metric, rebuilt as an argument ───────────────────────────────────
+   Three numbers in three boxes state a 96% redressal rate — the exact figure this project
+   exists to dispute. One proportional bar carries the same data and makes the point
+   instead: nearly all of it was marked disposed, and marked disposed is not fixed. */
+.gap-stat{ border: 1px solid var(--rule); background: #fff; padding: 30px 32px 26px }
+.gap-stat .lede{
+  font: 600 11px Mukta, sans-serif; letter-spacing: .19em; text-transform: uppercase;
+  color: var(--madder); margin: 0 0 18px;
+}
+.gap-bar{
+  display: flex; height: 44px; border: 1px solid var(--rule);
+  overflow: hidden; background: var(--ivory);
+}
+.gap-bar i{ display: block; height: 100%; width: 0;
+  transition: width 1.2s cubic-bezier(.22,.61,.36,1) }
+.gap-bar i.disposed{ background: var(--leaf) }
+.gap-bar i.pending{ background: var(--turmeric) }
+
+.gap-legend{ display: flex; flex-wrap: wrap; gap: 30px; margin: 18px 0 0 }
+.gap-legend > div{ display: flex; gap: 11px; align-items: flex-start }
+.gap-legend s{ width: 11px; height: 11px; margin-top: 6px; flex: 0 0 11px; text-decoration: none }
+.gap-legend s.disposed{ background: var(--leaf) }
+.gap-legend s.pending{ background: var(--turmeric) }
+.gap-legend b{ display: block; font: 400 22px Marcellus, serif; color: var(--ink); line-height: 1.05 }
+.gap-legend span{ display: block; font-size: 12.5px; color: var(--ink-soft); margin-top: 4px; max-width: 24ch }
+
+.gap-claim{
+  margin: 24px 0 0; padding: 16px 18px; background: var(--ivory);
+  border-left: 2px solid var(--madder); font-size: 14.5px; line-height: 1.62; color: var(--ink);
+}
+.gap-claim b{ color: var(--madder) }
+.gap-source{ margin: 13px 0 0; font-size: 11.5px; color: var(--ink-soft) }
+
+/* ── 5 · cards as illustrated panels ─────────────────────────────────────────
+   The shape that worked: a pale panel carrying the subject, a white body carrying the
+   words, and a scalloped edge across the bottom of the panel so it reads as a doorway into
+   a subject rather than a tile in a grid. */
+.panel-grid{
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(232px, 1fr)); gap: 22px;
+}
+.panel-card{
+  background: #fff; border: 1px solid var(--rule); overflow: hidden;
+  display: flex; flex-direction: column; text-decoration: none; color: inherit;
+  transition: transform .22s cubic-bezier(.22,.61,.36,1),
+              box-shadow .22s ease, border-color .22s ease;
+}
+.panel-card:hover{
+  transform: translateY(-4px); box-shadow: 0 16px 34px #241a1414; border-color: var(--madder);
+}
+.panel-card .panel{
+  position: relative; aspect-ratio: 16/11; background: #dfe9dc; overflow: hidden;
+}
+.panel-card .panel > svg{ width: 100%; height: 100%; display: block }
+/* the scalloped edge, a kolam border laid where the panel meets the words */
+.panel-card .panel::after{
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 13px;
+  background: #fff;
+  -webkit-mask: radial-gradient(circle 8px at 8px 13px, transparent 98%, #000 100%) repeat-x 0 0/16px 13px;
+  mask: radial-gradient(circle 8px at 8px 13px, transparent 98%, #000 100%) repeat-x 0 0/16px 13px;
+}
+.panel-card .body{ padding: 18px 21px 22px }
+.panel-card .body .hi{
+  display: block; font: 400 15.5px "Tiro Devanagari Hindi", serif; color: var(--madder);
+}
+.panel-card .body h3{ font-size: 19px; margin: 3px 0 7px }
+.panel-card .body p{ margin: 0; font-size: 13.5px; color: var(--ink-soft); line-height: 1.55 }
+.panel-card .body .go{
+  display: inline-block; margin-top: 13px; font: 600 12px Mukta, sans-serif;
+  color: var(--leaf); letter-spacing: .02em;
+}
+.panel-card:hover .body .go{ color: var(--madder) }
+
+/* ── 6 · the join panel, on a dark ground with pattern rather than flat ─────── */
+.joint-case, .join-dark{ position: relative; isolation: isolate }
+.joint-case::before, .join-dark::before{
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23f2e5d0' stroke-opacity='.09' stroke-width='1.2'%3E%3Ccircle cx='36' cy='36' r='15'/%3E%3Ccircle cx='0' cy='0' r='15'/%3E%3Ccircle cx='72' cy='0' r='15'/%3E%3Ccircle cx='0' cy='72' r='15'/%3E%3Ccircle cx='72' cy='72' r='15'/%3E%3Ccircle cx='36' cy='0' r='15'/%3E%3Ccircle cx='0' cy='36' r='15'/%3E%3Ccircle cx='72' cy='36' r='15'/%3E%3Ccircle cx='36' cy='72' r='15'/%3E%3C/g%3E%3C/svg%3E");
+}
+.joint-case > *, .join-dark > *{ position: relative; z-index: 1 }
+
+/* ── 7 · the gap section ─────────────────────────────────────────────────────
+   The statistic stands on its own now rather than sliding past in a carousel. Its
+   supporting figures sit beneath it as a quiet row: present, clearly secondary, and not
+   competing with the claim. */
+.gap-section{ padding: 74px 0 }
+.gap-aside{
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1px; margin-top: 22px; background: var(--rule);
+  border: 1px solid var(--rule);
+}
+.gap-aside > div{ background: var(--ivory); padding: 20px 22px }
+.gap-aside b{ display: block; font: 400 25px Marcellus, serif; color: var(--madder); line-height: 1 }
+.gap-aside span{ display: block; margin-top: 7px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5 }
