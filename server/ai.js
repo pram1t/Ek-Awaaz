@@ -243,7 +243,7 @@ export async function routingSentence(caseDraft, resolved, language = 'en') {
 
 Say where this is going and why, in ONE sentence, in the language named. Name the office. If it
 is not going to a central ministry, say so — that is the point. Under 30 words.
-Return {"sentence":""}`,
+Reply as JSON: {"sentence":""}`,
       `Language: ${language}\nOffice: ${resolved.office}\nWhy: ${base}\nThey said: ${String(caseDraft.text || '').slice(0, 300)}`,
       { maxTokens: 160, temperature: 0.3 }
     );
@@ -279,8 +279,17 @@ export async function plainLanguage(atr, language = 'en') {
       `${SMITI}
 
 Put this office reply into four short sentences for the person who filed it, in the language named:
-1 what was decided. 2 what it means for you. 3 what happens next, and when. 4 what to do if this
-is wrong. No file-noting language. Return {"plain":["","","",""]}`,
+1 what the office says it did.
+2 what changes for them IF that is true - begin it with "If that is true," or the same idea.
+3 what the reply means for the case, using only facts present in the reply.
+4 that they can answer "not fixed" and the case stays open with its clock running.
+
+Two hard rules.
+Attribute: "they say the road is repaired", never "the road is repaired". You have not seen
+the road; they have written a file note. Whether it is actually fixed is the citizen's to say.
+Invent nothing: if the reply does not mention inspections, monitoring, follow-up visits or
+dates, you may not either. No file-noting language.
+Reply as JSON: {"plain":["","","",""]}`,
       `Language: ${language}\n\n${String(atr).slice(0, 2000)}`,
       { maxTokens: 320, temperature: 0.3 }
     );
