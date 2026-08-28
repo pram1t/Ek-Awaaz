@@ -94,6 +94,20 @@
           "hint": "A landmark is enough. The school turning, the handpump, the bus stop.",
           "ph": "Example: the forty metres before the school gate"
         }
+      ],
+      "identifiers": [
+        {
+          "key": "road_name",
+          "label": "The road or stretch",
+          "hint": "A name, or the landmark at each end.",
+          "required": true
+        },
+        {
+          "key": "since",
+          "label": "How long it has been like this",
+          "hint": "A month is enough.",
+          "required": false
+        }
       ]
     },
     "infra.water": {
@@ -117,6 +131,20 @@
           "hint": "A rough count is enough. It decides whether this is one connection or the whole line.",
           "ph": "Example: the whole lane, about twenty houses"
         }
+      ],
+      "identifiers": [
+        {
+          "key": "connection",
+          "label": "Your consumer number",
+          "hint": "On your water bill, if you get one. Skip it if you do not.",
+          "required": false
+        },
+        {
+          "key": "since",
+          "label": "Since when",
+          "hint": "Roughly how long the supply has been failing.",
+          "required": true
+        }
       ]
     },
     "infra.power": {
@@ -139,6 +167,20 @@
           "q": "Has the outage damaged anything or stopped work?",
           "hint": "A burnt appliance, spoiled stock, a shop or a clinic that had to close. Say no if not.",
           "ph": "Example: the fridge compressor burnt"
+        }
+      ],
+      "identifiers": [
+        {
+          "key": "consumer_no",
+          "label": "Your consumer number",
+          "hint": "On your electricity bill — not your bank account number.",
+          "required": true
+        },
+        {
+          "key": "since",
+          "label": "Since when",
+          "hint": "When the outage or the wrong billing started.",
+          "required": true
         }
       ]
     },
@@ -275,6 +317,26 @@
           "hint": "The household count decides the quantity you are owed each month.",
           "ph": "Example: five, including two children"
         }
+      ],
+      "identifiers": [
+        {
+          "key": "shop",
+          "label": "The ration shop",
+          "hint": "Its name, its number, or where it is.",
+          "required": true
+        },
+        {
+          "key": "month",
+          "label": "Which month you were refused",
+          "hint": "The most recent one will do.",
+          "required": true
+        },
+        {
+          "key": "household",
+          "label": "People in your household",
+          "hint": "This decides the quantity you are owed.",
+          "required": false
+        }
       ]
     },
     "work.mgnrega": {
@@ -297,6 +359,20 @@
           "q": "Did you ask for work in writing, or was it spoken?",
           "hint": "A written demand is what makes an unemployment allowance claimable.",
           "ph": "Example: asked the rozgar sevak, nothing on paper"
+        }
+      ],
+      "identifiers": [
+        {
+          "key": "job_card",
+          "label": "Your MGNREGA job card",
+          "hint": "The number on the card. It is not a bank or debit card.",
+          "required": true
+        },
+        {
+          "key": "work_period",
+          "label": "The days you worked",
+          "hint": "The weeks or the muster roll dates, roughly.",
+          "required": true
         }
       ]
     },
@@ -321,6 +397,20 @@
           "hint": "Do not type the numbers. Just tell me whether the names match.",
           "ph": "Example: the passbook has my father name, the land record has mine"
         }
+      ],
+      "identifiers": [
+        {
+          "key": "registration",
+          "label": "Your PM-KISAN registration number",
+          "hint": "From the portal or your acknowledgement slip.",
+          "required": true
+        },
+        {
+          "key": "instalment",
+          "label": "Which instalment is missing",
+          "hint": "For example, the one due in April.",
+          "required": true
+        }
       ]
     },
     "property.housing": {
@@ -343,6 +433,26 @@
           "q": "Have you written to the builder, and did they reply?",
           "hint": "A written attempt is what the authority will ask for first.",
           "ph": "Example: emailed twice, no reply"
+        }
+      ],
+      "identifiers": [
+        {
+          "key": "project",
+          "label": "The project and the builder",
+          "hint": "The name on your agreement.",
+          "required": true
+        },
+        {
+          "key": "rera_no",
+          "label": "The RERA registration number",
+          "hint": "On the builder’s hoarding or the agreement. Skip if you do not have it.",
+          "required": false
+        },
+        {
+          "key": "possession_due",
+          "label": "The handover date you were promised",
+          "hint": "From the agreement.",
+          "required": true
         }
       ]
     },
@@ -367,6 +477,20 @@
           "hint": "A refund claim and a service complaint go to different desks in the same division.",
           "ph": "Example: a refund for the meal that never came"
         }
+      ],
+      "identifiers": [
+        {
+          "key": "pnr",
+          "label": "Your PNR",
+          "hint": "10 digits on the ticket. It is not a payment number.",
+          "required": true
+        },
+        {
+          "key": "journey_date",
+          "label": "The date of the journey",
+          "hint": "",
+          "required": true
+        }
       ]
     },
     "telecom.service": {
@@ -390,6 +514,20 @@
           "hint": "That number is the first thing an appeal officer will ask you for.",
           "ph": "Example: yes, docket 8891234, nothing since"
         }
+      ],
+      "identifiers": [
+        {
+          "key": "docket",
+          "label": "The docket number the operator gave you",
+          "hint": "From the SMS or email when you first complained.",
+          "required": true
+        },
+        {
+          "key": "complained_on",
+          "label": "When you first complained to them",
+          "hint": "This decides when you can go above them.",
+          "required": true
+        }
       ]
     },
     "office.inaction": {
@@ -412,6 +550,20 @@
           "q": "How many times have you been, and what did they say the last time?",
           "hint": "Come tomorrow, the sahib is not here, or nothing at all.",
           "ph": "Example: four visits, they keep saying come next week"
+        }
+      ],
+      "identifiers": [
+        {
+          "key": "reference",
+          "label": "Your application or file number",
+          "hint": "From the receipt or acknowledgement. Not an account number.",
+          "required": true
+        },
+        {
+          "key": "applied_on",
+          "label": "When you applied",
+          "hint": "Approximate month is fine.",
+          "required": true
         }
       ]
     },
@@ -438,6 +590,20 @@
           "hint": "A repeat on record is what moves a vigilance file.",
           "ph": "Example: twice, in June and again last week"
         }
+      ],
+      "identifiers": [
+        {
+          "key": "office",
+          "label": "Which office",
+          "hint": "The office and the town. Only what you are willing to have on record.",
+          "required": true
+        },
+        {
+          "key": "service",
+          "label": "What you were trying to get",
+          "hint": "The certificate, licence or service.",
+          "required": true
+        }
       ]
     },
     "other": {
@@ -460,6 +626,57 @@
           "q": "What do you want them to do?",
           "hint": "Fix something, pay something, or answer something.",
           "ph": "Example: give me the certificate I applied for"
+        }
+      ],
+      "identifiers": [
+        {
+          "key": "reference",
+          "label": "Any reference number you were given",
+          "hint": "From a receipt, an SMS or an acknowledgement. Skip it if there is none.",
+          "required": false
+        }
+      ]
+    },
+    "money.pension": {
+      "label": "Pension not received",
+      "tier": "Central",
+      "office": "Pension Disbursing Bank, then the Pension Sanctioning Authority",
+      "reason": "A pension that has stopped is either the paying bank’s doing or the sanctioning office’s, and the PPO number tells us which.",
+      "legal_basis": "Central Civil Services (Pension) Rules; CPENGRAMS for central pensioners",
+      "channel": "CPENGRAMS",
+      "days": 30,
+      "evidence": "Your PPO copy or the last pension slip, if you have one.",
+      "isPublic": false,
+      "identifiers": [
+        {
+          "key": "ppo",
+          "label": "Your PPO number",
+          "hint": "On your pension payment order or your pension slip. It is not a bank account number.",
+          "required": true
+        },
+        {
+          "key": "retired_from",
+          "label": "The office you retired from",
+          "hint": "Department and place.",
+          "required": true
+        },
+        {
+          "key": "last_paid",
+          "label": "The last month you were paid",
+          "hint": "Approximate is fine.",
+          "required": true
+        }
+      ],
+      "asks": [
+        {
+          "label": "What stopped",
+          "q": "What happened with your pension — did it stop, or is it short?",
+          "hint": "And which month it last came."
+        },
+        {
+          "label": "Who pays it",
+          "q": "Which bank or office pays your pension?",
+          "hint": "The branch name is enough."
         }
       ]
     }

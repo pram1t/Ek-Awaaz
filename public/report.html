@@ -155,13 +155,13 @@ textarea:disabled{background:#f9f3e9;color:#9a8674}
 .head-home{margin-left:14px;white-space:nowrap}
 @media(max-width:700px){.head-home{display:none}}
 </style>
-  <link rel="stylesheet" href="/heritage.css?v=f4d8a2de06" />
-  <link rel="stylesheet" href="/structure.css?v=f4d8a2de06" />
+  <link rel="stylesheet" href="/heritage.css?v=9292693176" />
+  <link rel="stylesheet" href="/structure.css?v=9292693176" />
 </head>
 <body>
-<script src="api-client.js?v=f4d8a2de06"></script>
-<script src="session.js?v=f4d8a2de06"></script>
-<script src="voice.js?v=f4d8a2de06"></script>
+<script src="api-client.js?v=9292693176"></script>
+<script src="session.js?v=9292693176"></script>
+<script src="voice.js?v=9292693176"></script>
 <div class="top"><div class="shell">Ek Awaaz · Lodging a grievance</div></div>
 
 <header class="head"><div class="shell head-in">
@@ -234,7 +234,7 @@ const TOPIC_OPENER = {
   road:   { q: 'What is wrong with the road?', hint: 'Potholes, a stretch never repaired, water standing on it. Tell me what you see, and roughly where it is.', chips: ['Potholes never repaired', 'Whole stretch broken', 'Water stands on it'] },
   power:  { q: 'What is happening with your electricity?', hint: 'A long outage, a transformer gone, or a bill that is wrong. Say which, and since when.', chips: ['Long daily outage', 'Transformer burnt out', 'Bill is wrong'] },
   water:  { q: 'What is wrong with the water supply?', hint: 'No supply, very little, or dirty water. Tell me how long it has been like this.', chips: ['No supply at all', 'Only for a few minutes', 'Water is dirty'] },
-  bank:   { q: 'What happened with the bank?', hint: 'Money debited that you did not spend, a fraud, or a payment that never arrived. Do not type your account number — I will never ask for it.', chips: ['Money debited wrongly', 'Fraud on my account', 'Payment not received'] },
+  bank:   { q: 'What happened with the bank?', hint: 'Money debited that you did not spend, a fraud, or a payment that never arrived. I will never ask for your account number.', chips: ['Money debited wrongly', 'Fraud on my account', 'Payment not received'] },
   pf:     { q: 'What is stuck with your PF?', hint: 'A withdrawal claim, a transfer, or a KYC problem. Tell me when you applied.', chips: ['Claim rejected', 'Claim stuck for months', 'Transfer not done'] },
   ration: { q: 'What happened at the ration shop?', hint: 'Less than your due, refused outright, or the shop stays shut. Tell me which month.', chips: ['Given less than my due', 'Refused outright', 'Shop stays closed'] },
   rail:   { q: 'What happened — the train, the ticket, or the station?', hint: 'A refund not received, a booking problem, or a condition at the station.', chips: ['Refund not received', 'Booking problem', 'Condition at the station'] },
@@ -290,7 +290,7 @@ const domains = [
     days: 21,
     remedy: { title: 'State Food Commission, under s.16 NFSA 2013', line: 'Your entitlement under the Act is not discretionary. Above the District Grievance Redressal Officer sits the State Food Commission, which hears this as a statutory right rather than a request.' },
     asks: [
-      { label: 'Card and refusal', q: 'What is your ration card number, and what were you refused?', hint: 'The card number, the month, and what the dealer said. If you have no card, say that instead.' },
+      { label: 'What was refused', q: 'What were you refused, and in which month?', hint: 'What the dealer said, and how much you were owed. A photo of the register helps if you have one.' },
       { label: 'How long', q: 'How many months has this been going on, and how many people are in the household?', hint: 'The household count decides the quantity you are owed each month.' }
     ],
     evidence: 'A photo of your ration card, or of the dealer’s register if you were shown it.',
@@ -533,7 +533,7 @@ const PLACE_ASK = {
   ration: { q: 'Which ration shop, and in which village or ward?',
             hint: 'The shop name or its number, and where it is.' },
   bank:   { q: 'Which bank branch, and in which city?',
-            hint: 'The branch name is enough. Never type your account number.' },
+            hint: 'The branch name is enough on its own.' },
   pf:     { q: 'Which city do you work in, and who is your employer?',
             hint: 'This tells me which EPFO office holds your account. Never type your UAN here.' },
   tax:    { q: 'Which city are you assessed in?',
@@ -544,8 +544,10 @@ const PLACE_ASK = {
             hint: 'The centre or office you applied at, if you remember it.' },
   bribe:  { q: 'Which office was this at?',
             hint: 'The office and the town. Only what you are willing to have on record.' },
-  other:  { q: 'Where is this? Village or ward, then block and district.',
-            hint: 'A landmark helps. This is what decides which office holds the case.' },
+  pension:{ q: 'Which office or bank pays your pension, and in which city?',
+            hint: 'The branch or the office you deal with. Never type an account number.' },
+  other:  { q: 'Where is this happening?',
+            hint: 'A village or ward, or an office or branch — whichever fits. This is what decides who holds the case.' },
 };
 
 function locationStep() {
@@ -567,6 +569,12 @@ const reply = document.querySelector('#reply');
 const tray = document.querySelector('#tray'), progressText = document.querySelector('#progressText');
 const answers = {}, files = [];
 let steps = [], step = 0, awaiting = false, phase = 'intake', isPublic = false, filedRecord = null, dismissedMatch = false;
+/* The conversation itself. Posted with every turn and kept in the draft, so a reload resumes
+   rather than restarting. The server holds nothing. */
+let convo = [];
+/* Where we are once the talking is done: 'talk' -> 'evidence' -> 'place' -> route. */
+let afterTalk = null;
+let placeReasked = false;
 
 function scrollDown() { wrap.scrollTop = wrap.scrollHeight; }
 function esc(text) { return String(text == null ? '' : text).replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c])); }
@@ -634,24 +642,35 @@ function ask(text, hint, chips, after) {
 }
 
 /* ---------- the question plan: two or three follow-ups, then location ---------- */
-function buildSteps() {
-  steps = [];
-  if (!answers.grievance) {
-    /* If they arrived by clicking a category, open on that category instead of asking them to
-       classify a problem they have already classified. */
-    const op = topic && TOPIC_OPENER[topic];
-    steps.push(op
-      ? { key: 'grievance', label: 'Grievance', q: op.q, hint: op.hint, chips: op.chips }
-      : { key: 'grievance', label: 'Grievance', q: 'क्या हुआ? What happened?', hint: 'Say it the way you would tell a neighbour. I find the office from your words — you never pick a department.', chips: ['Road not repaired', 'Ration denied', 'Bank debited wrongly', 'PF claim stuck'] });
-  }
-  domain.asks.slice(0, 2).forEach((a, i) => steps.push({ key: 'ask' + i, label: a.label, q: a.q, hint: a.hint, chips: a.chips }));
-  if (domain.evidence) steps.push({ key: 'evidence', label: 'Evidence', kind: 'evidence', q: 'Anything to attach?', hint: domain.evidence + ' Use the clip, or drag files onto this screen.', chips: ['Nothing to attach'] });
-  steps.push(locationStep());
+/* The opening line. The only scripted thing left, because somebody has to speak first — and if
+   they arrived by clicking a topic card we open on that topic rather than asking them to name it. */
+function opener() {
+  const op = topic && TOPIC_OPENER[topic];
+  if (op) return { q: op.q, hint: op.hint, chips: op.chips };
+  return {
+    q: 'क्या हुआ? What happened?',
+    hint: 'Say it the way you would tell a neighbour. I find the office from your words — you never pick a department.',
+    chips: ['Road not repaired', 'Ration denied', 'Bank debited wrongly', 'PF claim stuck']
+  };
+}
+
+/* Evidence is an affordance, not a question the model should invent. */
+function evidenceStep() {
+  return {
+    key: 'evidence', label: 'Evidence', kind: 'evidence',
+    q: 'Anything to attach?',
+    hint: (domain.evidence || 'A photo or a letter, if you have one.') + ' Use the clip, or drag files onto this screen.',
+    chips: ['Nothing to attach']
+  };
 }
 
 const progressLabels = ['Reading your grievance', 'Narrowing the office', 'Checking what the office will need', 'Locating the jurisdiction', 'Ready to review'];
 
-function save() { if (window.EA) EA.patch({ draft: { issue: issue, step: step, answers: answers, domain: domain.key, at: Date.now() } }); }
+function save() {
+  if (!window.EA) return;
+  /* convo goes into the draft, which is the whole reason a reload can resume a conversation. */
+  EA.patch({ draft: { issue: issue, step: step, answers: answers, domain: domain.key, convo: convo, afterTalk: afterTalk, at: Date.now() } });
+}
 
 /* The model's questions already come back in the citizen's language. These two do not, because
    we wrote them — so they are translated before being asked. English is the silent fallback. */
@@ -661,20 +680,144 @@ async function askLocalised(entry) {
     ask(entry.q, entry.hint, entry.chips);
     return;
   }
-  const wanted = [entry.q, entry.hint || ''].filter(Boolean);
+  /* The chips are ours too. A Hindi conversation with an English "Nothing to attach" button under
+     it is the same inconsistency as an English question — it just looks smaller. */
+  const chips = Array.isArray(entry.chips) ? entry.chips : [];
+  const wanted = [entry.q, entry.hint || ''].filter(Boolean).concat(chips);
   const out = await EAAPI.say(wanted, lang);
   const got = out && !out.error && Array.isArray(out.lines) && out.lines.length === wanted.length
     ? out.lines : wanted;
-  ask(got[0], entry.hint ? got[1] : null, entry.chips);
+  const nQ = entry.hint ? 2 : 1;
+  ask(got[0], entry.hint ? got[1] : null, chips.length ? got.slice(nQ) : entry.chips);
 }
 
+/* Once the talking is finished, two things remain: an offer to attach something, and the place.
+   Neither is a question the model should be inventing, and the place is the one field /route
+   genuinely needs. */
 function advance() {
-  progressText.textContent = progressLabels[Math.min(step, progressLabels.length - 1)];
-  if (step >= steps.length) { route(); return; }
-  const entry = steps[step];
-  /* Only our own lines need translating; the model's asks arrive already in their language. */
-  if (entry.key === 'evidence' || entry.key === 'location') askLocalised(entry);
-  else ask(entry.q, entry.hint, entry.chips);
+  if (afterTalk === 'evidence') {
+    progressText.textContent = 'Checking what the office will need';
+    const e = evidenceStep();
+    steps = [e]; step = 0;
+    askLocalised(e);
+    return;
+  }
+  if (afterTalk === 'place') {
+    progressText.textContent = 'Locating the jurisdiction';
+    const p = locationStep();
+    /* If the summary already found a place, confirm it in one turn instead of asking cold. */
+    if (answers.area && !answers.location) {
+      p.q = 'Is this in ' + answers.area + '?';
+      p.hint = 'If that is right, say yes. If not, tell me the village or ward, then block and district.';
+      p.chips = ['Yes, that is right'];
+    }
+    steps = [p]; step = 0;
+    askLocalised(p);
+    return;
+  }
+  route();
+}
+
+/* One turn of the actual conversation. */
+async function talk(value) {
+  awaiting = true;
+  const ghost = typing();
+  try {
+    const first = convo.length === 0;
+    if (first) answers.grievance = value;
+
+    /* On the first message the classifier runs alongside the conversation: /chat gives us the next
+       question, /intake gives us apiDomain, warning, isPublic and the rest of what the route screen
+       and the filing call read. Two calls, once, in parallel. */
+    const [res] = await Promise.all([
+      window.EAAPI.chat(convo, value, (domain && (domain.apiDomain || domain.key)) || null),
+      first ? classifyRemote(value).then(() => {
+        isPublic = !!domain.isPublic;
+        if (!coordsAsked) askForCoords();
+      }) : Promise.resolve()
+    ]);
+
+    ghost.remove();
+
+    if (!res || res.error) {
+      /* Never a dead end: the citizen is one tap from the review screen. */
+      bubble('them', '<p>I could not reach the service just then.</p>'
+        + '<p class="aside">Nothing is lost — you can carry on, or go straight to what I have so far.</p>');
+      chipRow(['Show me what you have'], () => { afterTalk = 'place'; advance(); });
+      return;
+    }
+
+    convo = Array.isArray(res.messages) ? res.messages : convo;
+    if (res.domain && domain && !domain.apiDomain) domain.key = res.domain;
+    if (res.language) domain.language = res.language;
+
+    /* Count the citizen's own answers into ask0, ask1... — real replies under the keys /route and
+       the review screen already understand. */
+    if (!first) {
+      const n = Object.keys(answers).filter((k) => /^ask/.test(k)).length;
+      answers['ask' + n] = value;
+    }
+    if (res.flags && res.flags.redacted && res.flags.redacted.length) {
+      bubble('them', '<p class="aside">I removed something that looked like an ID number. I never keep those.</p>');
+    }
+
+    save();
+
+    if (res.emergency) {
+      bubble('them', '<p>' + esc(res.say) + '</p>'
+        + (res.emergency.numbers || []).map((n) => '<p class="aside"><b>' + esc(n.label || n.number || n) + '</b>'
+            + (n.number ? ' — ' + esc(n.number) : '') + '</p>').join(''));
+      return;
+    }
+
+    if (res.done) {
+      if (res.say) bubble('them', '<p>' + esc(res.say) + '</p>');
+      await finishTalking();
+      return;
+    }
+
+    ask(res.say, null, null);
+  } catch (err) {
+    ghost.remove();
+    bubble('them', '<p>Something went wrong at our end.</p>'
+      + '<p class="aside">You can still go on to what I have so far.</p>');
+    chipRow(['Show me what you have'], () => { afterTalk = 'place'; advance(); });
+  } finally {
+    awaiting = false;
+  }
+}
+
+/* The conversation is over: write the case file from it, then collect the two things it cannot. */
+async function finishTalking() {
+  const ghost = typing();
+  try {
+    const f = window.EAAPI.chatSummary ? await window.EAAPI.chatSummary(convo) : null;
+    if (f && !f.error) {
+      if (Array.isArray(f.fields) && f.fields.length) summaryFields = f.fields;
+      if (f.title) domain.title = f.title;
+      if (f.summary) domain.summary = f.summary;
+      if (f.area) answers.area = f.area;
+      if (f.state) domain.state = f.state;
+      if (f.language) domain.language = f.language;
+    }
+  } catch (e) { /* the fallback is their own words, which we already have */ }
+  ghost.remove();
+  afterTalk = domain.evidence ? 'evidence' : 'place';
+  save();
+  advance();
+}
+
+/* A row of tappable chips under the last thing she said. */
+function chipRow(labels, onPick) {
+  const row = document.createElement('div');
+  row.className = 'chips';
+  row.innerHTML = labels.map((l) => '<button class="chip" type="button">' + esc(l) + '</button>').join('');
+  thread.appendChild(row);
+  row.querySelectorAll('.chip').forEach((b) => b.addEventListener('click', () => {
+    row.remove();
+    onPick(b.textContent);
+  }));
+  scrollDown();
 }
 
 function send(text) {
@@ -692,39 +835,37 @@ function send(text) {
 
   if (phase === 'route') { editFromMessage(value); return; }
 
-  if (entry.kind === 'location') {
-    answers.location = value;
-    if (coords) answers.coords = coords.lat + ',' + coords.lon;
-  } else if (entry.kind === 'evidence') {
+  /* The two collected steps, after the talking. */
+  if (afterTalk === 'evidence' && entry.kind === 'evidence') {
     tray.classList.remove('show');
     tray.innerHTML = '';
     answers.evidence = files.length ? files.length + (files.length === 1 ? ' file' : ' files') : 'None attached';
-  } else if (entry.key === 'grievance') {
-    answers.grievance = value;
-    awaiting = true;
-    const ghost = typing();
-    classifyRemote(value).then(() => {
-      ghost.remove();
-      awaiting = false;
-      /* Ask early and quietly, so the answer is ready by the time we reach the location step. */
-      if (!coordsAsked) askForCoords().then(function () {
-        const i = steps.findIndex(function (st) { return st.key === 'location'; });
-        if (i >= 0 && i !== step) steps[i] = locationStep();
-      });
-      isPublic = !!domain.isPublic;
-      buildSteps();
-      step = 0; /* the plan is rebuilt without the opening question */
-      save();
-      advance();
-    });
+    afterTalk = 'place';
+    save();
+    advance();
     return;
-  } else {
-    answers[entry.key] = value;
+  }
+  if (afterTalk === 'place' && entry.kind === 'location') {
+    /* "What time am I?" was accepted as a location and written into the case. A place is not a
+       question, and it is not one stray word. One re-ask, then it is taken as given — a person who
+       cannot name their ward must still be able to file. */
+    const looksLikePlace = value.length >= 3 && !/\?$/.test(value) && !/^(what|who|when|why|how|kya|kaun|kab)\b/i.test(value);
+    if (!looksLikePlace && !placeReasked) {
+      placeReasked = true;
+      ask('Sorry — I need the place. A village, ward, town, office or branch is enough.', null, null);
+      return;
+    }
+    /* "Yes, that is right" confirms the place the summary already found. */
+    answers.location = /^(yes|haan|ha|correct|right|sahi)/i.test(value) && answers.area ? answers.area : value;
+    if (coords) answers.coords = coords.lat + ',' + coords.lon;
+    afterTalk = null;
+    save();
+    advance();
+    return;
   }
 
-  step++;
-  save();
-  advance();
+  /* Otherwise this is the conversation. */
+  talk(value);
 }
 
 /* ---------- the route screen ---------- */
@@ -736,15 +877,15 @@ let routeTurn = null;
    question became a field name and a citizen aside became case content. */
 let summaryFields = null;
 
+/* The case file already came back from /chat/summary when the talking ended. This is the retry for
+   the one path that can miss it — a resumed draft whose summary never ran. */
 async function loadSummary() {
-  if (!window.EAAPI) return;
-  const asked = steps.filter((s) => /^ask/.test(s.key))
-    .map((s) => ({ q: s.q, a: answers[s.key] || '' })).filter((x) => x.a);
-  const res = await window.EAAPI.summarise({
-    grievance: answers.grievance || issue,
-    domain: domain.key, office: domain.office, answers: asked
-  });
-  if (res && Array.isArray(res.fields) && res.fields.length) summaryFields = res.fields;
+  if (summaryFields || !window.EAAPI || !window.EAAPI.chatSummary) return;
+  if (!convo.length) return;
+  try {
+    const f = await window.EAAPI.chatSummary(convo);
+    if (f && !f.error && Array.isArray(f.fields) && f.fields.length) summaryFields = f.fields;
+  } catch (e) { /* saidRows falls back to their own words */ }
 }
 
 function saidRows() {
@@ -754,7 +895,8 @@ function saidRows() {
   } else {
     /* No model. Fixed labels - the point is that none of them is built from a question. */
     rows.push(['grievance', 'What happened', answers.grievance || issue || '—', 'text']);
-    const said = steps.filter((s) => /^ask/.test(s.key)).map((s) => answers[s.key]).filter(Boolean);
+    /* The citizen's own answers, under the ask* keys the conversation writes them to. */
+    const said = Object.keys(answers).filter((k) => /^ask/.test(k)).sort().map((k) => answers[k]).filter(Boolean);
     if (said.length) rows.push(['detail', 'What you added', said.join(' · '), 'text']);
   }
   rows.push(['location', 'Where', answers.location || '—', 'place']);
@@ -770,7 +912,8 @@ function route() {
   const ghost = typing();
   Promise.all([fetchRoute(), loadSummary()]).finally(() => {
     ghost.remove();
-    bubble('them', '<p>That is enough. Here is where it goes and what you hold — nothing has been sent yet.</p>');
+    /* No bubble here. The panel's own heading says "nothing sent yet" and "your case, and where
+       it goes" — saying it again in a speech bubble directly above was the same sentence twice. */
     renderRoute();
     /* The payoff spoken, not just painted: which office, and why that one. Someone who has been
        talking rather than reading should not have to start reading at the one moment that
@@ -784,12 +927,45 @@ function route() {
   });
 }
 
+/* The review panel is where a citizen reads back what we understood before anything is sent. It is
+   the worst place on the site to switch languages on somebody, and it was entirely English inside a
+   Hindi conversation. Translated after paint so the panel never waits on a network call, and cached
+   by /say so it costs one call per language for the life of the instance.
+
+   The case fields are deliberately not translated: those are the citizen's own words. */
+async function localiseRoutePanel(root) {
+  const lang = spokenLang();
+  if (!lang || /^en/i.test(lang) || !window.EAAPI || !EAAPI.say || !root) return;
+
+  const nodes = [...root.querySelectorAll('[data-t]')];
+  if (!nodes.length) return;
+  const originals = nodes.map((n) => n.textContent.trim());
+
+  const out = await EAAPI.say(originals, lang);
+  if (!out || out.error || !Array.isArray(out.lines) || out.lines.length !== originals.length) return;
+  nodes.forEach((n, i) => { if (out.lines[i]) n.textContent = out.lines[i]; });
+}
+
+/* A line of ours, spoken in their language. Painted in English first so nothing waits on a
+   network call, then replaced in place when the translation arrives. */
+async function sayLocalised(text) {
+  const turn = bubble('them', '<p>' + esc(text) + '</p>');
+  const lang = spokenLang();
+  if (!lang || /^en/i.test(lang) || !window.EAAPI || !EAAPI.say) return turn;
+  const out = await EAAPI.say([text], lang);
+  if (out && !out.error && Array.isArray(out.lines) && out.lines[0]) {
+    const p = turn.querySelector('.bubble p:not(.who)');
+    if (p) p.textContent = out.lines[0];
+  }
+  return turn;
+}
+
 function renderRoute() {
   const found = domain.match || null;
   const showMatch = found && !dismissedMatch;
-  let html = '<div class="route"><header><b>Route found · nothing sent yet</b><h2>Your case, and where it goes</h2><p>Read it back. Every line can be corrected before you send.</p></header>';
+  let html = '<div class="route"><header><b data-t>Route found · nothing sent yet</b><h2 data-t>Your case, and where it goes</h2><p data-t>Read it back. Every line can be corrected before you send.</p></header>';
 
-  html += '<div class="block"><p class="eyebrow">What you said</p><div class="said">'
+  html += '<div class="block"><p class="eyebrow" data-t>What you said</p><div class="said">'
     + saidRows().map(([key, label, value, kind]) => '<div><div><dt>' + esc(label) + '</dt><dd data-value="' + key + '">' + esc(value) + '</dd></div>'
         + (kind === 'file'
             ? '<button class="edit" type="button" data-attach="1">Attach a file</button>'
@@ -797,7 +973,7 @@ function renderRoute() {
         + '</div>').join('')
     + '</div></div>';
 
-  html += '<div class="block where"><p class="eyebrow">Where it goes</p><b>' + esc(domain.office) + '</b><p>' + esc(domain.reason) + '</p>'
+  html += '<div class="block where"><p class="eyebrow" data-t>Where it goes</p><b>' + esc(domain.office) + '</b><p>' + esc(domain.reason) + '</p>'
     + (domain.legalBasis ? '<p style="margin-top:7px;font-size:11.5px;color:var(--muted)">' + esc(domain.legalBasis) + '</p>' : '')
     + '</div>';
 
@@ -835,7 +1011,7 @@ function renderRoute() {
   }
 
   if (showMatch) {
-    html += '<div class="block"><p class="eyebrow">Match found</p><div class="panel match"><b>' + esc(found.supporters) + ' households have already reported this.</b>'
+    html += '<div class="block"><p class="eyebrow" data-t>Match found</p><div class="panel match"><b>' + esc(found.supporters) + ' households have already reported this.</b>'
       + '<p>' + esc(found.title) + ' · ' + esc(found.code) + ' · with ' + esc(found.office) + '. Your name on that case is worth more than a second case about the same problem. At ' + esc(found.target) + ' names it goes to the ' + esc(found.escalatesTo || 'District Collector') + ' on its own.</p>'
       + '<div class="acts"><button class="button" type="button" data-join>Add my name to that case →</button><button class="ghost" type="button" data-nojoin>Mine is different, file it</button></div></div></div>';
   }
@@ -854,6 +1030,9 @@ function renderRoute() {
 
   if (!routeTurn) { routeTurn = document.createElement('div'); routeTurn.className = 'turn'; }
   routeTurn.innerHTML = '<span class="av"><img src="/img/smiti-didi.jpg" alt="" width="34" height="34" decoding="async" /></span><div class="bubble wide">' + html + '</div>';
+  /* After paint: the panel appears immediately in English and settles into their language a
+     moment later, rather than making them wait on a network call to see their own case. */
+  localiseRoutePanel(routeTurn);
   thread.appendChild(routeTurn);
 
   routeTurn.querySelectorAll('[data-edit]').forEach((button) => button.addEventListener('click', () => inlineEdit(button.dataset.edit)));
@@ -917,7 +1096,7 @@ function editFromMessage(value) {
   const lower = value.toLowerCase();
   const labels = {};
   saidRows().forEach(([key, label]) => { labels[label.toLowerCase()] = key; });
-  if (labels[lower]) { pendingField = labels[lower]; bubble('them', '<p>Send me the new wording for that line.</p>'); return; }
+  if (labels[lower]) { pendingField = labels[lower]; sayLocalised('Send me the new wording for that line.'); return; }
   let field = pendingField;
   pendingField = null;
   if (!field) {
@@ -935,7 +1114,7 @@ function editFromMessage(value) {
   const ghost = typing();
   setTimeout(() => {
     ghost.remove();
-    bubble('them', '<p>Changed. Read it once more before you send it.</p>');
+    sayLocalised('Changed. Read it once more before you send it.');
     renderRoute();
   }, 650);
 }
@@ -1210,46 +1389,29 @@ document.addEventListener('drop', (e) => { if (e.dataTransfer && e.dataTransfer.
 
 /* ---------- open the conversation ---------- */
 const draft = window.EA ? EA.read().draft : null;
-if (draft && draft.step > 0 && (!issue || draft.issue === issue)) {
+
+/* A conversation now survives a reload, which the old step machine could not do: the transcript is
+   in the draft, so it is replayed turn for turn instead of being restarted. */
+if (draft && Array.isArray(draft.convo) && draft.convo.length) {
   Object.assign(answers, draft.answers || {});
+  convo = draft.convo;
+  afterTalk = draft.afterTalk || null;
   if (draft.domain) domain = domains.find((d) => d.key === draft.domain) || domain;
-  isPublic = !!domain.isPublic;
-  buildSteps();
-  step = Math.min(draft.step, steps.length);
-  for (let i = 0; i < step; i++) {
-    const entry = steps[i];
-    let inner = '<p>' + esc(entry.q) + '</p>';
-    if (entry.hint) inner += '<p class="aside">' + esc(entry.hint) + '</p>';
-    bubble('them', inner);
-    const said = answers[entry.key];
-    if (said) bubble('you', '<p>' + esc(said) + '</p>');
-  }
-  bubble('them', '<p class="aside">Picked up where you left off.</p>');
-  advance();
+  for (const m of convo) bubble(m.role === 'user' ? 'you' : 'them', '<p>' + esc(m.content) + '</p>');
+  bubble('them', '<p class="aside">Picked up where we left off.</p>');
+  if (afterTalk) advance();
+  else reply.focus();
 } else if (issue) {
-  /* Arriving with a sentence already typed on the home page. This must still go through the
-     model — it used to skip straight to buildSteps(), leaving domain.apiDomain unset, so
-     fetchRoute() returned early and the whole journey silently ran on the local fallback
-     table instead of the API. */
-  answers.grievance = issue;
-  ask('क्या हुआ? What happened?', 'Say it the way you would tell a neighbour. I find the office from your words — you never pick a department.', null, () => {
+  /* Arrived with a sentence typed on the home page. It goes through the conversation like any
+     other first message — this path used to skip the model entirely. */
+  const op = opener();
+  ask(op.q, op.hint, null, () => {
     setTimeout(() => {
       bubble('you', '<p>' + esc(issue) + '</p>');
-      const ghost = typing();
-      classifyRemote(issue).then(() => {
-        ghost.remove();
-        isPublic = !!domain.isPublic;
-        buildSteps();
-        step = 0;
-        save();
-        advance();
-      });
-    }, 450);
+      talk(issue);
+    }, 420);
   });
 } else {
-  /* Seed the domain from the clicked card so the follow-ups and the public/private decision are
-     already the right ones for this topic. The server still classifies from what they type, and
-     overwrites this — the seed only decides what we open with. */
   if (topic) {
     const seeded = domains.find((d) => d.key === topic);
     if (seeded) { domain = seeded; isPublic = !!seeded.isPublic; }
@@ -1259,11 +1421,11 @@ if (draft && draft.step > 0 && (!issue || draft.issue === issue)) {
       other: 'Something else' }[topic];
     if (nameOf) bubble('them', '<p class="aside">' + esc(nameOf) + ' — I have that. If it is not the right one, just tell me and I will change it.</p>');
   }
-  buildSteps();
-  advance();
+  const op = opener();
+  ask(op.q, op.hint, op.chips);
 }
 </script>
-<script src="kolam.js?v=f4d8a2de06"></script>
+<script src="kolam.js?v=9292693176"></script>
 <script>
 /* portrait fallback, delegated. A broken image in a chat avatar should degrade to her
    initial, and doing it here rather than with an inline onerror keeps the generated

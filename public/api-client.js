@@ -46,6 +46,11 @@
     /* One turn of the intake: the next question, given what has been said. */
     nextQuestion: (payload) => call('/next', { method: 'POST', body: payload }),
 
+    /* The conversation. The transcript travels with every turn — the server keeps none of it, so a
+       reload resumes and no instance holds anybody's intake hostage. */
+    chat: (messages, text, domain) => call('/chat', { method: 'POST', body: { messages, text, domain } }),
+    chatSummary: (messages) => call('/chat/summary', { method: 'POST', body: { messages } }),
+
     /* Our own fixed lines, in the citizen's language. */
     say: (lines, lang) => call('/say', { method: 'POST', body: { lines, lang } }),
 

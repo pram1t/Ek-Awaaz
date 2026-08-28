@@ -11,6 +11,7 @@
 import express, { Router } from 'express';
 import * as db from './db.js';
 import { routing, remedies } from './db.js';
+import { chat, summariseTranscript, chatAvailable, conversationReport } from './chat.js';
 import { classify, pickOption, plainLanguage, routingSentence, aiAvailable, answerAboutCase, nextQuestion, MAX_QUESTIONS, summariseIntake , localise } from './ai.js';
 import { sanitizeInput, detectEmergency, rateLimit, budgetReport, cacheReport, MAX_INPUT_CHARS } from './guardrails.js';
 import { speak, listen, speechAvailable, speechReport, ttsLanguages, etag, VOICE } from './speech.js';
@@ -151,6 +152,7 @@ api.get('/health', (_req, res) => {
     budget: budgetReport(),
     cache: cacheReport(),
     speech: speechReport(),
+    conversation: conversationReport(),
     maxInputChars: MAX_INPUT_CHARS,
     disclosure: 'Independent prototype. Filing, officer actions and identities are simulated. No live government system is contacted.'
   });
@@ -539,6 +541,24 @@ api.post('/say', metered, async (req, res) => {
   const lang = String(req.body?.lang || 'en-IN').slice(0, 8);
   if (!lines.length) return res.json({ lines: [], source: 'empty' });
   const out = await localise(lines, lang);
+  res.json(out);
+});
+
+/** THE CONVERSATION — one turn.
+    The transcript arrives from the device, is treated as untrusted, and goes back updated. No
+    conversation state is held here: a reload resumes, and an instance restart cannot strand
+    anybody mid-intake. Turn count is derived from the history rather than sent, so a client can
+    only shorten its own context, never inflate its budget. */
+api.post('/chat', metered, async (req, res) => {
+  const out = await chat(req.body?.messages, req.body?.text, req.body?.domain);
+  res.json(out);
+});
+
+/** The case file, written from the conversation itself.
+    Always 200. There is no failure here that justifies showing a citizen a blank review screen
+    after they have answered four questions — the fallback is their own first sentence. */
+api.post('/chat/summary', metered, async (req, res) => {
+  const out = await summariseTranscript(req.body?.messages);
   res.json(out);
 });
 

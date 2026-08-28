@@ -648,7 +648,7 @@ function tooSimilar(a, b) {
 const DUNNO = /\b(idk|dunno|no idea|don'?t know|do not know|nahi pata|nahin pata|pata nahi|malum nahi|not sure|no reference|nothing to attach|none)\b/i;
 const HAS_DATE = /\b(\d{1,2}\s*(st|nd|rd|th)?\s*(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)|(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*\s*\d{1,2}|\d{1,2}[\/.-]\d{1,2}|yesterday|last (week|month|year)|since \w+|\d+ (days?|weeks?|months?) ago|kal|pichhle)\b/i;
 
-function enoughKnown(grievance, answers) {
+export function enoughKnown(grievance, answers) {
   const said = answers.map((a) => String(a.a || ''));
   const everything = [String(grievance || '')].concat(said).join(' ');
 
