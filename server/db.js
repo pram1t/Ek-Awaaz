@@ -32,6 +32,26 @@ const seed = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'seed.json'), 'u
 export const stats = seed.stats;
 
 const db = new Database(DB_PATH);
+
+/* Every prepared statement, kept for the life of the process.
+ *
+ * better-sqlite3 registers a Node environment cleanup hook per Statement and removes it in the
+ * destructor. On serverless the environment can be gone before that runs — the assertion inside
+ * RemoveEnvironmentCleanupHook fails and the process aborts with SIGABRT, killing the request that
+ * happened to be in flight. It shows up as an intermittent 500 with no error behind it, because
+ * there is no error: the process died.
+ *
+ * Preparing once and holding the reference means no Statement is ever collected, so no destructor
+ * ever runs at teardown. Keyed on the SQL text, which is static at every call site here.
+ */
+const STMT = new Map();
+function P(sql) {
+  let prepared = STMT.get(sql);
+  if (!prepared) { prepared = db.prepare(sql); STMT.set(sql, prepared); }
+  return prepared;
+}
+
+export const statementCount = () => STMT.size;
 if (storageMode === 'file') db.pragma('journal_mode = WAL');
 
 db.exec(`
@@ -112,19 +132,19 @@ db.exec(`
 function seedCases({ force = false } = {}) {
   if (force) {
     /* the child rows hang off seeded cases and would otherwise be orphaned on a reseed */
-    const ids = db.prepare('SELECT id FROM cases WHERE seeded = 1').all().map((r) => r.id);
+    const ids = P('SELECT id FROM cases WHERE seeded = 1').all().map((r) => r.id);
     if (ids.length) {
       const list = ids.join(',');
-      db.prepare('DELETE FROM signatures WHERE case_id IN (' + list + ')').run();
-      db.prepare('DELETE FROM messages WHERE case_id IN (' + list + ')').run();
-      db.prepare('DELETE FROM confirmations WHERE case_id IN (' + list + ')').run();
+      P('DELETE FROM signatures WHERE case_id IN (' + list + ')').run();
+      P('DELETE FROM messages WHERE case_id IN (' + list + ')').run();
+      P('DELETE FROM confirmations WHERE case_id IN (' + list + ')').run();
     }
-    db.prepare('DELETE FROM cases WHERE seeded = 1').run();
+    P('DELETE FROM cases WHERE seeded = 1').run();
   }
-  const existing = db.prepare('SELECT COUNT(*) AS n FROM cases WHERE seeded = 1').get().n;
+  const existing = P('SELECT COUNT(*) AS n FROM cases WHERE seeded = 1').get().n;
   if (existing > 0) return existing;
 
-  const insert = db.prepare(`
+  const insert = P(`
     INSERT INTO cases (code, domain, option_key, title, summary, area, state, cell, office,
                        reason, legal_basis, channel, remedy_key,
                        visibility, supporters, target, status, escalates_to, recurrence,
@@ -245,7 +265,7 @@ function daysBetween(fromISO, toISO = today()) {
 }
 
 function nextCode() {
-  const row = db.prepare("SELECT COUNT(*) AS n FROM cases").get();
+  const row = P("SELECT COUNT(*) AS n FROM cases").get();
   const year = new Date().getFullYear();
   return `EA-${year}-${String(60000 + row.n + 1).slice(-5)}`;
 }
@@ -298,7 +318,7 @@ export function shape(row) {
 export function findByCode(input) {
   const digits = String(input || '').replace(/\D/g, '');
   if (digits.length < 4) return null;
-  const rows = db.prepare('SELECT * FROM cases').all();
+  const rows = P('SELECT * FROM cases').all();
   const hit = rows.find((r) => {
     const rd = r.code.replace(/\D/g, '');
     return rd === digits || rd.endsWith(digits) || digits.endsWith(rd.slice(-5));
@@ -311,21 +331,21 @@ export function publicCases({ state = null, limit = 60 } = {}) {
     ? 'SELECT * FROM cases WHERE visibility != ? AND state = ? ORDER BY supporters DESC, filed_on DESC, id DESC LIMIT ?'
     : 'SELECT * FROM cases WHERE visibility != ? ORDER BY supporters DESC, filed_on DESC, id DESC LIMIT ?';
   const rows = state
-    ? db.prepare(sql).all('private', state, limit)
-    : db.prepare(sql).all('private', limit);
+    ? P(sql).all('private', state, limit)
+    : P(sql).all('private', limit);
   return rows.map(shape);
 }
 
 /** Joinder match: same dedup cell, or same domain in the same area. Public cases only. */
 export function findMatch({ domain, cell, area, state }) {
   if (cell) {
-    const byCell = db.prepare(
+    const byCell = P(
       "SELECT * FROM cases WHERE cell = ? AND visibility != 'private' AND status != 'confirmed_fixed' LIMIT 1"
     ).get(cell);
     if (byCell) return shape(byCell);
   }
   if (domain && (area || state)) {
-    const byArea = db.prepare(
+    const byArea = P(
       "SELECT * FROM cases WHERE domain = ? AND visibility != 'private' AND status != 'confirmed_fixed'" +
       ' AND (LOWER(COALESCE(area, ?)) LIKE ? OR LOWER(COALESCE(state, ?)) = ?) LIMIT 1'
     ).get(domain, '', `%${String(area || '').toLowerCase().split(',')[0].trim()}%`, '', String(state || '').toLowerCase());
@@ -336,7 +356,7 @@ export function findMatch({ domain, cell, area, state }) {
 
 export function createCase(data) {
   const code = nextCode();
-  db.prepare(`
+  P(`
     INSERT INTO cases (code, domain, option_key, title, summary, area, state, cell, office,
                        reason, legal_basis, channel, remedy_key, visibility, name_withheld,
                        supporters, target, status, escalates_to, recurrence, filed_on,
@@ -371,7 +391,7 @@ export function createCase(data) {
   });
   if (data.phone) {
     try {
-      db.prepare('INSERT INTO signatures (case_id, phone, note, added_on) VALUES ((SELECT id FROM cases WHERE code = ?), ?, ?, ?)')
+      P('INSERT INTO signatures (case_id, phone, note, added_on) VALUES ((SELECT id FROM cases WHERE code = ?), ?, ?, ?)')
         .run(code, data.phone, null, today());
     } catch { /* first filer already counted in supporters */ }
   }
@@ -380,58 +400,58 @@ export function createCase(data) {
 
 function countRecurrence(cell) {
   if (!cell) return 1;
-  const n = db.prepare('SELECT COUNT(*) AS n FROM cases WHERE cell = ?').get(cell).n;
+  const n = P('SELECT COUNT(*) AS n FROM cases WHERE cell = ?').get(cell).n;
   return n + 1;
 }
 
 /** One signature per verified mobile per case. Returns { case, already }. */
 export function addSignature(code, phone, note) {
-  const row = db.prepare('SELECT * FROM cases WHERE code = ?').get(findByCode(code)?.code || code);
+  const row = P('SELECT * FROM cases WHERE code = ?').get(findByCode(code)?.code || code);
   if (!row) return { error: 'not_found' };
   if (row.visibility === 'private') return { error: 'not_joinable' };
 
-  const existing = db.prepare('SELECT 1 FROM signatures WHERE case_id = ? AND phone = ?').get(row.id, phone);
+  const existing = P('SELECT 1 FROM signatures WHERE case_id = ? AND phone = ?').get(row.id, phone);
   if (existing) return { case: shape(row), already: true };
 
-  db.prepare('INSERT INTO signatures (case_id, phone, note, added_on) VALUES (?, ?, ?, ?)')
+  P('INSERT INTO signatures (case_id, phone, note, added_on) VALUES (?, ?, ?, ?)')
     .run(row.id, phone, note || null, today());
-  db.prepare('UPDATE cases SET supporters = supporters + 1 WHERE id = ?').run(row.id);
+  P('UPDATE cases SET supporters = supporters + 1 WHERE id = ?').run(row.id);
 
-  const updated = db.prepare('SELECT * FROM cases WHERE id = ?').get(row.id);
+  const updated = P('SELECT * FROM cases WHERE id = ?').get(row.id);
   const escalated = updated.target && updated.supporters >= updated.target;
   if (escalated && updated.status === 'open') {
-    db.prepare("UPDATE cases SET status = 'escalated' WHERE id = ?").run(row.id);
+    P("UPDATE cases SET status = 'escalated' WHERE id = ?").run(row.id);
   }
-  return { case: shape(db.prepare('SELECT * FROM cases WHERE id = ?').get(row.id)), already: false, escalated };
+  return { case: shape(P('SELECT * FROM cases WHERE id = ?').get(row.id)), already: false, escalated };
 }
 
 /** Citizen-confirmed closure. An officer report never closes a case. */
 export function confirmCase(code, phone, verdict) {
   const found = findByCode(code);
   if (!found) return { error: 'not_found' };
-  const row = db.prepare('SELECT * FROM cases WHERE code = ?').get(found.code);
+  const row = P('SELECT * FROM cases WHERE code = ?').get(found.code);
 
   try {
-    db.prepare('INSERT INTO confirmations (case_id, phone, verdict, added_on) VALUES (?, ?, ?, ?)')
+    P('INSERT INTO confirmations (case_id, phone, verdict, added_on) VALUES (?, ?, ?, ?)')
       .run(row.id, phone, verdict, today());
   } catch {
-    db.prepare('UPDATE confirmations SET verdict = ?, added_on = ? WHERE case_id = ? AND phone = ?')
+    P('UPDATE confirmations SET verdict = ?, added_on = ? WHERE case_id = ? AND phone = ?')
       .run(verdict, today(), row.id, phone);
   }
 
-  const yes = db.prepare("SELECT COUNT(*) AS n FROM confirmations WHERE case_id = ? AND verdict = 'fixed'").get(row.id).n;
+  const yes = P("SELECT COUNT(*) AS n FROM confirmations WHERE case_id = ? AND verdict = 'fixed'").get(row.id).n;
   const needed = row.visibility === 'private' ? 1 : 2;
 
   if (verdict === 'fixed' && yes >= needed) {
-    db.prepare("UPDATE cases SET status = 'confirmed_fixed', confirmed_on = ?, confirmed_by = ? WHERE id = ?")
+    P("UPDATE cases SET status = 'confirmed_fixed', confirmed_on = ?, confirmed_by = ? WHERE id = ?")
       .run(today(), yes, row.id);
   } else if (verdict === 'not_fixed') {
-    db.prepare("UPDATE cases SET status = 'reopened', confirmed_on = NULL, recurrence = recurrence + 1 WHERE id = ?")
+    P("UPDATE cases SET status = 'reopened', confirmed_on = NULL, recurrence = recurrence + 1 WHERE id = ?")
       .run(row.id);
   } else if (verdict === 'partly') {
-    db.prepare("UPDATE cases SET status = 'partly_fixed' WHERE id = ?").run(row.id);
+    P("UPDATE cases SET status = 'partly_fixed' WHERE id = ?").run(row.id);
   } else {
-    db.prepare("UPDATE cases SET confirmed_by = ? WHERE id = ?").run(yes, row.id);
+    P("UPDATE cases SET confirmed_by = ? WHERE id = ?").run(yes, row.id);
   }
 
   return { case: findByCode(found.code), confirmations: yes, needed };
@@ -441,14 +461,14 @@ export function confirmCase(code, phone, verdict) {
 export function simulateOfficerReply(code, atr) {
   const found = findByCode(code);
   if (!found) return { error: 'not_found' };
-  db.prepare("UPDATE cases SET status = 'awaiting_confirmation', officer_responded_on = ?, officer_atr = ? WHERE code = ?")
+  P("UPDATE cases SET status = 'awaiting_confirmation', officer_responded_on = ?, officer_atr = ? WHERE code = ?")
     .run(today(), atr, found.code);
   return { case: findByCode(found.code) };
 }
 
 export function myCases(phone) {
-  const filed = db.prepare('SELECT * FROM cases WHERE phone = ? ORDER BY id DESC').all(phone).map(shape);
-  const joined = db.prepare(`
+  const filed = P('SELECT * FROM cases WHERE phone = ? ORDER BY id DESC').all(phone).map(shape);
+  const joined = P(`
     SELECT c.* FROM cases c
     JOIN signatures s ON s.case_id = c.id
     WHERE s.phone = ? AND (c.phone IS NULL OR c.phone != ?)
@@ -458,10 +478,10 @@ export function myCases(phone) {
 }
 
 export function dashboard() {
-  const openPublic = db.prepare("SELECT COUNT(*) AS n FROM cases WHERE visibility != 'private' AND status NOT IN ('confirmed_fixed')").get().n;
-  const fixed = db.prepare("SELECT COUNT(*) AS n FROM cases WHERE status = 'confirmed_fixed'").get().n;
-  const recurring = db.prepare('SELECT code, title, area, recurrence FROM cases WHERE recurrence > 1 ORDER BY recurrence DESC LIMIT 5').all();
-  const byDomain = db.prepare('SELECT domain, COUNT(*) AS n, SUM(supporters) AS supporters FROM cases GROUP BY domain ORDER BY n DESC').all();
+  const openPublic = P("SELECT COUNT(*) AS n FROM cases WHERE visibility != 'private' AND status NOT IN ('confirmed_fixed')").get().n;
+  const fixed = P("SELECT COUNT(*) AS n FROM cases WHERE status = 'confirmed_fixed'").get().n;
+  const recurring = P('SELECT code, title, area, recurrence FROM cases WHERE recurrence > 1 ORDER BY recurrence DESC LIMIT 5').all();
+  const byDomain = P('SELECT domain, COUNT(*) AS n, SUM(supporters) AS supporters FROM cases GROUP BY domain ORDER BY n DESC').all();
   return {
     openPublic,
     fixed,
@@ -488,19 +508,19 @@ export default db;
    already" is distinguishable from "they have not answered yet". */
 
 export function getPerson(phone) {
-  const row = db.prepare('SELECT phone, name, created_on FROM people WHERE phone = ?').get(phone);
+  const row = P('SELECT phone, name, created_on FROM people WHERE phone = ?').get(phone);
   return row ? { phone: row.phone, name: row.name || null, since: row.created_on } : null;
 }
 
 export function seePerson(phone) {
-  db.prepare('INSERT OR IGNORE INTO people (phone, created_on) VALUES (?, ?)').run(phone, today());
+  P('INSERT OR IGNORE INTO people (phone, created_on) VALUES (?, ?)').run(phone, today());
   return getPerson(phone);
 }
 
 export function setName(phone, name) {
   const clean = String(name || '').replace(/\s+/g, ' ').trim().slice(0, 60);
   if (!clean) return { error: 'empty' };
-  db.prepare(`INSERT INTO people (phone, name, created_on, updated_on) VALUES (?, ?, ?, ?)
+  P(`INSERT INTO people (phone, name, created_on, updated_on) VALUES (?, ?, ?, ?)
               ON CONFLICT(phone) DO UPDATE SET name = excluded.name, updated_on = excluded.updated_on`)
     .run(phone, clean, today(), today());
   return getPerson(phone);
@@ -509,8 +529,8 @@ export function setName(phone, name) {
 /** Everything we know, and where each part of it came from. Derived, never stored twice. */
 export function profile(phone) {
   const person = getPerson(phone);
-  const filed = db.prepare('SELECT * FROM cases WHERE phone = ? ORDER BY id').all(phone).map(shape);
-  const signed = db.prepare(
+  const filed = P('SELECT * FROM cases WHERE phone = ? ORDER BY id').all(phone).map(shape);
+  const signed = P(
     `SELECT c.code, c.title, c.area, s.added_on, s.note FROM cases c
        JOIN signatures s ON s.case_id = c.id
       WHERE s.phone = ? AND (c.phone IS NULL OR c.phone != ?)
@@ -586,33 +606,33 @@ function daysSince(iso) {
 export function addReply(code, phone, text) {
   const found = findByCode(code);
   if (!found) return { error: 'not_found' };
-  const row = db.prepare('SELECT * FROM cases WHERE code = ?').get(found.code);
+  const row = P('SELECT * FROM cases WHERE code = ?').get(found.code);
 
-  db.prepare('INSERT INTO messages (case_id, role, phone, text, added_on) VALUES (?, ?, ?, ?, ?)')
+  P('INSERT INTO messages (case_id, role, phone, text, added_on) VALUES (?, ?, ?, ?, ?)')
     .run(row.id, 'citizen', phone, String(text).slice(0, 1200), today());
 
   /* Answering an officer's report is not the same as confirming it. The clock goes back to
      the office rather than the case sitting in limbo waiting on the citizen. */
   let movedTo = null;
   if (row.status === 'awaiting_confirmation') {
-    db.prepare("UPDATE cases SET status = 'open' WHERE id = ?").run(row.id);
+    P("UPDATE cases SET status = 'open' WHERE id = ?").run(row.id);
     movedTo = 'open';
   }
   return { case: findByCode(found.code), movedTo };
 }
 
 export function messages(caseId) {
-  return db.prepare('SELECT role, text, added_on, phone FROM messages WHERE case_id = ? ORDER BY id').all(caseId);
+  return P('SELECT role, text, added_on, phone FROM messages WHERE case_id = ? ORDER BY id').all(caseId);
 }
 
 /** Every event on the case, derived from the record rather than kept as a parallel log. */
 export function timeline(code) {
   const found = findByCode(code);
   if (!found) return { error: 'not_found' };
-  const row = db.prepare('SELECT * FROM cases WHERE code = ?').get(found.code);
+  const row = P('SELECT * FROM cases WHERE code = ?').get(found.code);
 
-  const signed = db.prepare('SELECT phone, added_on FROM signatures WHERE case_id = ? ORDER BY id').all(row.id);
-  const confirmed = db.prepare('SELECT verdict, added_on FROM confirmations WHERE case_id = ? ORDER BY id').all(row.id);
+  const signed = P('SELECT phone, added_on FROM signatures WHERE case_id = ? ORDER BY id').all(row.id);
+  const confirmed = P('SELECT verdict, added_on FROM confirmations WHERE case_id = ? ORDER BY id').all(row.id);
   const msgs = messages(row.id);
 
   const events = [];
