@@ -334,7 +334,7 @@ export async function chat(history, text, hint) {
 
     /* clean() blanks a reply that cites a law or invents a figure. Reporting that as a missing field
        is a lie the model cannot act on, so the two are told apart. */
-    const say = clean(rawSay, 400);
+    let say = clean(rawSay, 400);
     if (!say) {
       correction = '\nYour previous reply was rejected: do not cite laws, sections or amounts to the '
         + 'citizen, and do not invent figures. Ask a plain question about their situation.\n';
@@ -351,6 +351,20 @@ export async function chat(history, text, hint) {
        English pension grievance came back answered in romanised Hindi. The prompt asks; this is the
        guarantee. One correction, then the canned question, which is English and therefore safe for
        an English citizen and legible to a Hinglish one. */
+    /* ONE QUESTION per turn. The prompt asks for it and the model still ships two — "kya aapne
+       kisi office se sampark kiya hai? Unhone kya kaha?" is two things to answer at once, and a
+       person on a phone answers one and drops the other. One correction, then it is simply cut
+       after the first question mark: half a reply that can be answered beats a whole one that
+       cannot. */
+    if (say.split(String.fromCharCode(63)).length - 1 > 1) {
+      if (attempt === 0) {
+        correction = String.fromCharCode(10) + 'Your previous reply contained more than one '
+          + 'question. Ask exactly ONE thing. Delete the rest.' + String.fromCharCode(10);
+        continue;
+      }
+      say = say.slice(0, say.indexOf(String.fromCharCode(63)) + 1);
+    }
+
     if (switchedLanguage(message, say)) {
       if (attempt === 0) {
         correction = String.fromCharCode(10) + 'Your previous reply was in a different language or '
