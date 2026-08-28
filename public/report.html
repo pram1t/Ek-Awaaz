@@ -669,7 +669,12 @@ const progressLabels = ['Reading your grievance', 'Narrowing the office', 'Check
 function save() {
   if (!window.EA) return;
   /* convo goes into the draft, which is the whole reason a reload can resume a conversation. */
-  EA.patch({ draft: { issue: issue, step: step, answers: answers, domain: domain.key, convo: convo, afterTalk: afterTalk, at: Date.now() } });
+  /* The whole resolved domain, not just its key. The key alone was not enough to rebuild this:
+     after the server classifies, domain.key holds a server key like "infra.water", and the
+     client table that the resume looked it up in is keyed "water". The lookup missed, the
+     object fell back to "other", and apiDomain went with it — so the case filed offline. */
+  EA.patch({ draft: { issue: issue, step: step, answers: answers, domain: domain.key,
+    domainState: domain, convo: convo, afterTalk: afterTalk, at: Date.now() } });
 }
 
 /* The model's questions already come back in the citizen's language. These two do not, because
@@ -1206,6 +1211,14 @@ async function fileCase() {
   /* The case is created on the server. Filing onward into CPGRAMS / EPFiGMS / RBI CMS /
      Meri Sadak is simulated — no live government system is contacted. */
   let record = null;
+  /* A case with no apiDomain has never been classified by the server — which now only happens
+     when something went wrong, not as a matter of course. Classify it before filing rather than
+     quietly recording it on the device: an offline case gets a case number and appears in no
+     dashboard, and the citizen has no way to tell. */
+  if (window.EAAPI && !domain.apiDomain && (answers.grievance || issue)) {
+    try { await classifyRemote(answers.grievance || issue); } catch (e) { /* handled below */ }
+  }
+
   if (window.EAAPI && domain.apiDomain && session.phone) {
     const res = await window.EAAPI.fileCase({
       phone: session.phone,
@@ -1230,7 +1243,13 @@ async function fileCase() {
     }
   }
   /* If the server is unreachable we still complete the journey, and say the case is local only. */
-  if (!record) record = Object.assign(EA.file(local), { offline: true });
+  if (!record) {
+    record = Object.assign(EA.file(local), { offline: true });
+    /* Say it. A case number for a case the server never received is the one thing here that
+       would be worse than an error message. */
+    bubble('them', '<p class="aside">I could not reach the service, so this is saved on your phone '
+      + 'only and is not with any office yet. Open it again when you have a signal and I will send it.</p>');
+  }
   /* Record it. This concatenated an empty array, so nothing a person filed was ever kept
      in the session — the offline list stayed empty and the public wall could not tell that a
      case on it was your own. */
@@ -1396,7 +1415,11 @@ if (draft && Array.isArray(draft.convo) && draft.convo.length) {
   Object.assign(answers, draft.answers || {});
   convo = draft.convo;
   afterTalk = draft.afterTalk || null;
-  if (draft.domain) domain = domains.find((d) => d.key === draft.domain) || domain;
+  /* Prefer what the server gave us last time. The table lookup is only a fallback for a draft
+     saved before this fix existed. */
+  if (draft.domainState && typeof draft.domainState === 'object') domain = draft.domainState;
+  else if (draft.domain) domain = domains.find((d) => d.key === draft.domain) || domain;
+  isPublic = !!domain.isPublic;
   for (const m of convo) bubble(m.role === 'user' ? 'you' : 'them', '<p>' + esc(m.content) + '</p>');
   bubble('them', '<p class="aside">Picked up where we left off.</p>');
   if (afterTalk) advance();
