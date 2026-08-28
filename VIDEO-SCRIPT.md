@@ -9,7 +9,8 @@ costs marks on *Product thinking* and *End-to-end thinking*, and it is the only 
 requirement can be evidenced.
 
 Narration below is written at ~150 words per minute, which is a comfortable pace with room to
-breathe. **Minute one: 148 words. Minute two: 151 words.**
+breathe. **Minute one: 155 words (62s). Minute two: 156 words (62s). Total 124s of speech — the gap to
+120s is why the shot list has no dead air in it, and why you record the halves separately.**
 
 ---
 
@@ -30,22 +31,21 @@ Shivangi narrates. Do not open on our interface; open on the problem.
 
 **Minute-one narration, to read straight through:**
 
-> To report a broken village road, you first choose your problem's owner from ninety-two
-> organisations. Then a category. Then a sub-category. A pothole is not on that list. It never was —
-> local government is a State subject, so no central ministry can fix it.
+> To report a broken village road, you first choose from ninety-two organisations. Then a category.
+> Then a sub-category. A pothole is not on that list — it never was. Local government is a State
+> subject, so no central ministry can fix it.
 >
-> Ek Awaaz never asks which office. She just says what happened, in her own language. Smiti Didi
-> hears which language it is from the audio, asks two or three questions, and answers out loud in
-> the same one. Eleven Indian languages.
+> Ek Awaaz never asks which office. She says what happened, in her own language. Smiti Didi hears
+> which language from the audio, asks two or three questions, and answers aloud in the same one.
 >
 > Before anything is sent: this goes to the Block Development Officer, not Delhi, because a village
 > road is Panchayat work. And it names what she is already owed by law, with the deadline.
 >
-> Thirty-four households have already reported this road. She adds her name instead of filing the
-> thirty-fifth case. At fifty it goes to the District Collector automatically.
+> Thirty-four households have reported this road. She adds her name instead of filing the
+> thirty-fifth case. At fifty it reaches the District Collector automatically.
 >
-> Weeks later the officer files "disposed". The case does not close. Only she can close it — and she
-> says it is not fixed.
+> The officer files "disposed". The case does not close. Only she can close it — and she says it is
+> not fixed.
 
 ---
 
@@ -64,23 +64,21 @@ Pramit narrates. Screen: the repo, the routing table, a guardrail function, the 
 
 **Minute-two narration, to read straight through:**
 
-> We built this with Codex — the backend, and most of the frontend. Smiti runs on the OpenAI API:
-> she reads the grievance, chooses the next question, and puts the officer's reply into plain words.
+> We built this with Codex — the backend and most of the frontend. Smiti runs on the OpenAI API: she
+> reads the grievance, chooses the next question, and puts the officer's reply into plain words.
 >
 > The two things that matter are data, not prompts. The constitutional tiers are a routing table.
-> Twelve statutory remedies are a second table, gated by deadline and by state — so the same pothole
-> question gets a different, correct answer in Bihar and in Maharashtra.
+> Twelve statutory remedies are a second table, gated by deadline and state — so the same pothole
+> question gets a different, correct answer in Bihar and Maharashtra.
 >
-> Codex also found the bugs. A prompt is a request; code is a guarantee. Every rule the model must
-> obey is enforced in code, because the model broke each one when we only asked: never request an
-> Aadhaar or account number, never invent a date, never answer in a language you did not use.
+> A prompt is a request; code is a guarantee. Every rule the model must obey is enforced in code,
+> because it broke each one when we only asked: never request an Aadhaar number, never invent a
+> date, never answer in a language you did not use.
 >
-> The closure gate is a database constraint, not a screen. An officer's report cannot reach "fixed" —
-> only a citizen's verified confirmation can. Our test suite asserts that a case stays open after an
-> officer says it is closed.
+> The closure gate is a database constraint. An officer's report cannot reach "fixed" — only a
+> citizen's confirmation can, and our tests assert it.
 >
-> A full walkthrough costs about a tenth of a paisa. That is what makes national scale arguable.
-> Filing into government systems is simulated, and every case on the site says so.
+> Filing is simulated, and every case says so.
 
 ---
 
